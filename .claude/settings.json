@@ -14,7 +14,11 @@
       "Bash(curl -s -N -X POST http://localhost:3000/api/trade-analyst -H 'Content-Type: application/json' -d '{\"messages\":[{\"role\":\"user\",\"content\":\"How is the market opportunity score computed, and what is the top opportunity right now?\"}]}' --max-time 60)",
       "Bash(curl -s -N -X POST http://localhost:3000/api/trade-analyst -H 'Content-Type: application/json' -d '{\"messages\":[{\"role\":\"user\",\"content\":\"How is the market opportunity score computed, and what is the top opportunity right now?\"}]}' --max-time 120)",
       "Bash(xargs ls -la)",
-      "Bash(gh auth *)"
+      "Bash(gh auth *)",
+      "Bash(curl -s -w \"\\\\nHTTP_STATUS:%{http_code}\\\\n\" \"https://api.github.com/repos/actions/checkout/releases/latest\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/actions/checkout/v7/action.yml\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/actions/setup-node/v7/action.yml\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/pnpm/action-setup/v6/action.yml\")"
     ]
   }
 }
