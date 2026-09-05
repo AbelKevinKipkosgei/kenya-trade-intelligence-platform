@@ -10,7 +10,8 @@
     "db:push": "drizzle-kit push --config=drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config=drizzle.config.ts",
     "db:seed": "tsx db/seed/index.ts",
-    "db:views": "tsx db/views/apply.ts"
+    "db:views": "tsx db/views/apply.ts",
+    "eval:trade-analyst": "tsx evals/trade-analyst.eval.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.123.0",
