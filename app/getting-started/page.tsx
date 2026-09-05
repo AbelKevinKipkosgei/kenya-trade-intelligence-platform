@@ -12,7 +12,13 @@ const CATEGORY_LABELS: Record<string, string> = {
   customs: "Customs & Duties",
 };
 
-const CATEGORY_ORDER = ["import", "export", "certification", "licensing", "customs"];
+const CATEGORY_ORDER = [
+  "import",
+  "export",
+  "certification",
+  "licensing",
+  "customs",
+];
 
 export default async function GettingStartedPage() {
   const rows = await db
@@ -44,9 +50,11 @@ export default async function GettingStartedPage() {
           Getting Started
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Step-by-step procedures across Kenya&apos;s trade agencies — centralized here instead of
-          scattered across each agency&apos;s own site. Ask the{" "}
-          <a href="/analyst" className="font-medium text-kenya-green hover:underline">
+          Step-by-step procedures across Kenya&apos;s trade agencies. Ask the{" "}
+          <a
+            href="/analyst"
+            className="font-medium text-kenya-green hover:underline"
+          >
             AI Trade Analyst
           </a>{" "}
           if you want this walked through for your specific product.
@@ -72,10 +80,14 @@ export default async function GettingStartedPage() {
                     <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                       Lead agency: {proc.leadAgencyName}
                       {proc.sectorName ? ` · ${proc.sectorName}` : ""}
-                      {proc.estimatedTotalDays ? ` · ~${proc.estimatedTotalDays} days` : ""}
+                      {proc.estimatedTotalDays
+                        ? ` · ~${proc.estimatedTotalDays} days`
+                        : ""}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{proc.summary}</p>
+                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                    {proc.summary}
+                  </p>
 
                   <ol className="mt-4 flex flex-col gap-3 border-l-2 border-kenya-green/40 pl-4">
                     {(proc.steps as ProcedureStep[])
@@ -88,13 +100,21 @@ export default async function GettingStartedPage() {
                           <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
                             {step.description}
                           </p>
-                          {(step.documentsRequired?.length || step.fees || step.estimatedDays) && (
+                          {(step.documentsRequired?.length ||
+                            step.fees ||
+                            step.estimatedDays) && (
                             <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-zinc-500 dark:text-zinc-500">
                               {step.documentsRequired?.length ? (
-                                <span>Documents: {step.documentsRequired.join(", ")}</span>
+                                <span>
+                                  Documents: {step.documentsRequired.join(", ")}
+                                </span>
                               ) : null}
-                              {step.fees ? <span>Fees: {step.fees}</span> : null}
-                              {step.estimatedDays ? <span>~{step.estimatedDays} days</span> : null}
+                              {step.fees ? (
+                                <span>Fees: {step.fees}</span>
+                              ) : null}
+                              {step.estimatedDays ? (
+                                <span>~{step.estimatedDays} days</span>
+                              ) : null}
                             </div>
                           )}
                         </li>
