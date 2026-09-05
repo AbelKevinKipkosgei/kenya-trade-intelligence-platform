@@ -1,13 +1,20 @@
 import { eq, and, desc, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
-import { marketOpportunityScores, products, sectors, countries } from "@/db/schema";
+import {
+  marketOpportunityScores,
+  products,
+  sectors,
+  countries,
+} from "@/db/schema";
 import { LeaderboardFilters } from "@/components/leaderboard-filters";
 
 export const revalidate = 3600;
 
 async function loadPeriods() {
   const rows = await db
-    .select({ period: sql<string>`to_char(${marketOpportunityScores.period}, 'YYYY-MM-DD')` })
+    .select({
+      period: sql<string>`to_char(${marketOpportunityScores.period}, 'YYYY-MM-DD')`,
+    })
     .from(marketOpportunityScores)
     .groupBy(marketOpportunityScores.period)
     .orderBy(desc(marketOpportunityScores.period))
@@ -28,12 +35,21 @@ export default async function OpportunitiesPage({
 }) {
   const params = await searchParams;
   const periods = await loadPeriods();
-  const selectedPeriod = params.period && periods.includes(params.period) ? params.period : periods[0];
+  const selectedPeriod =
+    params.period && periods.includes(params.period)
+      ? params.period
+      : periods[0];
 
   const [sectorOptions, countryOptions] = await Promise.all([
-    db.select({ value: sql<string>`${sectors.id}::text`, label: sectors.name }).from(sectors).orderBy(sectors.name),
     db
-      .select({ value: sql<string>`${countries.id}::text`, label: countries.name })
+      .select({ value: sql<string>`${sectors.id}::text`, label: sectors.name })
+      .from(sectors)
+      .orderBy(sectors.name),
+    db
+      .select({
+        value: sql<string>`${countries.id}::text`,
+        label: countries.name,
+      })
       .from(countries)
       .orderBy(countries.name),
   ]);
@@ -41,8 +57,12 @@ export default async function OpportunitiesPage({
   const conditions: SQL[] = [
     sql`to_char(${marketOpportunityScores.period}, 'YYYY-MM-DD') = ${selectedPeriod}`,
   ];
-  if (params.sector) conditions.push(eq(products.sectorId, Number(params.sector)));
-  if (params.country) conditions.push(eq(marketOpportunityScores.countryId, Number(params.country)));
+  if (params.sector)
+    conditions.push(eq(products.sectorId, Number(params.sector)));
+  if (params.country)
+    conditions.push(
+      eq(marketOpportunityScores.countryId, Number(params.country)),
+    );
 
   const rows = await db
     .select({
@@ -74,22 +94,27 @@ export default async function OpportunitiesPage({
           Market Opportunity Leaderboard
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Ranks product–market combinations by opportunity score (demand, growth,
-          competitiveness, market access, competition, logistics, domestic capacity).
+          Ranks product–market combinations by opportunity score (demand,
+          growth, competitiveness, market access, competition, logistics,
+          domestic capacity).
         </p>
         <p className="mt-2 text-xs text-amber-700 dark:text-amber-500">
-          Computed from real trade transactions, tariffs, trade barriers, and registered exporter
-          capacity. Competitiveness and competition are proxies (Kenya has no third-country trade
-          data to benchmark against rival exporters), and logistics uses regional-bloc membership
-          as a stand-in for real freight/transit data — see the AI Trade Analyst for the full
-          methodology on any figure.
+          Computed from real trade transactions, tariffs, trade barriers, and
+          registered exporter capacity. Competitiveness and competition are
+          proxies (Kenya has no third-country trade data to benchmark against
+          rival exporters), and logistics uses regional-bloc membership as a
+          stand-in for real freight/transit data - see the AI Trade Analyst for
+          the full methodology on any figure.
         </p>
       </div>
 
       <LeaderboardFilters
         sectors={sectorOptions}
         countries={countryOptions}
-        periods={periods.map((p) => ({ value: p, label: formatPeriodLabel(p) }))}
+        periods={periods.map((p) => ({
+          value: p,
+          label: formatPeriodLabel(p),
+        }))}
         selectedSector={params.sector ?? ""}
         selectedCountry={params.country ?? ""}
         selectedPeriod={selectedPeriod}
@@ -101,11 +126,17 @@ export default async function OpportunitiesPage({
             Top opportunity this period
           </span>
           <p className="mt-1 text-sm text-zinc-800 dark:text-zinc-200">
-            <a href={`/explorer?hs=${top.hsCode}`} className="font-semibold hover:underline">
+            <a
+              href={`/explorer?hs=${top.hsCode}`}
+              className="font-semibold hover:underline"
+            >
               {top.productDescription}
             </a>{" "}
-            in <span className="font-semibold">{top.countryName}</span> — overall score{" "}
-            <span className="font-semibold">{Number(top.overallScore).toFixed(1)}</span>
+            in <span className="font-semibold">{top.countryName}</span> —
+            overall score{" "}
+            <span className="font-semibold">
+              {Number(top.overallScore).toFixed(1)}
+            </span>
           </p>
         </div>
       )}
@@ -120,20 +151,34 @@ export default async function OpportunitiesPage({
               <th className="px-3 py-2 text-right font-semibold">Overall</th>
               <th className="px-3 py-2 text-right font-semibold">Demand</th>
               <th className="px-3 py-2 text-right font-semibold">Growth</th>
-              <th className="px-3 py-2 text-right font-semibold">Competitiveness</th>
-              <th className="px-3 py-2 text-right font-semibold">Market Access</th>
+              <th className="px-3 py-2 text-right font-semibold">
+                Competitiveness
+              </th>
+              <th className="px-3 py-2 text-right font-semibold">
+                Market Access
+              </th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className="border-t border-stone-200 dark:border-zinc-800">
+              <tr
+                key={r.id}
+                className="border-t border-stone-200 dark:border-zinc-800"
+              >
                 <td className="px-3 py-2">
-                  <a href={`/explorer?hs=${r.hsCode}`} className="text-kenya-green hover:underline">
+                  <a
+                    href={`/explorer?hs=${r.hsCode}`}
+                    className="text-kenya-green hover:underline"
+                  >
                     {r.productDescription}
                   </a>
                 </td>
-                <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400">{r.sectorName}</td>
-                <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">{r.countryName}</td>
+                <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400">
+                  {r.sectorName}
+                </td>
+                <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">
+                  {r.countryName}
+                </td>
                 <td className="px-3 py-2 text-right font-semibold text-zinc-900 dark:text-zinc-50">
                   {Number(r.overallScore).toFixed(1)}
                 </td>

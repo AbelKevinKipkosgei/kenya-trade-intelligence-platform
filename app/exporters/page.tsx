@@ -8,7 +8,12 @@ export const revalidate = 3600;
 export default async function ExportersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sector?: string; county?: string; exportReady?: string; q?: string }>;
+  searchParams: Promise<{
+    sector?: string;
+    county?: string;
+    exportReady?: string;
+    q?: string;
+  }>;
 }) {
   const params = await searchParams;
   const sector = params.sector ?? "";
@@ -17,14 +22,24 @@ export default async function ExportersPage({
   const q = params.q ?? "";
 
   const [sectorOptions, countyOptions] = await Promise.all([
-    db.select({ value: sql<string>`${sectors.id}::text`, label: sectors.name }).from(sectors).orderBy(sectors.name),
-    db.select({ value: sql<string>`${counties.id}::text`, label: counties.name }).from(counties).orderBy(counties.name),
+    db
+      .select({ value: sql<string>`${sectors.id}::text`, label: sectors.name })
+      .from(sectors)
+      .orderBy(sectors.name),
+    db
+      .select({
+        value: sql<string>`${counties.id}::text`,
+        label: counties.name,
+      })
+      .from(counties)
+      .orderBy(counties.name),
   ]);
 
   const conditions: SQL[] = [];
   if (sector) conditions.push(eq(exporters.sectorId, Number(sector)));
   if (county) conditions.push(eq(exporters.countyId, Number(county)));
-  if (exportReady) conditions.push(eq(exporters.exportReady, exportReady === "true"));
+  if (exportReady)
+    conditions.push(eq(exporters.exportReady, exportReady === "true"));
   if (q) conditions.push(ilike(exporters.name, `%${q}%`));
   const whereClause = conditions.length ? and(...conditions) : undefined;
 
@@ -51,7 +66,10 @@ export default async function ExportersPage({
       .where(whereClause)
       .orderBy(desc(exporters.exportReady), desc(exporters.employeesCount))
       .limit(50),
-    db.select({ count: sql<string>`count(*)` }).from(exporters).where(whereClause),
+    db
+      .select({ count: sql<string>`count(*)` })
+      .from(exporters)
+      .where(whereClause),
   ]);
 
   return (
@@ -61,8 +79,8 @@ export default async function ExportersPage({
           Kenyan Export Capacity Map
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Manufacturers and producers registered as capable of supplying a given product —
-          find who can actually fulfil a market opportunity.
+          Manufacturers and producers registered as capable of supplying a given
+          product - find who can actually fulfil a market opportunity.
         </p>
       </div>
 
@@ -91,7 +109,9 @@ export default async function ExportersPage({
             className="rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70"
           >
             <div className="flex items-start justify-between gap-2">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{e.name}</h3>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                {e.name}
+              </h3>
               {e.exportReady && (
                 <span className="shrink-0 rounded-full bg-kenya-green/10 px-2 py-0.5 text-xs font-medium text-kenya-green">
                   Export-ready
@@ -108,8 +128,8 @@ export default async function ExportersPage({
               {e.productDescription}
             </a>
             <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-              {e.employeesCount.toLocaleString()} employees · {e.annualCapacity.toLocaleString()}{" "}
-              {e.capacityUnit} capacity
+              {e.employeesCount.toLocaleString()} employees ·{" "}
+              {e.annualCapacity.toLocaleString()} {e.capacityUnit} capacity
             </p>
             {e.certifications.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
@@ -124,7 +144,9 @@ export default async function ExportersPage({
               </div>
             )}
             {e.contactEmail && (
-              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">{e.contactEmail}</p>
+              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                {e.contactEmail}
+              </p>
             )}
           </div>
         ))}
