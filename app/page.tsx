@@ -48,7 +48,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Home() {
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-linear-to-b from-white to-zinc-50 dark:from-black dark:to-zinc-950">
+    <div className="flex min-h-full flex-1 flex-col bg-linear-to-b from-[#faf9f6] to-stone-100 dark:from-[#1c1c1e] dark:to-zinc-900">
       <div className="flex h-1 w-full">
         <div className="flex-1 bg-kenya-black" />
         <div className="flex-1 bg-kenya-red" />
