@@ -1,6 +1,3 @@
-import Link from "next/link";
-import { ThemeToggle } from "@/components/theme-toggle";
-
 const stats = [
   { label: "Total Export Value", value: "$7.2B", change: "+4.8%" },
   { label: "Total Import Value", value: "$18.6B", change: "+2.1%" },
@@ -50,51 +47,6 @@ const features = [
 export default function Home() {
   return (
     <div className="flex min-h-full flex-1 flex-col bg-linear-to-b from-[#ece6d8] to-stone-200 dark:from-[#1c1c1e] dark:to-zinc-900">
-      <div className="flex h-1 w-full">
-        <div className="flex-1 bg-kenya-black" />
-        <div className="flex-1 bg-kenya-red" />
-        <div className="flex-1 bg-kenya-green" />
-      </div>
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6 sm:px-10">
-        <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-kenya-black text-sm font-bold text-white">
-            KE
-          </span>
-          <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Trade Intelligence Platform
-          </span>
-        </div>
-        <nav className="hidden items-center gap-6 text-sm font-medium text-zinc-600 dark:text-zinc-400 lg:flex">
-          <Link href="/explorer" className="hover:text-zinc-900 dark:hover:text-zinc-50">
-            Explorer
-          </Link>
-          <Link href="/opportunities" className="hover:text-zinc-900 dark:hover:text-zinc-50">
-            Opportunities
-          </Link>
-          <Link href="/barriers" className="hover:text-zinc-900 dark:hover:text-zinc-50">
-            Barriers
-          </Link>
-          <Link href="/exporters" className="hover:text-zinc-900 dark:hover:text-zinc-50">
-            Exporters
-          </Link>
-          <Link href="/getting-started" className="hover:text-zinc-900 dark:hover:text-zinc-50">
-            Getting Started
-          </Link>
-          <Link href="/analyst" className="hover:text-zinc-900 dark:hover:text-zinc-50">
-            AI Analyst
-          </Link>
-        </nav>
-        <div className="flex items-center gap-3">
-          <ThemeToggle />
-          <a
-            href="#overview"
-            className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
-            Get Started
-          </a>
-        </div>
-      </header>
-
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 sm:px-10">
         <section className="flex flex-col items-start gap-6 py-20 sm:py-28">
           <span className="rounded-full bg-kenya-green/10 px-3 py-1 text-xs font-semibold text-kenya-green dark:bg-kenya-green/20">
