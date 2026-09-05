@@ -6,7 +6,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #faf9f6;
+  --background: #ece6d8;
   --foreground: #171717;
 
   /* Kenyan flag palette */
