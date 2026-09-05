@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { MarkdownMessage } from "@/components/markdown-message";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -92,18 +93,27 @@ export default function AnalystPage() {
       )}
 
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto">
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-              m.role === "user"
-                ? "self-end bg-kenya-green text-white"
-                : "self-start border border-stone-300 bg-white/70 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800/70 dark:text-zinc-200"
-            }`}
-          >
-            {m.content || (isStreaming && i === messages.length - 1 ? "…" : "")}
-          </div>
-        ))}
+        {messages.map((m, i) =>
+          m.role === "user" ? (
+            <div
+              key={i}
+              className="max-w-[85%] self-end whitespace-pre-wrap rounded-2xl bg-kenya-green px-4 py-3 text-sm leading-relaxed text-white"
+            >
+              {m.content}
+            </div>
+          ) : (
+            <div
+              key={i}
+              className="w-full max-w-full self-start rounded-2xl border border-stone-300 bg-white/70 px-4 py-3 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800/70 dark:text-zinc-200"
+            >
+              {m.content ? (
+                <MarkdownMessage content={m.content} />
+              ) : isStreaming && i === messages.length - 1 ? (
+                <span className="text-sm">…</span>
+              ) : null}
+            </div>
+          ),
+        )}
       </div>
 
       <form
