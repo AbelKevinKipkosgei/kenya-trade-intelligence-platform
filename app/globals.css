@@ -27,7 +27,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-.dark {
+html.dark {
   --background: #1c1c1e;
   --foreground: #ededed;
 }
