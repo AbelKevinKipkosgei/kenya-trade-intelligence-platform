@@ -4,7 +4,7 @@ A centralized trade decision-support platform built for Kenya's State Department
 
 This document is the platform's technical and product documentation: the problem it solves, how it solves it, the stack and techniques behind it, every feature in detail, the limitations that come with a project at this stage, the errors hit along the way and how they were fixed, and where it hands off to the organization's existing BI tooling (InsightGrid).
 
-> **Source of truth:** the feature scope below was defined by two internal concept documents — *"Kenya Trade Intelligence Platform (Software Concept)"* and *"KTIP Data Analysis Concept"* — which specify the platform's core capabilities and the requirement that every insight the system surfaces be traceable back to real underlying data, not a black box.
+> Source of truth: the feature scope below was defined by two internal concept documents — "Kenya Trade Intelligence Platform (Software Concept)" and "KTIP Data Analysis Concept" — which specify the platform's core capabilities and the requirement that every insight the system surfaces be traceable back to real underlying data, not a black box.
 
 ---
 
@@ -28,9 +28,9 @@ This document is the platform's technical and product documentation: the problem
 
 Kenya's trade information — customs and transaction records, tariff schedules, trade agreement terms, non-tariff barrier reports, export procedures, and registered export capacity — is fragmented across multiple state agencies (KRA/Customs, KEPROBA, KEBS, EPZA, KenTrade, KPA, KEPHIS, and others), each with its own systems and formats. This creates three concrete problems:
 
-1. **Policymakers and trade officers** at the State Department for Trade have no single, up-to-date view of trade flows, tariff exposure, or active barriers to reason about policy with. Getting a cross-agency picture today means manually reconciling separate reports.
-2. **Exporters and importers** — especially new or small businesses — have no single place to find what procedures apply to them, which markets are actually promising for their product, what barriers currently exist there, and who else in Kenya already has the capacity to supply that market. This information exists, but it's scattered and hard to act on.
-3. **Insight tools that do exist tend to be black boxes.** The source concept docs explicitly call for the opposite: any score or recommendation the platform produces must be explainable and traceable back to the real data behind it — not an opaque model output.
+- Policymakers and trade officers at the State Department for Trade have no single, up-to-date view of trade flows, tariff exposure, or active barriers to reason about policy with. Getting a cross-agency picture today means manually reconciling separate reports.
+- Exporters and importers — especially new or small businesses — have no single place to find what procedures apply to them, which markets are actually promising for their product, what barriers currently exist there, and who else in Kenya already has the capacity to supply that market. This information exists, but it's scattered and hard to act on.
+- Insight tools that do exist tend to be black boxes. The source concept docs explicitly call for the opposite: any score or recommendation the platform produces must be explainable and traceable back to the real data behind it — not an opaque model output.
 
 KTIP exists to solve these three problems in one system.
 
@@ -40,11 +40,11 @@ KTIP is a Next.js application backed by a single Postgres database (hosted on Ne
 
 Three design decisions shape the whole system:
 
-- **Every page is server-rendered and grounded in the real database** — there is no page in this app showing numbers that aren't a query result. Even the homepage's headline statistics (export/import totals, top trading partner, active barrier count) are computed live from the same tables the rest of the app uses, not hardcoded copy.
-- **General analytics and dashboarding are explicitly out of scope for this repo.** The organization already has a BI tool for that — **InsightGrid** (see [Section 11](#11-external-analytics-insightgrid)) — so instead of duplicating dashboard-building work, KTIP exposes a set of clean, denormalized SQL views (`vw_*`) that InsightGrid (or any BI tool) can point at directly. The one deliberate exception is the Market Opportunity Engine's scoring logic, which was brought in-repo because it's core product logic the platform itself depends on, not a general-purpose analytics view.
-- **The AI Trade Analyst is retrieval-grounded, not a trained model.** It's Claude (Anthropic's Opus 5) given a single tool — a hardened, read-only SQL query against the live database — so every answer it gives is backed by a query it actually ran, satisfying the "traceable, not a black box" requirement directly rather than trying to approximate it with a fine-tuned model.
+- Every page is server-rendered and grounded in the real database — there is no page in this app showing numbers that aren't a query result. Even the homepage's headline statistics (export/import totals, top trading partner, active barrier count) are computed live from the same tables the rest of the app uses, not hardcoded copy.
+- General analytics and dashboarding are explicitly out of scope for this repo. The organization already has a BI tool for that — InsightGrid (see [Section 11](#11-external-analytics-insightgrid)) — so instead of duplicating dashboard-building work, KTIP exposes a set of clean, denormalized SQL views (`vw_*`) that InsightGrid (or any BI tool) can point at directly. The one deliberate exception is the Market Opportunity Engine's scoring logic, which was brought in-repo because it's core product logic the platform itself depends on, not a general-purpose analytics view.
+- The AI Trade Analyst is retrieval-grounded, not a trained model. It's Claude (Anthropic's Opus 5) given a single tool — a hardened, read-only SQL query against the live database — so every answer it gives is backed by a query it actually ran, satisfying the "traceable, not a black box" requirement directly rather than trying to approximate it with a fine-tuned model.
 
-Because there is no live feed from the real government agencies yet, the database is seeded with a large, structurally realistic mock dataset (2.7M+ trade transaction rows, real ISO country/HS-chapter reference data, curated per-sector product names, real Kenyan counties/agencies/trade-bloc memberships) so every feature can be built, tested, and demonstrated against something that behaves like the real thing. One feature — the trade news feed — is **not** entirely mock: it's backed by a live ingestion pipeline pulling real Kenya trade news from NewsAPI.org on a schedule (see the Trade News feature below).
+Because there is no live feed from the real government agencies yet, the database is seeded with a large, structurally realistic mock dataset (2.7M+ trade transaction rows, real ISO country/HS-chapter reference data, curated per-sector product names, real Kenyan counties/agencies/trade-bloc memberships) so every feature can be built, tested, and demonstrated against something that behaves like the real thing. One feature — the trade news feed — is not entirely mock: it's backed by a live ingestion pipeline pulling real Kenya trade news from NewsAPI.org on a schedule (see the Trade News feature below).
 
 ## 3. Solution Architecture
 
@@ -88,54 +88,50 @@ flowchart TB
     Views --> InsightGrid
 ```
 
-**Layering, top to bottom:**
+Layering, top to bottom:
 
-- **Feature pages** are React Server Components. Each one reads its filters from the URL's search params (not client state), queries Postgres directly through Drizzle ORM, and renders server-side — so every page is a plain link that can be bookmarked or shared and reproduces the exact same view. There is no client-side dashboard framework anywhere in this layer.
-- **The AI Trade Analyst** is a separate, parallel path: a streaming API route that hands the conversation to Claude with a single tool (a locked-down SQL runner) and loops until Claude produces a final, non-tool-use answer.
-- **The database** is the single source of truth for both paths. It also exposes a layer of read-only SQL views (`vw_*`) purely for external consumption — this is the seam where InsightGrid plugs in without needing to understand the underlying normalized schema.
-- **Two GitHub Actions workflows** run against the same database on a schedule, standing in for the recurring jobs a deployed system would need: recomputing opportunity scores, and pulling in new trade news.
+- Feature pages are React Server Components. Each one reads its filters from the URL's search params (not client state), queries Postgres directly through Drizzle ORM, and renders server-side — so every page is a plain link that can be bookmarked or shared and reproduces the exact same view. There is no client-side dashboard framework anywhere in this layer.
+- The AI Trade Analyst is a separate, parallel path: a streaming API route that hands the conversation to Claude with a single tool (a locked-down SQL runner) and loops until Claude produces a final, non-tool-use answer.
+- The database is the single source of truth for both paths. It also exposes a layer of read-only SQL views (`vw_*`) purely for external consumption — this is the seam where InsightGrid plugs in without needing to understand the underlying normalized schema.
+- Two GitHub Actions workflows run against the same database on a schedule, standing in for the recurring jobs a deployed system would need: recomputing opportunity scores, and pulling in new trade news.
 
 ## 4. Technology Stack
 
-| Technology | Role |
-|---|---|
-| **Next.js 16** (App Router) | Full-stack framework — Server Components for all data-driven pages, route handlers for the streaming AI API, file-based routing for all 8 pages. |
-| **React 19** | UI rendering. Used with the React Compiler's stricter lint rules (`react-hooks/refs`, `react-hooks/set-state-in-effect`) enabled. |
-| **TypeScript** | End-to-end static typing, including inferred types from the Drizzle schema all the way into page props. |
-| **Tailwind CSS v4** | Styling. Custom theme tokens for the Kenyan flag palette (`kenya-black`, `kenya-red`, `kenya-green`, `kenya-white`) and dark/light mode via `@custom-variant dark`. |
-| **Drizzle ORM** (`drizzle-orm/node-postgres`) + **drizzle-kit** | Typed schema definition and query building against Postgres; `drizzle-kit push` keeps the live schema in sync with the TypeScript schema files. |
-| **Neon** (serverless Postgres) | The database. Free-tier project, which shaped several design decisions (see [Section 8](#8-limitations--known-errors-and-how-they-were-fixed)). |
-| **Redux Toolkit** + **react-redux** | Client-side state — deliberately scoped to state that's genuinely shared across client components within a page (e.g. filter context), not used as a replacement for the URL-driven server-rendered pattern most pages use. |
-| **next-themes** | Dark / light / system theme switching with persistence. |
-| **Anthropic SDK** (`@anthropic-ai/sdk`) + **Claude Opus 5** | Powers the AI Trade Analyst: streaming responses, tool use, prompt caching, adaptive thinking, and server-side refusal fallback. |
-| **Zod** | Runtime validation of the AI tool's input and the chat API's request body. |
-| **react-markdown** + **remark-gfm** | Renders the AI Trade Analyst's Markdown-formatted answers (tables, lists, code) safely in the chat UI. |
-| **@faker-js/faker** + **world-countries** | Mock data generation — faker for volume/randomization, `world-countries` for real ISO country reference data (names, codes, regions) so the mock dataset is geographically accurate. |
-| **NewsAPI.org** | Real-time source for the trade news feed's live ingestion pipeline. |
-| **pnpm** | Package manager (workspace-aware, used for its strict, disk-efficient install model). |
-| **GitHub Actions** | Scheduled automation — daily opportunity-score recomputation and 6-hourly news ingestion — chosen after confirming Neon's free tier does not support `pg_cron` (see [Section 8](#8-limitations--known-errors-and-how-they-were-fixed)). |
-| **Playwright** (dev-only) | Available for browser-driven verification of pages during development. |
+- Next.js 16 (App Router) — full-stack framework: Server Components for all data-driven pages, route handlers for the streaming AI API, file-based routing for all 8 pages.
+- React 19 — UI rendering, used with the React Compiler's stricter lint rules (`react-hooks/refs`, `react-hooks/set-state-in-effect`) enabled.
+- TypeScript — end-to-end static typing, including inferred types from the Drizzle schema all the way into page props.
+- Tailwind CSS v4 — styling; custom theme tokens for the Kenyan flag palette (`kenya-black`, `kenya-red`, `kenya-green`, `kenya-white`) and dark/light mode via `@custom-variant dark`.
+- Drizzle ORM (`drizzle-orm/node-postgres`) + drizzle-kit — typed schema definition and query building against Postgres; `drizzle-kit push` keeps the live schema in sync with the TypeScript schema files.
+- Neon (serverless Postgres) — the database. Free-tier project, which shaped several design decisions (see [Section 8](#8-limitations--known-errors-and-how-they-were-fixed)).
+- Redux Toolkit + react-redux — client-side state, deliberately scoped to state that's genuinely shared across client components within a page (e.g. filter context), not used as a replacement for the URL-driven server-rendered pattern most pages use.
+- next-themes — dark / light / system theme switching with persistence.
+- Anthropic SDK (`@anthropic-ai/sdk`) + Claude Opus 5 — powers the AI Trade Analyst: streaming responses, tool use, prompt caching, adaptive thinking, and server-side refusal fallback.
+- Zod — runtime validation of the AI tool's input and the chat API's request body.
+- react-markdown + remark-gfm — renders the AI Trade Analyst's Markdown-formatted answers (tables, lists, code) safely in the chat UI.
+- @faker-js/faker + world-countries — mock data generation: faker for volume/randomization, `world-countries` for real ISO country reference data (names, codes, regions) so the mock dataset is geographically accurate.
+- NewsAPI.org — real-time source for the trade news feed's live ingestion pipeline.
+- pnpm — package manager (workspace-aware, used for its strict, disk-efficient install model).
+- GitHub Actions — scheduled automation: daily opportunity-score recomputation and 6-hourly news ingestion, chosen after confirming Neon's free tier does not support `pg_cron` (see [Section 8](#8-limitations--known-errors-and-how-they-were-fixed)).
+- Playwright (dev-only) — available for browser-driven verification of pages during development.
 
 ## 5. Data Model
 
 The schema is organized into six logical groups, each in its own file under `db/schema/`. Row counts below reflect the current seeded database:
 
-| Group | File | Tables | Rows (seeded) |
-|---|---|---|---|
-| **Reference / core** | `core.ts` | `agencies`, `countries`, `sectors`, `counties`, `ports` | 13 agencies · 250 countries · 14 sectors · 47 counties · 12 ports |
-| **Trade catalog** | `trade.ts` | `products`, `trade_agreements`, `agreement_members`, `tariffs`, `trade_barriers` | 1,307 products · 8 agreements · 395 memberships · 79,528 tariffs · 4,000 barriers |
-| **Export capacity** | `exporters.ts` | `exporters` | 5,000 |
-| **Transactions** | `transactions.ts` | `trade_transactions` | 2,709,265 |
-| **Intelligence** | `intelligence.ts` | `market_opportunity_scores`, `news_articles` | 311,468 scores · 3,004 articles (3,000 seeded mock + live NewsAPI ingestion) |
-| **Procedures** | `procedures.ts` | `procedures` | 10 |
-| **Users** | `users.ts` | `users` | Schema scaffold only (role field: `public \| exporter \| officer \| admin`) — not yet wired into auth |
+- Reference / core (`core.ts`) — `agencies`, `countries`, `sectors`, `counties`, `ports`: 13 agencies · 250 countries · 14 sectors · 47 counties · 12 ports.
+- Trade catalog (`trade.ts`) — `products`, `trade_agreements`, `agreement_members`, `tariffs`, `trade_barriers`: 1,307 products · 8 agreements · 395 memberships · 79,528 tariffs · 4,000 barriers.
+- Export capacity (`exporters.ts`) — `exporters`: 5,000 rows.
+- Transactions (`transactions.ts`) — `trade_transactions`: 2,709,265 rows.
+- Intelligence (`intelligence.ts`) — `market_opportunity_scores`, `news_articles`: 311,468 scores · 3,004 articles (3,000 seeded mock + live NewsAPI ingestion).
+- Procedures (`procedures.ts`) — `procedures`: 10 rows.
+- Users (`users.ts`) — `users`: schema scaffold only (role field: `public | exporter | officer | admin`) — not yet wired into auth.
 
-**Design principles baked into the schema:**
+Design principles baked into the schema:
 
-- **Provenance first.** Every fact table (`trade_transactions`, `tariffs`, `trade_barriers`, `procedures`) carries a foreign key back to the `agencies` table that is its source of record — a direct implementation of the concept docs' "must be traceable" requirement.
-- **`trade_transactions` is a narrow fact table** (product × country × month × flow direction) with a single composite index covering the common query patterns, deliberately kept lean since it's both the largest table and the one InsightGrid would query most heavily.
-- **JSONB where structure is genuinely variable**: `exporters.certifications` (a list of cert names) and `procedures.steps` (an ordered list of step objects with optional documents/fees/duration) — both consumed as typed structures in TypeScript via Drizzle's `$type<T>()`.
-- **Idempotency where re-runs are expected**: `news_articles.source_url` has a `UNIQUE` constraint specifically so the scheduled ingestion job can `ON CONFLICT DO NOTHING` instead of accumulating duplicates on every run.
+- Provenance first — every fact table (`trade_transactions`, `tariffs`, `trade_barriers`, `procedures`) carries a foreign key back to the `agencies` table that is its source of record, a direct implementation of the concept docs' "must be traceable" requirement.
+- `trade_transactions` is a narrow fact table (product × country × month × flow direction) with a single composite index covering the common query patterns, deliberately kept lean since it's both the largest table and the one InsightGrid would query most heavily.
+- JSONB where structure is genuinely variable — `exporters.certifications` (a list of cert names) and `procedures.steps` (an ordered list of step objects with optional documents/fees/duration), both consumed as typed structures in TypeScript via Drizzle's `$type<T>()`.
+- Idempotency where re-runs are expected — `news_articles.source_url` has a `UNIQUE` constraint specifically so the scheduled ingestion job can `ON CONFLICT DO NOTHING` instead of accumulating duplicates on every run.
 
 ## 6. Features
 
@@ -145,7 +141,7 @@ Look up any product by HS code or free-text name and see its complete trade prof
 
 ### 6.2. Market Opportunity Engine / Leaderboard (`/opportunities`)
 
-Ranks product–market combinations by a composite **Opportunity Score** built from seven dimensions, exactly as specified in the concept docs: demand, growth, competitiveness, market access, competition, logistics, and domestic capacity. Unlike most of the platform's intelligence, this scoring is **computed for real** from the underlying transaction, tariff, barrier, and exporter data — not seeded as placeholder noise (see [Section 7](#7-key-techniques--implementation-patterns) for the exact formula). The leaderboard is filterable by sector, market, and quarter, and every result links to the full product profile on the Explorer page. The UI is explicit about which dimensions are direct measurements versus documented proxies (see [Section 8](#8-limitations--known-errors-and-how-they-were-fixed)) rather than presenting every number with false precision.
+Ranks product–market combinations by a composite Opportunity Score built from seven dimensions, exactly as specified in the concept docs: demand, growth, competitiveness, market access, competition, logistics, and domestic capacity. Unlike most of the platform's intelligence, this scoring is computed for real from the underlying transaction, tariff, barrier, and exporter data — not seeded as placeholder noise (see [Section 7](#7-key-techniques--implementation-patterns) for the exact formula). The leaderboard is filterable by sector, market, and quarter, and every result links to the full product profile on the Explorer page. The UI is explicit about which dimensions are direct measurements versus documented proxies (see [Section 8](#8-limitations--known-errors-and-how-they-were-fixed)) rather than presenting every number with false precision.
 
 ### 6.3. Trade Barrier Monitor (`/barriers`)
 
@@ -165,7 +161,7 @@ A step-by-step procedures browser, grouped by category (Importing, Exporting, Ce
 
 ### 6.7. Trade News (`/news`)
 
-A categorized (tariff / agreement / market / policy / logistics) feed of Kenya trade news, filterable by category and related market. Most of the 3,000+ articles are part of the seeded mock dataset (clearly labeled **"Mock article"**), but the feed is also backed by a **real, live ingestion pipeline**: a scheduled job pulls actual Kenya trade/tariff/agreement news from [NewsAPI.org](https://newsapi.org) every six hours, filters it for relevance, categorizes it, and inserts it idempotently. See [Section 7](#7-key-techniques--implementation-patterns) for exactly how the relevance filtering works and why.
+A categorized (tariff / agreement / market / policy / logistics) feed of Kenya trade news, filterable by category and related market. Most of the 3,000+ articles are part of the seeded mock dataset (clearly labeled "Mock article"), but the feed is also backed by a real, live ingestion pipeline: a scheduled job pulls actual Kenya trade/tariff/agreement news from [NewsAPI.org](https://newsapi.org) every six hours, filters it for relevance, categorizes it, and inserts it idempotently. See [Section 7](#7-key-techniques--implementation-patterns) for exactly how the relevance filtering works and why.
 
 ### 6.8. AI Trade Analyst (`/analyst`)
 
@@ -173,86 +169,82 @@ A chat interface for asking free-form questions about Kenyan trade — tariffs, 
 
 ### 6.9. Trade Intelligence Dashboard
 
-Per the architectural boundary in [Section 11](#11-external-analytics-insightgrid), general trend dashboards and BI-style analytics are intentionally **not** built in this repository — that's InsightGrid's job, fed by the `vw_*` views. The homepage (`/`) does surface a small set of real, live headline statistics (current-year export/import totals, top export partner, active trade barrier count) computed directly from the database, but this is deliberately a summary strip, not a dashboard.
+Per the architectural boundary in [Section 11](#11-external-analytics-insightgrid), general trend dashboards and BI-style analytics are intentionally not built in this repository — that's InsightGrid's job, fed by the `vw_*` views. The homepage (`/`) does surface a small set of real, live headline statistics (current-year export/import totals, top export partner, active trade barrier count) computed directly from the database, but this is deliberately a summary strip, not a dashboard.
 
 ## 7. Key Techniques & Implementation Patterns
 
-**Server-rendered, URL-filtered pages instead of a client dashboard framework.** Every feature page reads its filter state from `searchParams`, queries the database in the Server Component itself (often several queries in parallel via `Promise.all`), and renders fully on the server. Filter controls are small Client Components that just push a new URL via `router.push()` — no client-side data fetching, no loading spinners, no state synchronization bugs, and every filtered view is a real, shareable URL.
+Server-rendered, URL-filtered pages instead of a client dashboard framework — every feature page reads its filter state from `searchParams`, queries the database in the Server Component itself (often several queries in parallel via `Promise.all`), and renders fully on the server. Filter controls are small Client Components that just push a new URL via `router.push()` — no client-side data fetching, no loading spinners, no state synchronization bugs, and every filtered view is a real, shareable URL.
 
-**The Opportunity Score is computed with real SQL, not placeholder randomness** (`db/scoring/compute-opportunity-scores.sql`, run via `pnpm db:score`):
+The Opportunity Score is computed with real SQL, not placeholder randomness (`db/scoring/compute-opportunity-scores.sql`, run via `pnpm db:score`):
 
-- **Demand** — a percentile rank of a product-market pair's export value against every other pair traded that same quarter.
-- **Growth** — quarter-over-quarter change via a `LAG()` window function over full transaction history.
-- **Market access** — driven by the best (lowest) tariff rate Kenya's exporters actually face for that pair.
-- **Competition** — a penalty accumulated from active trade barriers, weighted by severity.
-- **Logistics** — a proxy based on EAC/COMESA trade-bloc membership (overland-reachable vs. not), since the platform has no real freight/transit-time data.
-- **Domestic capacity** — a percentile rank of registered, export-ready exporter capacity for that product.
-- **Competitiveness** — a percentile rank of a product's performance within a specific market relative to Kenya's other products sold there (not against rival exporting countries — see limitations).
+- Demand — a percentile rank of a product-market pair's export value against every other pair traded that same quarter.
+- Growth — quarter-over-quarter change via a `LAG()` window function over full transaction history.
+- Market access — driven by the best (lowest) tariff rate Kenya's exporters actually face for that pair.
+- Competition — a penalty accumulated from active trade barriers, weighted by severity.
+- Logistics — a proxy based on EAC/COMESA trade-bloc membership (overland-reachable vs. not), since the platform has no real freight/transit-time data.
+- Domestic capacity — a percentile rank of registered, export-ready exporter capacity for that product.
+- Competitiveness — a percentile rank of a product's performance within a specific market relative to Kenya's other products sold there (not against rival exporting countries — see limitations).
 
 Every dimension is documented inline in the SQL and in the UI as either a direct measurement or an explicit proxy, per the concept docs' explainability requirement.
 
-**BI views as the external-analytics boundary** (`db/views/bi-views.sql`, applied via `pnpm db:views`): six flattened, fully-joined, zero-storage-cost SQL views (`vw_trade_transactions`, `vw_market_opportunity`, `vw_tariffs`, `vw_trade_barriers`, `vw_procedures`, `vw_exporters`) so a BI tool never needs to understand the normalized schema or write its own joins — see [Section 11](#11-external-analytics-insightgrid).
+BI views as the external-analytics boundary (`db/views/bi-views.sql`, applied via `pnpm db:views`) — six flattened, fully-joined, zero-storage-cost SQL views (`vw_trade_transactions`, `vw_market_opportunity`, `vw_tariffs`, `vw_trade_barriers`, `vw_procedures`, `vw_exporters`) so a BI tool never needs to understand the normalized schema or write its own joins — see [Section 11](#11-external-analytics-insightgrid).
 
-**AI Trade Analyst internals** (`lib/ai/trade-analyst.ts`, `lib/ai/sql-tool.ts`):
+AI Trade Analyst internals (`lib/ai/trade-analyst.ts`, `lib/ai/sql-tool.ts`):
 
-- **Hardened read-only SQL tool** — defense in depth: a regex prefilter rejects obvious writes/DDL, the query then runs inside a `BEGIN TRANSACTION READ ONLY` block (so Postgres itself refuses any write regardless of what slips past the regex), with an 8-second statement timeout and every result wrapped in an outer `LIMIT` so no query can return more than 200 rows.
-- **Prompt caching** — the schema-context system prompt uses an explicit 1-hour cache breakpoint (since gaps between a user's chat turns are often past the default 5-minute window but rarely past an hour); the growing tool-use message history uses an automatic breakpoint so each iteration only pays for what it just added.
-- **Narration suppression** — the model's text is buffered per tool-loop iteration and only forwarded to the client once a genuine final answer (not a tool call) is confirmed, so "I'll check the database…"-style narration never reaches the visible chat.
-- **A custom status-protocol** (`lib/status-protocol.ts`) rides the same plain-text HTTP stream as the answer, delimited by the Unicode Private Use Area character `U+E000` (chosen specifically because it can never appear in real model output, unlike a word like "status" which is common in this domain) — the client strips these out and renders them as a transient "Thinking… / Querying the trade database…" indicator instead of leaking them into the visible message.
-- **Refusal fallback** — uses Claude's server-side fallback beta so a safety-classifier refusal (a normal `200`, not an error) automatically retries on Anthropic's recommended substitute model instead of dead-ending the conversation.
-- **In-memory sliding-window rate limiting** (10/min, 60/hour per IP) bounds worst-case API cost exposure on the public chat route.
+- Hardened read-only SQL tool — defense in depth: a regex prefilter rejects obvious writes/DDL, the query then runs inside a `BEGIN TRANSACTION READ ONLY` block (so Postgres itself refuses any write regardless of what slips past the regex), with an 8-second statement timeout and every result wrapped in an outer `LIMIT` so no query can return more than 200 rows.
+- Prompt caching — the schema-context system prompt uses an explicit 1-hour cache breakpoint (since gaps between a user's chat turns are often past the default 5-minute window but rarely past an hour); the growing tool-use message history uses an automatic breakpoint so each iteration only pays for what it just added.
+- Narration suppression — the model's text is buffered per tool-loop iteration and only forwarded to the client once a genuine final answer (not a tool call) is confirmed, so "I'll check the database…"-style narration never reaches the visible chat.
+- A custom status-protocol (`lib/status-protocol.ts`) rides the same plain-text HTTP stream as the answer, delimited by the Unicode Private Use Area character `U+E000` (chosen specifically because it can never appear in real model output, unlike a word like "status" which is common in this domain) — the client strips these out and renders them as a transient "Thinking… / Querying the trade database…" indicator instead of leaking them into the visible message.
+- Refusal fallback — uses Claude's server-side fallback beta so a safety-classifier refusal (a normal `200`, not an error) automatically retries on Anthropic's recommended substitute model instead of dead-ending the conversation.
+- In-memory sliding-window rate limiting (10/min, 60/hour per IP) bounds worst-case API cost exposure on the public chat route.
 
-**Idempotent, scheduled data ingestion** (`db/ingestion/fetch-news.ts`, run via `pnpm news:fetch` or the `Fetch Trade News` GitHub Action): queries NewsAPI's `/v2/everything` with an empirically-tuned boolean query, then applies a **dual-regex relevance filter** requiring both a Kenya-signal term (`kenya|nairobi|mombasa|ruto|eac|comesa|east african community`) *and* a trade-signal term (`trade|export|import|tariff|customs|comesa|eac|afcfta|agoa|...`) to both appear in the combined title+description (not the full article body, which was found empirically to produce false positives). Category is assigned via keyword-priority heuristic, related country via substring match against the `countries` table, and inserts use `onConflictDoNothing()` against the unique `source_url` constraint — safe to run on any schedule without duplicating articles.
+Idempotent, scheduled data ingestion (`db/ingestion/fetch-news.ts`, run via `pnpm news:fetch` or the "Fetch Trade News" GitHub Action) — queries NewsAPI's `/v2/everything` with an empirically-tuned boolean query, then applies a dual-regex relevance filter requiring both a Kenya-signal term (`kenya|nairobi|mombasa|ruto|eac|comesa|east african community`) and a trade-signal term (`trade|export|import|tariff|customs|comesa|eac|afcfta|agoa|...`) to both appear in the combined title+description (not the full article body, which was found empirically to produce false positives). Category is assigned via keyword-priority heuristic, related country via substring match against the `countries` table, and inserts use `onConflictDoNothing()` against the unique `source_url` constraint — safe to run on any schedule without duplicating articles.
 
-**Mock data generation, at volume, within a free-tier storage budget** (`db/seed/`): `@faker-js/faker` for randomized volume plus `world-countries` for real ISO reference data, a **size-guard system** (`checkSizeLimit()`) that checks live database size after every insert batch and halts generation before hitting Neon's free-tier cap, and curated per-sector product name lists (replacing faker's nonsensical generic product names) so the 1,307-product catalog reads like real HS-coded goods.
+Mock data generation, at volume, within a free-tier storage budget (`db/seed/`) — `@faker-js/faker` for randomized volume plus `world-countries` for real ISO reference data, a size-guard system (`checkSizeLimit()`) that checks live database size after every insert batch and halts generation before hitting Neon's free-tier cap, and curated per-sector product name lists (replacing faker's nonsensical generic product names) so the 1,307-product catalog reads like real HS-coded goods.
 
-**Kenyan flag theming with full dark/light/system support**: Tailwind v4 theme tokens (`kenya-black`, `kenya-red`, `kenya-green`, `kenya-white`) plus `next-themes` for OS-default theme detection with a manual override, implemented as a compact icon-based toggle (not full text labels, which was found to crowd the header on mobile — see [Section 8](#8-limitations--known-errors-and-how-they-were-fixed)).
+Kenyan flag theming with full dark/light/system support — Tailwind v4 theme tokens (`kenya-black`, `kenya-red`, `kenya-green`, `kenya-white`) plus `next-themes` for OS-default theme detection with a manual override, implemented as a compact icon-based toggle (not full text labels, which was found to crowd the header on mobile — see [Section 8](#8-limitations--known-errors-and-how-they-were-fixed)).
 
-**A deliberate mobile-first pass**: the 8-column Opportunity Leaderboard table renders as a stacked card view below the `sm` breakpoint instead of relying on horizontal scroll; all filter inputs render at 16px on mobile (smaller sizes trigger unwanted auto-zoom in iOS Safari on focus); the site header spans the full viewport width (not a centered max-width box) so the logo and controls sit at the true edges instead of being crowded into a narrow strip; and the mobile nav uses a proper overlay panel with backdrop blur rather than blending into page content.
+A deliberate mobile-first pass — the 8-column Opportunity Leaderboard table renders as a stacked card view below the `sm` breakpoint instead of relying on horizontal scroll; all filter inputs render at 16px on mobile (smaller sizes trigger unwanted auto-zoom in iOS Safari on focus); the site header spans the full viewport width (not a centered max-width box) so the logo and controls sit at the true edges instead of being crowded into a narrow strip; and the mobile nav uses a proper overlay panel with backdrop blur rather than blending into page content.
 
 ## 8. Limitations & Known Errors (and How They Were Fixed)
 
 ### Documented data limitations (by design, not oversight)
 
-| Limitation | Detail |
-|---|---|
-| **No third-country trade data** | KTIP holds only Kenya's own bilateral trade records — there's no UN Comtrade-style global dataset. This means the Opportunity Engine's "competitiveness" and "competition" scores are genuine, data-derived proxies (see [Section 7](#7-key-techniques--implementation-patterns)) rather than true measurements against rival exporting countries — clearly caveated in both the UI and the AI's system prompt, not hidden. |
-| **No real freight/logistics data** | The "logistics" score dimension uses EAC/COMESA trade-bloc membership as a stand-in for actual transit-time/freight-cost data. |
-| **Mock data stands in for real agency feeds** | All trade transactions, tariffs, barriers, and exporter records are synthetically generated (structurally realistic, at real-world scale) pending an actual integration with KRA/KEPROBA/KEBS/EPZA/KenTrade/KPA systems. Seeded news articles link to a placeholder `example.com` URL and are labeled **"Mock article"** wherever shown, specifically so they're never confused with the real, live-ingested articles. |
-| **News relevance filtering is heuristic, not semantic** | The dual-regex approach materially improved on NewsAPI's raw boolean search (from ~90% noise down to a handful of clearly on-topic articles per fetch) but it's keyword-based, not an LLM classifier — a documented, deliberate cost/complexity trade-off, with LLM-based classification identified as a future upgrade path if warranted. |
-| **Rate limiting is in-memory, per-instance** | Fine for a single self-hosted Node process; would need a Postgres- or Redis-backed limiter before running multiple instances. |
-| **`users` table is a schema scaffold only** | Role field (`public / exporter / officer / admin`) exists but isn't wired into any authentication/authorization flow yet — no login exists today. |
+- No third-country trade data — KTIP holds only Kenya's own bilateral trade records; there's no UN Comtrade-style global dataset. This means the Opportunity Engine's "competitiveness" and "competition" scores are genuine, data-derived proxies (see [Section 7](#7-key-techniques--implementation-patterns)) rather than true measurements against rival exporting countries — clearly caveated in both the UI and the AI's system prompt, not hidden.
+- No real freight/logistics data — the "logistics" score dimension uses EAC/COMESA trade-bloc membership as a stand-in for actual transit-time/freight-cost data.
+- Mock data stands in for real agency feeds — all trade transactions, tariffs, barriers, and exporter records are synthetically generated (structurally realistic, at real-world scale) pending an actual integration with KRA/KEPROBA/KEBS/EPZA/KenTrade/KPA systems. Seeded news articles link to a placeholder `example.com` URL and are labeled "Mock article" wherever shown, specifically so they're never confused with the real, live-ingested articles.
+- News relevance filtering is heuristic, not semantic — the dual-regex approach materially improved on NewsAPI's raw boolean search (from ~90% noise down to a handful of clearly on-topic articles per fetch) but it's keyword-based, not an LLM classifier — a documented, deliberate cost/complexity trade-off, with LLM-based classification identified as a future upgrade path if warranted.
+- Rate limiting is in-memory, per-instance — fine for a single self-hosted Node process; would need a Postgres- or Redis-backed limiter before running multiple instances.
+- `users` table is a schema scaffold only — role field (`public / exporter / officer / admin`) exists but isn't wired into any authentication/authorization flow yet — no login exists today.
 
 ### Errors encountered during development, and their fixes
 
-| Error / Issue | Root Cause | Fix |
-|---|---|---|
-| Seed inserts intermittently failing against a 512MB size cap | Neon's free-tier project storage limit (`throttle_or_fail_extension`) | Built a size-guard system (`checkSizeLimit`, `seedStopState`) that checks live DB size after every batch insert and halts generation cleanly before overshoot; scoring's `TRUNCATE` + `INSERT` split into two separate transactions to avoid a transient ~2x space spike. |
-| `pg_cron` needed for scheduled scoring, but unavailable | Confirmed directly (not just from docs): `CREATE EXTENSION pg_cron` is rejected with `permission denied` even for the owning role on Neon's free plan | Moved scheduling to GitHub Actions (`workflow_dispatch` + cron), which is also more portable across whatever host the app eventually deploys to. |
-| `.env` values not available when a seed script's later imports ran | ES module imports hoist above interspersed code, so `import { config } from "dotenv"; config(...)` didn't actually run before the next import needed it | Extracted env loading into a dedicated `db/seed/load-env.ts` side-effect module, imported first in every entry point. |
-| Random, seemingly unrelated "Failed query" errors deep in page code during dev | Next.js Fast Refresh/Turbopack HMR re-executed `db/client.ts` on every save, creating a new `pg.Pool` each time without closing the old one — eventually exhausting Neon's connection limit | Stashed the pool on `globalThis`, guarded by `NODE_ENV !== "production"`, so HMR reloads reuse the same pool within one Node process. |
-| Intermittent `ENETUNREACH`/`ETIMEDOUT` `AggregateError`s on random pages | This sandbox (WSL2) has no real IPv6 route to Neon. `dns.setDefaultResultOrder("ipv4first")` alone only changes DNS lookup *order* — Node's Happy Eyeballs algorithm (default since Node 18) still races a parallel connection attempt on the next resolved address if the first hasn't connected within ~250ms, pulling in doomed IPv6 attempts under any latency | Added `net.setDefaultAutoSelectFamily(false)` alongside the DNS fix, so Node tries addresses strictly in order instead of racing. Verified with 15 back-to-back requests against a previously-failing route with zero errors afterward. |
-| React 19 console warning: *"Encountered a script tag while rendering React component"* | `next-themes`' `ThemeProvider` (a Client Component) renders a blocking inline `<script>` to set the theme before hydration and avoid a flash of the wrong theme — it runs correctly as part of the server-rendered HTML, but React 19 warns on any `<script>` from a Client Component without distinguishing this legitimate case, and `next-themes` is unmaintained (no fix shipped) | Applied the documented community workaround: filter that one specific, dev-only `console.error` message. |
-| A Tailwind hover-ring effect silently did nothing | Constructed the class name dynamically as `` `hover:${style.ring}` `` at the usage site — Tailwind's compiler statically scans source text for complete class-name strings, and `"hover:ring-blue-500/30"` never appeared as one literal string anywhere in the file | Pre-composed the full class string (`"hover:ring-blue-500/30"`) as a single literal value in the style-lookup object, so it appears intact for Tailwind's scanner regardless of which one gets selected at runtime. |
-| React Compiler lint failures (`react-hooks/refs`, `react-hooks/set-state-in-effect`) | Stricter React 19 lint rules caught a `useRef`-based store pattern and a couple of effect-based `setState` calls that looked like cascading-render risks | Fixed with `useState(() => makeStore())` for the store; `useSyncExternalStore` for one-time mount detection (theme toggle); a debounced search guarded on render instead of clearing state in an early-return branch (product search). One legitimate one-time localStorage-sync case in the AI Analyst chat kept its effect-based pattern with a scoped, justified `eslint-disable` rather than introducing a real SSR/hydration mismatch. |
-| Seeded product descriptions were nonsensical (e.g. *"Coffee, tea, mate and spices – Sleek Chicken"*) | `faker.commerce.product()` generates a generic random noun with no awareness of the HS chapter it was attached to | Replaced with curated per-sector product name lists and backfilled all already-seeded rows in a single bulk update. |
-| The AI Analyst reported the trade barriers table as empty | Genuine correctness signal, not a bug in the AI — `trade_barriers` genuinely had no seed function yet despite having a schema and a BI view | Built the missing seed script and a backfill for data seeded before the gap was caught. |
-| NewsAPI's raw boolean search returned mostly irrelevant results | Matching "Kenya" and a trade keyword anywhere in an article's full stored text (not proximity-aware) — empirically tested and confirmed, not assumed | Landed on a single boolean query for recall, plus a client-side dual-regex filter scoped to title+description only — verified to cut noise from ~90% down to a handful of clean, on-topic results per fetch. |
-| `drizzle-kit push` blocked on adding a `UNIQUE` constraint to `news_articles.source_url` | The table already had 3,000 seeded rows; drizzle-kit's interactive TTY prompt (unavailable non-interactively) defaulted to suggesting a destructive truncate | Verified zero duplicate `source_url` values existed first, applied the constraint directly via raw `ALTER TABLE ... ADD CONSTRAINT ... UNIQUE` SQL, then re-ran `drizzle-kit push` to confirm the schema and database were back in sync. |
-| The Opportunity Leaderboard was unusable on a phone | An 8-column table with only horizontal-scroll as a mobile fallback — comparing a row meant constant side-scrolling | Added a stacked card view (overall score prominent, four sub-scores in a small grid) below the `sm` breakpoint, keeping the table for larger screens. |
-| Clicking a news article often didn't go anywhere real | Seeded mock articles use a placeholder `example.com` URL as a stand-in for a real source, which resolves to a generic placeholder page regardless of path | Labeled every article sourced from that placeholder domain with a **"Mock article"** badge (kept clickable, since the placeholder link itself is harmless) so it's clear which articles are real, live-ingested coverage. |
+- Seed inserts intermittently failing against a 512MB size cap. Root cause: Neon's free-tier project storage limit (`throttle_or_fail_extension`). Fix: built a size-guard system (`checkSizeLimit`, `seedStopState`) that checks live DB size after every batch insert and halts generation cleanly before overshoot; scoring's `TRUNCATE` + `INSERT` split into two separate transactions to avoid a transient ~2x space spike.
+- `pg_cron` needed for scheduled scoring, but unavailable. Root cause: confirmed directly (not just from docs) — `CREATE EXTENSION pg_cron` is rejected with `permission denied` even for the owning role on Neon's free plan. Fix: moved scheduling to GitHub Actions (`workflow_dispatch` + cron), which is also more portable across whatever host the app eventually deploys to.
+- `.env` values not available when a seed script's later imports ran. Root cause: ES module imports hoist above interspersed code, so `import { config } from "dotenv"; config(...)` didn't actually run before the next import needed it. Fix: extracted env loading into a dedicated `db/seed/load-env.ts` side-effect module, imported first in every entry point.
+- Random, seemingly unrelated "Failed query" errors deep in page code during dev. Root cause: Next.js Fast Refresh/Turbopack HMR re-executed `db/client.ts` on every save, creating a new `pg.Pool` each time without closing the old one, eventually exhausting Neon's connection limit. Fix: stashed the pool on `globalThis`, guarded by `NODE_ENV !== "production"`, so HMR reloads reuse the same pool within one Node process.
+- Intermittent `ENETUNREACH`/`ETIMEDOUT` `AggregateError`s on random pages. Root cause: this sandbox (WSL2) has no real IPv6 route to Neon. `dns.setDefaultResultOrder("ipv4first")` alone only changes DNS lookup order — Node's Happy Eyeballs algorithm (default since Node 18) still races a parallel connection attempt on the next resolved address if the first hasn't connected within ~250ms, pulling in doomed IPv6 attempts under any latency. Fix: added `net.setDefaultAutoSelectFamily(false)` alongside the DNS fix, so Node tries addresses strictly in order instead of racing. Verified with 15 back-to-back requests against a previously-failing route with zero errors afterward.
+- React 19 console warning: "Encountered a script tag while rendering React component." Root cause: `next-themes`' `ThemeProvider` (a Client Component) renders a blocking inline `<script>` to set the theme before hydration and avoid a flash of the wrong theme — it runs correctly as part of the server-rendered HTML, but React 19 warns on any `<script>` from a Client Component without distinguishing this legitimate case, and `next-themes` is unmaintained (no fix shipped). Fix: applied the documented community workaround — filter that one specific, dev-only `console.error` message.
+- A Tailwind hover-ring effect silently did nothing. Root cause: constructed the class name dynamically as `` `hover:${style.ring}` `` at the usage site — Tailwind's compiler statically scans source text for complete class-name strings, and `"hover:ring-blue-500/30"` never appeared as one literal string anywhere in the file. Fix: pre-composed the full class string (`"hover:ring-blue-500/30"`) as a single literal value in the style-lookup object, so it appears intact for Tailwind's scanner regardless of which one gets selected at runtime.
+- React Compiler lint failures (`react-hooks/refs`, `react-hooks/set-state-in-effect`). Root cause: stricter React 19 lint rules caught a `useRef`-based store pattern and a couple of effect-based `setState` calls that looked like cascading-render risks. Fix: `useState(() => makeStore())` for the store; `useSyncExternalStore` for one-time mount detection (theme toggle); a debounced search guarded on render instead of clearing state in an early-return branch (product search). One legitimate one-time localStorage-sync case in the AI Analyst chat kept its effect-based pattern with a scoped, justified `eslint-disable` rather than introducing a real SSR/hydration mismatch.
+- Seeded product descriptions were nonsensical (e.g. "Coffee, tea, mate and spices – Sleek Chicken"). Root cause: `faker.commerce.product()` generates a generic random noun with no awareness of the HS chapter it was attached to. Fix: replaced with curated per-sector product name lists and backfilled all already-seeded rows in a single bulk update.
+- The AI Analyst reported the trade barriers table as empty. Root cause: a genuine correctness signal, not a bug in the AI — `trade_barriers` genuinely had no seed function yet despite having a schema and a BI view. Fix: built the missing seed script and a backfill for data seeded before the gap was caught.
+- NewsAPI's raw boolean search returned mostly irrelevant results. Root cause: matching "Kenya" and a trade keyword anywhere in an article's full stored text (not proximity-aware) — empirically tested and confirmed, not assumed. Fix: landed on a single boolean query for recall, plus a client-side dual-regex filter scoped to title+description only — verified to cut noise from ~90% down to a handful of clean, on-topic results per fetch.
+- `drizzle-kit push` blocked on adding a `UNIQUE` constraint to `news_articles.source_url`. Root cause: the table already had 3,000 seeded rows; drizzle-kit's interactive TTY prompt (unavailable non-interactively) defaulted to suggesting a destructive truncate. Fix: verified zero duplicate `source_url` values existed first, applied the constraint directly via raw `ALTER TABLE ... ADD CONSTRAINT ... UNIQUE` SQL, then re-ran `drizzle-kit push` to confirm the schema and database were back in sync.
+- The Opportunity Leaderboard was unusable on a phone. Root cause: an 8-column table with only horizontal-scroll as a mobile fallback — comparing a row meant constant side-scrolling. Fix: added a stacked card view (overall score prominent, four sub-scores in a small grid) below the `sm` breakpoint, keeping the table for larger screens.
+- Clicking a news article often didn't go anywhere real. Root cause: seeded mock articles use a placeholder `example.com` URL as a stand-in for a real source, which resolves to a generic placeholder page regardless of path. Fix: labeled every article sourced from that placeholder domain with a "Mock article" badge (kept clickable, since the placeholder link itself is harmless) so it's clear which articles are real, live-ingested coverage.
 
 ## 9. Getting Started (Local Development)
 
-**Prerequisites:** Node.js 24, pnpm, a Neon (or any) Postgres connection string, an Anthropic API key, and (optionally, for live news ingestion) a NewsAPI.org API key.
+Prerequisites: Node.js 24, pnpm, a Neon (or any) Postgres connection string, an Anthropic API key, and (optionally, for live news ingestion) a NewsAPI.org API key.
 
-1. **Install dependencies**
+1. Install dependencies
 
    ```bash
    pnpm install
    ```
 
-2. **Configure environment** — create `.env.local` (git-ignored) in the project root:
+2. Configure environment — create `.env.local` (git-ignored) in the project root:
 
    ```bash
    DATABASE_URL="postgresql://user:password@host/db?sslmode=verify-full"
@@ -260,31 +252,31 @@ Every dimension is documented inline in the SQL and in the UI as either a direct
    NEWS_API_KEY="..."   # optional — only needed for `pnpm news:fetch`
    ```
 
-3. **Push the schema to your database**
+3. Push the schema to your database
 
    ```bash
    pnpm db:push
    ```
 
-4. **Seed mock data** (large — respects a size guard against free-tier storage caps)
+4. Seed mock data (large — respects a size guard against free-tier storage caps)
 
    ```bash
    pnpm db:seed
    ```
 
-5. **Compute Market Opportunity scores**
+5. Compute Market Opportunity scores
 
    ```bash
    pnpm db:score
    ```
 
-6. **Apply the BI views** (optional, only needed if pointing an external BI tool at the database)
+6. Apply the BI views (optional, only needed if pointing an external BI tool at the database)
 
    ```bash
    pnpm db:views
    ```
 
-7. **Run the dev server**
+7. Run the dev server
 
    ```bash
    pnpm dev
@@ -294,44 +286,39 @@ Every dimension is documented inline in the SQL and in the UI as either a direct
 
 ### Scripts reference
 
-| Script | What it does |
-|---|---|
-| `pnpm dev` | Starts the Next.js dev server (Turbopack). |
-| `pnpm build` / `pnpm start` | Production build and serve. |
-| `pnpm lint` | Runs ESLint (includes React Compiler rules). |
-| `pnpm db:push` | Syncs the live database schema to match `db/schema/*.ts`. |
-| `pnpm db:studio` | Opens Drizzle Studio against the configured database. |
-| `pnpm db:seed` | Seeds the full mock dataset (idempotent size-guarded batches). |
-| `pnpm db:views` | Applies/refreshes the `vw_*` BI views. |
-| `pnpm db:score` | Recomputes `market_opportunity_scores` from live transaction/tariff/barrier/exporter data. |
-| `pnpm news:fetch` | Runs one pass of the NewsAPI ingestion pipeline. |
-| `pnpm eval:trade-analyst` | Runs a lightweight real-API regression smoke test against the AI Trade Analyst. |
+- `pnpm dev` — starts the Next.js dev server (Turbopack).
+- `pnpm build` / `pnpm start` — production build and serve.
+- `pnpm lint` — runs ESLint (includes React Compiler rules).
+- `pnpm db:push` — syncs the live database schema to match `db/schema/*.ts`.
+- `pnpm db:studio` — opens Drizzle Studio against the configured database.
+- `pnpm db:seed` — seeds the full mock dataset (idempotent size-guarded batches).
+- `pnpm db:views` — applies/refreshes the `vw_*` BI views.
+- `pnpm db:score` — recomputes `market_opportunity_scores` from live transaction/tariff/barrier/exporter data.
+- `pnpm news:fetch` — runs one pass of the NewsAPI ingestion pipeline.
+- `pnpm eval:trade-analyst` — runs a lightweight real-API regression smoke test against the AI Trade Analyst.
 
 ## 10. Automation / Scheduled Jobs
 
 Both scheduled jobs run as GitHub Actions (chosen after confirming `pg_cron` isn't available on Neon's free tier — see [Section 8](#8-limitations--known-errors-and-how-they-were-fixed)) and can also be triggered manually from the repository's Actions tab.
 
-| Workflow | File | Schedule | Purpose | Required secrets |
-|---|---|---|---|---|
-| Recompute Market Opportunity Scores | `.github/workflows/recompute-opportunity-scores.yml` | Daily, 03:00 UTC | Keeps the Opportunity Leaderboard current as underlying transaction/tariff/barrier data changes. | `DATABASE_URL` |
-| Fetch Trade News | `.github/workflows/fetch-trade-news.yml` | Every 6 hours | Pulls new, relevance-filtered Kenya trade news from NewsAPI.org into `news_articles`. | `DATABASE_URL`, `NEWS_API_KEY` |
+- Recompute Market Opportunity Scores (`.github/workflows/recompute-opportunity-scores.yml`) — runs daily at 03:00 UTC. Keeps the Opportunity Leaderboard current as underlying transaction/tariff/barrier data changes. Requires the `DATABASE_URL` secret.
+- Fetch Trade News (`.github/workflows/fetch-trade-news.yml`) — runs every 6 hours. Pulls new, relevance-filtered Kenya trade news from NewsAPI.org into `news_articles`. Requires the `DATABASE_URL` and `NEWS_API_KEY` secrets.
 
 ## 11. External Analytics: InsightGrid
 
-**InsightGrid is the organization's existing BI/analytics tool**, and general trend dashboards, cross-cutting analytics, and visual reporting are deliberately **not** built inside this platform — building that here would duplicate work the organization already has a dedicated tool for. Instead, KTIP's database exposes a purpose-built integration surface for exactly this:
+InsightGrid is the organization's existing BI/analytics tool, and general trend dashboards, cross-cutting analytics, and visual reporting are deliberately not built inside this platform — building that here would duplicate work the organization already has a dedicated tool for. Instead, KTIP's database exposes a purpose-built integration surface for exactly this:
 
-- **Six read-only SQL views** (`db/views/bi-views.sql`, applied with `pnpm db:views`) — plain views with zero storage cost, never materialized, so they always reflect live data:
+Six read-only SQL views (`db/views/bi-views.sql`, applied with `pnpm db:views`) — plain views with zero storage cost, never materialized, so they always reflect live data:
 
-  | View | What it flattens |
-  |---|---|
-  | `vw_trade_transactions` | Every transaction joined out to product, sector, country (with region/bloc-membership flags), port, and source agency — the main fact table InsightGrid would query most heavily. |
-  | `vw_market_opportunity` | Every opportunity score joined to its product/sector/country, with all seven score dimensions as columns. |
-  | `vw_tariffs` | Every tariff rate joined to product, country, and the trade agreement (if any) it derives from. |
-  | `vw_trade_barriers` | Every barrier joined to product, country, and the reporting agency. |
-  | `vw_procedures` | Every procedure joined to its sector and lead agency, with step count pre-computed. |
-  | `vw_exporters` | Every exporter joined to county, sector, and primary product, with certifications and export-readiness. |
+- `vw_trade_transactions` — every transaction joined out to product, sector, country (with region/bloc-membership flags), port, and source agency — the main fact table InsightGrid would query most heavily.
+- `vw_market_opportunity` — every opportunity score joined to its product/sector/country, with all seven score dimensions as columns.
+- `vw_tariffs` — every tariff rate joined to product, country, and the trade agreement (if any) it derives from.
+- `vw_trade_barriers` — every barrier joined to product, country, and the reporting agency.
+- `vw_procedures` — every procedure joined to its sector and lead agency, with step count pre-computed.
+- `vw_exporters` — every exporter joined to county, sector, and primary product, with certifications and export-readiness.
 
-- **No joins required on InsightGrid's side** — every view is already fully denormalized with human-readable names (not just foreign keys), so it can be pointed at directly as a flat dataset.
-- **The one deliberate exception to this boundary** is the Market Opportunity Engine's scoring logic (`market_opportunity_scores`, [Section 7](#7-key-techniques--implementation-patterns)): rather than leaving it as a placeholder for InsightGrid to eventually compute, it was brought in-repo as real, documented SQL, because it's core product logic several of KTIP's own features (the Leaderboard, the Explorer, the AI Analyst) depend on directly — not general-purpose analytics. `vw_market_opportunity` still exposes the *results* of that computation to InsightGrid like any other view.
+No joins are required on InsightGrid's side — every view is already fully denormalized with human-readable names (not just foreign keys), so it can be pointed at directly as a flat dataset.
+
+The one deliberate exception to this boundary is the Market Opportunity Engine's scoring logic (`market_opportunity_scores`, [Section 7](#7-key-techniques--implementation-patterns)): rather than leaving it as a placeholder for InsightGrid to eventually compute, it was brought in-repo as real, documented SQL, because it's core product logic several of KTIP's own features (the Leaderboard, the Explorer, the AI Analyst) depend on directly — not general-purpose analytics. `vw_market_opportunity` still exposes the results of that computation to InsightGrid like any other view.
 
 To connect InsightGrid, point it at the same `DATABASE_URL` used by this application (ideally via a read-only role) and configure its datasets against the `vw_*` views listed above rather than the underlying normalized tables.
