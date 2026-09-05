@@ -30,7 +30,12 @@
       "Bash(pkill -f \"next dev\")",
       "Bash(python3 -c \"import json; json.load\\(open\\('.claude/settings.json'\\)\\)\")",
       "Bash(curl -s -w \"\\\\nHTTP_STATUS:%{http_code}\\\\n\" http://localhost:3000/news -o /tmp/news-check.html)",
-      "Bash(curl -s http://localhost:3000/news -o /tmp/news-check2.html -w \"HTTP:%{http_code}\\\\n\")"
+      "Bash(curl -s http://localhost:3000/news -o /tmp/news-check2.html -w \"HTTP:%{http_code}\\\\n\")",
+      "Bash(npx playwright *)",
+      "Bash(pkill -f \"next-server\")",
+      "Bash(curl -s http://localhost:3000/ -o /tmp/home-check.html)",
+      "Bash(grep -oE '\\\\$[0-9.]+[BMK]' /tmp/home-check.html)",
+      "Bash(curl -s http://localhost:3000/)"
     ]
   }
 }

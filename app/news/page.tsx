@@ -78,50 +78,33 @@ export default async function NewsPage({
             No articles match these filters.
           </p>
         )}
-        {rows.map((a) => {
-          // Seeded mock articles use a placeholder example.com URL (see
-          // db/seed/05-news.ts) since they stand in for real coverage that
-          // doesn't exist — only real NewsAPI-ingested articles have a
-          // genuine source to link out to.
-          const isMockSource = a.sourceUrl.startsWith("https://example.com/");
-          const Card = isMockSource ? "div" : "a";
-          return (
-            <Card
-              key={a.id}
-              {...(!isMockSource && {
-                href: a.sourceUrl,
-                target: "_blank",
-                rel: "noopener noreferrer",
-              })}
-              className={`rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70 ${
-                isMockSource ? "" : "transition hover:border-kenya-green/60"
-              }`}
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${CATEGORY_STYLES[a.category] ?? ""}`}
-                >
-                  {a.category}
+        {rows.map((a) => (
+          <a
+            key={a.id}
+            href={a.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-2xl border border-stone-300 bg-white/70 p-5 transition hover:border-kenya-green/60 dark:border-zinc-700 dark:bg-zinc-800/70"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${CATEGORY_STYLES[a.category] ?? ""}`}
+              >
+                {a.category}
+              </span>
+              {a.countryName && (
+                <span className="rounded-full bg-stone-200 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
+                  {a.countryName}
                 </span>
-                {a.countryName && (
-                  <span className="rounded-full bg-stone-200 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
-                    {a.countryName}
-                  </span>
-                )}
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {a.sourceName} · {a.publishedAt}
-                </span>
-                {isMockSource && (
-                  <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400">
-                    Demo data — no live source
-                  </span>
-                )}
-              </div>
-              <p className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">{a.title}</p>
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{a.summary}</p>
-            </Card>
-          );
-        })}
+              )}
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                {a.sourceName} · {a.publishedAt}
+              </span>
+            </div>
+            <p className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">{a.title}</p>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{a.summary}</p>
+          </a>
+        ))}
       </div>
     </div>
   );
