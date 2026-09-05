@@ -114,6 +114,7 @@ async function loadNews(productId: number) {
       title: newsArticles.title,
       publishedAt: newsArticles.publishedAt,
       sourceName: newsArticles.sourceName,
+      sourceUrl: newsArticles.sourceUrl,
     })
     .from(newsArticles)
     .where(eq(newsArticles.relatedProductId, productId))
@@ -360,7 +361,14 @@ export default async function ExplorerPage({
           <ul className="flex flex-col gap-2">
             {newsRows.map((n) => (
               <li key={n.id} className="text-sm">
-                <span className="text-zinc-800 dark:text-zinc-200">{n.title}</span>
+                <a
+                  href={n.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-kenya-green hover:underline"
+                >
+                  {n.title}
+                </a>
                 <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">{n.sourceName}</span>
               </li>
             ))}

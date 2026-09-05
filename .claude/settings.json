@@ -41,7 +41,11 @@
       "Bash(curl -s http://localhost:3000/ -o /tmp/home3.html)",
       "Bash(curl -s http://localhost:3000/opportunities -o /tmp/opp.html)",
       "Bash(curl -s http://localhost:3000/barriers -o /tmp/barr.html)",
-      "Bash(curl -s http://localhost:3000/exporters -o /tmp/exp.html)"
+      "Bash(curl -s http://localhost:3000/exporters -o /tmp/exp.html)",
+      "Bash(curl -s \"http://localhost:3000/explorer?hs=630900\" -o /tmp/exp-check.html -w \"HTTP:%{http_code}\\\\n\")",
+      "Bash(curl -s http://localhost:3000/api/products/search?q=textile -o /tmp/search.json)",
+      "Bash(curl -s \"http://localhost:3000/explorer?hs=275754\" -o /tmp/exp-check.html -w \"HTTP:%{http_code}\\\\n\")",
+      "Bash(curl -s \"http://localhost:3000/explorer?hs=275754\" -o /tmp/exp-check.html)"
     ]
   }
 }
