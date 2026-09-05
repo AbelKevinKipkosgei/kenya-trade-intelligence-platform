@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import type Anthropic from "@anthropic-ai/sdk";
 import { runTradeAnalystTurn } from "@/lib/ai/trade-analyst";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 // Uses the `pg` driver (TCP), not fetch-only — needs the Node runtime, not Edge.
 export const runtime = "nodejs";
@@ -30,6 +31,12 @@ function sanitizeMessages(body: unknown): ChatMessage[] {
 }
 
 export async function POST(req: NextRequest) {
+  const clientIp = getClientIp(req.headers);
+  const rateLimit = checkRateLimit(clientIp);
+  if (!rateLimit.allowed) {
+    return new Response(rateLimit.reason, { status: 429 });
+  }
+
   const body = await req.json().catch(() => null);
   const messages = sanitizeMessages(body);
 
@@ -43,7 +50,7 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const chunk of runTradeAnalystTurn(messages as Anthropic.MessageParam[])) {
+        for await (const chunk of runTradeAnalystTurn(messages as Anthropic.Beta.BetaMessageParam[])) {
           controller.enqueue(encoder.encode(chunk));
         }
       } catch (err) {

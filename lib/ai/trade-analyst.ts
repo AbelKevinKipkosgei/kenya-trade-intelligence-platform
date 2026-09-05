@@ -12,7 +12,7 @@ const MODEL = "claude-opus-5";
 const MAX_TOKENS = 8192;
 const MAX_TOOL_ITERATIONS = 8;
 
-const queryTool: Anthropic.Tool = {
+const queryTool: Anthropic.Beta.BetaTool = {
   name: "query_trade_database",
   description:
     "Run a single read-only SQL query (SELECT, or WITH ... SELECT) against the KTIP Postgres database and get back up to 200 rows as JSON. Writes and DDL are rejected server-side.",
@@ -56,16 +56,22 @@ async function executeQueryTool(rawInput: unknown): Promise<{ content: string; i
  * tool-use loop — the caller only sees the final assistant text.
  */
 export async function* runTradeAnalystTurn(
-  history: Anthropic.MessageParam[],
+  history: Anthropic.Beta.BetaMessageParam[],
 ): AsyncGenerator<string> {
-  const messages: Anthropic.MessageParam[] = [...history];
+  const messages: Anthropic.Beta.BetaMessageParam[] = [...history];
 
   for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
-    const stream = client.messages.stream({
+    const stream = client.beta.messages.stream({
       model: MODEL,
       max_tokens: MAX_TOKENS,
       thinking: { type: "adaptive" },
       output_config: { effort: "high" },
+      // Opus 5's safety classifiers can decline with stop_reason: "refusal"
+      // (a normal 200, not an error). "default" re-runs a declined request
+      // on Anthropic's recommended substitute model server-side, routed by
+      // refusal category, instead of just dead-ending the conversation.
+      betas: ["server-side-fallback-2026-07-01"],
+      fallbacks: "default",
       // Explicit breakpoint: the frozen schema prompt, reused across every
       // user's requests (1h TTL — gaps between chat turns are often well
       // past 5 minutes but rarely past an hour).
@@ -124,10 +130,10 @@ export async function* runTradeAnalystTurn(
     }
 
     const toolUseBlocks = message.content.filter(
-      (b): b is Anthropic.ToolUseBlock => b.type === "tool_use",
+      (b): b is Anthropic.Beta.BetaToolUseBlock => b.type === "tool_use",
     );
 
-    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+    const toolResults: Anthropic.Beta.BetaToolResultBlockParam[] = [];
     for (const block of toolUseBlocks) {
       const { content, isError } = await executeQueryTool(block.input);
       toolResults.push({
