@@ -14,7 +14,7 @@ async function main() {
   const { agencyIdByCode, sectorIdByName, countryIdByIso3, countryNameById, countyIdByName, portRows } =
     await seedCore();
 
-  const { insertedProducts, agreementIdByCode } = await seedCatalog(sectorIdByName, agencyIdByCode);
+  const { insertedProducts, agreementIdByCode } = await seedCatalog(sectorIdByName);
 
   const productsBySector = new Map<number, { id: number }[]>();
   for (const p of insertedProducts) {

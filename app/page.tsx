@@ -44,12 +44,19 @@ const features = [
   },
 ];
 
+import { ThemeToggle } from "@/components/theme-toggle";
+
 export default function Home() {
   return (
     <div className="flex min-h-full flex-1 flex-col bg-linear-to-b from-white to-zinc-50 dark:from-black dark:to-zinc-950">
+      <div className="flex h-1 w-full">
+        <div className="flex-1 bg-kenya-black" />
+        <div className="flex-1 bg-kenya-red" />
+        <div className="flex-1 bg-kenya-green" />
+      </div>
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6 sm:px-10">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-sm font-bold text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-kenya-black text-sm font-bold text-white">
             KE
           </span>
           <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
@@ -73,17 +80,20 @@ export default function Home() {
             Docs
           </a>
         </nav>
-        <a
-          href="#overview"
-          className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          Get Started
-        </a>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <a
+            href="#overview"
+            className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            Get Started
+          </a>
+        </div>
       </header>
 
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 sm:px-10">
         <section className="flex flex-col items-start gap-6 py-20 sm:py-28">
-          <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+          <span className="rounded-full bg-kenya-green/10 px-3 py-1 text-xs font-semibold text-kenya-green dark:bg-kenya-green/20">
             Live data across 42 border posts
           </span>
           <h1 className="max-w-2xl text-4xl font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-6xl">
@@ -97,7 +107,7 @@ export default function Home() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <a
               href="#overview"
-              className="flex h-12 items-center justify-center rounded-full bg-emerald-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+              className="flex h-12 items-center justify-center rounded-full bg-kenya-green px-6 text-sm font-semibold text-white transition-colors hover:bg-kenya-green/90"
             >
               Explore Dashboard
             </a>
@@ -125,7 +135,7 @@ export default function Home() {
               <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 {stat.label}
               </span>
-              <span className="mt-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+              <span className="mt-2 text-xs font-semibold text-kenya-green dark:text-green-400">
                 {stat.change}
               </span>
             </div>
@@ -138,7 +148,7 @@ export default function Home() {
               key={feature.title}
               className="flex flex-col gap-4 rounded-2xl border border-zinc-200 p-6 dark:border-zinc-800"
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-kenya-green/10 text-kenya-green dark:bg-kenya-green/20">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"

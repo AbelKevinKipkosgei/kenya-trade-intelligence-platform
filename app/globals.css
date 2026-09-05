@@ -1,22 +1,35 @@
 @import "tailwindcss";
 
+/* next-themes toggles a `.dark` class on <html>; this makes Tailwind's
+   `dark:` variant follow that class instead of only prefers-color-scheme,
+   so the manual override actually takes effect. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Kenyan flag palette */
+  --color-kenya-black: #000000;
+  --color-kenya-red: #bb0000;
+  --color-kenya-green: #006600;
+  --color-kenya-white: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-kenya-black: var(--color-kenya-black);
+  --color-kenya-red: var(--color-kenya-red);
+  --color-kenya-green: var(--color-kenya-green);
+  --color-kenya-white: var(--color-kenya-white);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {

@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { db } from "../client";
 import { newsArticles } from "../schema";
-import { batchInsert, pick, randomInt, SEED_SCALE } from "./utils";
+import { batchInsert, pick, SEED_SCALE } from "./utils";
 
 const SOURCES = [
   "Business Daily Africa",

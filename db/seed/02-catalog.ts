@@ -29,7 +29,7 @@ const SECTOR_UNITS: Record<string, string[]> = {
   "Energy & Petroleum Products": ["litres", "tonnes"],
 };
 
-export async function seedCatalog(sectorIdByName: Map<string, number>, agencyIdByCode: Map<string, number>) {
+export async function seedCatalog(sectorIdByName: Map<string, number>) {
   console.log("Seeding products (HS codes)...");
   const usedCodes = new Set<string>();
   const productRows: { hsCode: string; description: string; sectorId: number; unit: string }[] = [];
