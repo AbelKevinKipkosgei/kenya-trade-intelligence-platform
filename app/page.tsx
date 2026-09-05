@@ -77,6 +77,12 @@ export default function Home() {
           >
             Insights
           </a>
+          <Link href="/explorer" className="hover:text-zinc-900 dark:hover:text-zinc-50">
+            Explorer
+          </Link>
+          <Link href="/opportunities" className="hover:text-zinc-900 dark:hover:text-zinc-50">
+            Opportunities
+          </Link>
           <Link href="/getting-started" className="hover:text-zinc-900 dark:hover:text-zinc-50">
             Getting Started
           </Link>
