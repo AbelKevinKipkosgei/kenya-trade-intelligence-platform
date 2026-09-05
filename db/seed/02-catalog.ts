@@ -29,6 +29,75 @@ const SECTOR_UNITS: Record<string, string[]> = {
   "Energy & Petroleum Products": ["litres", "tonnes"],
 };
 
+// Plausible item names per sector, used instead of a randomly generated
+// adjective+noun pair — faker's generic commerce vocabulary produced
+// nonsense like "Coffee, tea, mate and spices — Sleek Chicken".
+const SECTOR_PRODUCT_NAMES: Record<string, string[]> = {
+  "Agriculture & Horticulture": [
+    "Fresh Cut Roses", "Avocados", "French Beans", "Snow Peas", "Mangoes",
+    "Passion Fruit", "Macadamia Nuts", "Fresh Chillies", "Baby Corn",
+    "Pineapples", "Cut Foliage", "Runner Beans",
+  ],
+  "Coffee & Tea": [
+    "Arabica Coffee Beans", "Robusta Coffee Beans", "Green Coffee",
+    "Roasted Coffee", "Black Tea Leaves", "Green Tea", "Herbal Infusion",
+    "Instant Coffee Granules", "CTC Tea", "Orthodox Tea",
+  ],
+  "Textiles & Apparel": [
+    "Cotton T-Shirts", "Knitted Sweaters", "Woven Cotton Fabric",
+    "Denim Jeans", "School Uniforms", "Cotton Yarn", "Kitenge Fabric",
+    "Work Overalls", "Baby Clothing", "Sportswear",
+  ],
+  "Leather & Footwear": [
+    "Leather Handbags", "Safety Boots", "Sports Shoes", "Leather Belts",
+    "Sandals", "Raw Hides", "Tanned Leather", "School Shoes",
+  ],
+  "Minerals & Mining": [
+    "Soda Ash", "Titanium Ore", "Fluorspar", "Gold Ore", "Limestone",
+    "Gemstones", "Diatomite", "Kaolin Clay", "Manganese Ore",
+  ],
+  "Manufacturing (General)": [
+    "Packaged Snacks", "Bottled Water", "Plastic Containers",
+    "Ceramic Tiles", "Ballpoint Pens", "Ceramic Tableware",
+    "Exercise Books", "Cardboard Packaging", "Cooking Oil",
+  ],
+  "Chemicals & Plastics": [
+    "Industrial Adhesives", "PVC Pipes", "Detergent Powder",
+    "Plastic Sheeting", "Fertilizer Blends", "Paints & Coatings",
+    "Soap Bars", "Insecticides", "Plastic Housewares",
+  ],
+  "ICT & Digital Services": [
+    "Mobile Handsets", "Network Routers", "Solar Inverters",
+    "Circuit Boards", "Data Cables", "Set-Top Boxes", "SIM Cards",
+  ],
+  "Fisheries & Aquaculture": [
+    "Nile Perch Fillets", "Frozen Tilapia", "Dried Fish", "Fish Meal",
+    "Farmed Prawns", "Fish Maws", "Smoked Fish",
+  ],
+  "Iron & Steel": [
+    "Steel Rebar", "Galvanized Sheets", "Steel Wire", "Structural Beams",
+    "Steel Pipes", "Wire Nails", "Roofing Sheets",
+  ],
+  "Automotive & Machinery": [
+    "Motor Vehicle Parts", "Agricultural Tractors", "Water Pumps",
+    "Diesel Generators", "Bicycle Frames", "Motorcycle Parts",
+    "Irrigation Equipment",
+  ],
+  Pharmaceuticals: [
+    "Antimalarial Tablets", "Antibiotic Capsules", "Vaccines",
+    "Oral Rehydration Salts", "Surgical Gloves", "Pain Relief Tablets",
+    "Antiseptic Solution",
+  ],
+  "Handicrafts & Furniture": [
+    "Sisal Baskets", "Wooden Furniture", "Soapstone Carvings",
+    "Wicker Chairs", "Beaded Jewelry", "Wood Carvings", "Woven Mats",
+  ],
+  "Energy & Petroleum Products": [
+    "Refined Petroleum", "LPG Cylinders", "Diesel Fuel", "Solar Panels",
+    "Charcoal Briquettes", "Lubricating Oils", "Kerosene",
+  ],
+};
+
 export async function seedCatalog(sectorIdByName: Map<string, number>) {
   console.log("Seeding products (HS codes)...");
   const usedCodes = new Set<string>();
@@ -38,6 +107,7 @@ export async function seedCatalog(sectorIdByName: Map<string, number>) {
     const sectorId = sectorIdByName.get(sector);
     if (!sectorId) continue;
     const units = SECTOR_UNITS[sector] ?? ["units"];
+    const names = SECTOR_PRODUCT_NAMES[sector] ?? [title];
     const count = Math.max(1, Math.round(randomInt(25, 45) * SEED_SCALE));
 
     for (let i = 0; i < count; i++) {
@@ -54,7 +124,7 @@ export async function seedCatalog(sectorIdByName: Map<string, number>) {
 
       productRows.push({
         hsCode: code,
-        description: `${title} — ${faker.commerce.productAdjective()} ${faker.commerce.product()}`,
+        description: `${title} — ${pick(names)}`,
         sectorId,
         unit: pick(units),
       });
