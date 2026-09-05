@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const stats = [
@@ -76,9 +77,9 @@ export default function Home() {
           >
             Insights
           </a>
-          <a href="#" className="hover:text-zinc-900 dark:hover:text-zinc-50">
-            Docs
-          </a>
+          <Link href="/analyst" className="hover:text-zinc-900 dark:hover:text-zinc-50">
+            AI Analyst
+          </Link>
         </nav>
         <div className="flex items-center gap-3">
           <ThemeToggle />
