@@ -152,5 +152,5 @@ export async function* runTradeAnalystTurn(
     messages.push({ role: "user", content: toolResults });
   }
 
-  yield "\n\n_Reached the tool-call limit for this turn — try narrowing the question._";
+  yield "\n\n_Reached the tool-call limit for this turn – try narrowing the question._";
 }

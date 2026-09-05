@@ -55,8 +55,8 @@ export async function seedTradeBarriers(
     const reportedDate = faker.date.between({ from: "2019-01-01", to: "2024-10-01" });
     const resolvedDate = status === "resolved" ? faker.date.between({ from: reportedDate, to: "2024-12-31" }) : null;
     // Use the real HS-chapter title half of the description, not the
-    // random faker-generated noun after the em dash.
-    const productLabel = product.description.split(" — ")[0].toLowerCase();
+    // random faker-generated noun after the dash.
+    const productLabel = product.description.split(/ [—–] /)[0].toLowerCase();
 
     rows.push({
       productId: product.id,

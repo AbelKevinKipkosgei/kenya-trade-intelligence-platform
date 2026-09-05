@@ -78,10 +78,10 @@ async function main() {
   const sectorNameById = new Map(sectorRows.map((r) => [r.id, r.name]));
 
   const updates = productRows.map((p) => {
-    const chapterTitle = p.description.split(" — ")[0];
+    const chapterTitle = p.description.split(/ [—–] /)[0];
     const sectorName = sectorNameById.get(p.sectorId);
     const names = (sectorName && SECTOR_PRODUCT_NAMES[sectorName]) || [chapterTitle];
-    return { id: p.id, description: `${chapterTitle} — ${pick(names)}` };
+    return { id: p.id, description: `${chapterTitle} – ${pick(names)}` };
   });
 
   const values = updates.map((_, i) => `($${i * 2 + 1}::int, $${i * 2 + 2}::text)`).join(", ");

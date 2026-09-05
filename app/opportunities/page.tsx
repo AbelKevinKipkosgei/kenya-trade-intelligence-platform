@@ -132,7 +132,7 @@ export default async function OpportunitiesPage({
             >
               {top.productDescription}
             </a>{" "}
-            in <span className="font-semibold">{top.countryName}</span> —
+            in <span className="font-semibold">{top.countryName}</span> –
             overall score{" "}
             <span className="font-semibold">
               {Number(top.overallScore).toFixed(1)}

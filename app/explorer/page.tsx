@@ -175,7 +175,7 @@ export default async function ExplorerPage({
                 href={`/explorer?hs=${s.hsCode}`}
                 className="rounded-xl border border-stone-300 bg-white/60 px-4 py-3 text-sm text-zinc-700 transition-colors hover:border-kenya-green hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300 dark:hover:text-zinc-50"
               >
-                <span className="font-medium">{s.hsCode}</span> — {s.description}
+                <span className="font-medium">{s.hsCode}</span> – {s.description}
               </a>
             ))}
           </div>
@@ -283,7 +283,7 @@ export default async function ExplorerPage({
                       {t.rateType}
                     </td>
                     <td className="border-b border-stone-200 py-2 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-                      {t.agreementCode ?? "—"}
+                      {t.agreementCode ?? "–"}
                     </td>
                   </tr>
                 ))}

@@ -56,7 +56,7 @@ export default function Home() {
             Understand Kenya&apos;s trade flows, in real time.
           </h1>
           <p className="max-w-xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
-            A unified view of exports, imports, tariffs, and market trends —
+            A unified view of exports, imports, tariffs, and market trends –
             built for policymakers, exporters, and analysts who need answers
             fast.
           </p>

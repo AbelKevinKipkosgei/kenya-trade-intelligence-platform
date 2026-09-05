@@ -124,7 +124,7 @@ export async function seedCatalog(sectorIdByName: Map<string, number>) {
 
       productRows.push({
         hsCode: code,
-        description: `${title} — ${pick(names)}`,
+        description: `${title} – ${pick(names)}`,
         sectorId,
         unit: pick(units),
       });
