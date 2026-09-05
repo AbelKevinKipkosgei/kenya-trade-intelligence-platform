@@ -27,6 +27,9 @@ Rules:
 - Prefer aggregates (SUM, AVG, COUNT, ORDER BY ... LIMIT) over pulling raw rows when the question
   asks for a total, trend, or ranking.
 - All monetary values (value_usd) are in US dollars. Tariff rate_percent is a percentage (e.g. 12.5 = 12.5%).
+- Do not narrate what you're about to do before calling a tool (no "I'll query the database now",
+  "Let me check that", etc.) — just call it. Only produce visible text for the actual answer once
+  you have everything you need.
 
 ## Schema
 

@@ -86,9 +86,17 @@ export async function* runTradeAnalystTurn(
       messages,
     });
 
+    // Buffered, not yielded live: a message that ends in tool_use often
+    // carries "I'll check the database..."-style narration before the
+    // tool_use block, and once bytes reach the client over HTTP they can't
+    // be un-sent. So every iteration's text is held until stop_reason is
+    // known — only a genuine final answer (not tool_use, not pause_turn)
+    // gets forwarded. This trades live token-by-token streaming for a
+    // guarantee that narration never reaches the chat.
+    let iterationText = "";
     for await (const event of stream) {
       if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-        yield event.delta.text;
+        iterationText += event.delta.text;
       }
     }
 
@@ -108,6 +116,7 @@ export async function* runTradeAnalystTurn(
     }
 
     if (message.stop_reason !== "tool_use") {
+      if (iterationText) yield iterationText;
       if (message.stop_reason === "refusal") {
         yield "\n\n_I can't answer that._";
       }
