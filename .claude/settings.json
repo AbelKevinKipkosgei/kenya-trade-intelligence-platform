@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://localhost:3000/barriers)",
+      "Bash(curl -s http://localhost:3000/exporters)",
+      "Bash(curl -s http://localhost:3000/barriers -o /tmp/barriers.html -w \"%{http_code}\\\\n\")",
+      "Bash(curl -s http://localhost:3000/exporters -o /tmp/exporters.html)",
+      "Bash(curl -s \"http://localhost:3000/barriers?status=resolved\" -o /tmp/barriers2.html)",
+      "Bash(curl -s \"http://localhost:3000/exporters?exportReady=false\" -o /tmp/exporters2.html)",
+      "Bash(git commit -m ' *)",
+      "Bash(node -e ' *)",
+      "Bash(curl -s \"http://localhost:3000/explorer?hs=093487\" -o /tmp/explorer-check.html)"
+    ]
+  }
+}
