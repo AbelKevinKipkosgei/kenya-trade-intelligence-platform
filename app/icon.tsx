@@ -11,13 +11,16 @@ export default function Icon() {
           width: "100%",
           height: "100%",
           display: "flex",
+          flexDirection: "column",
           borderRadius: 8,
           overflow: "hidden",
         }}
       >
-        <div style={{ flex: 1, backgroundColor: "#000000" }} />
-        <div style={{ flex: 1, backgroundColor: "#bb0000" }} />
-        <div style={{ flex: 1, backgroundColor: "#006600" }} />
+        <div style={{ flex: 5, backgroundColor: "#000000" }} />
+        <div style={{ flex: 1, backgroundColor: "#ffffff" }} />
+        <div style={{ flex: 5, backgroundColor: "#bb0000" }} />
+        <div style={{ flex: 1, backgroundColor: "#ffffff" }} />
+        <div style={{ flex: 5, backgroundColor: "#006600" }} />
       </div>
     ),
     { ...size },

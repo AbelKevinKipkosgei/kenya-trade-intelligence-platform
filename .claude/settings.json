@@ -55,7 +55,10 @@
       "Bash(curl -s \"http://localhost:3000/explorer?hs=275754\")",
       "Bash(pnpm build *)",
       "Bash(node -e \"console.log\\(require.resolve\\('next/og'\\)\\)\")",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(curl -s -o /tmp/apple-icon2.png http://localhost:3000/apple-icon -w \"%{http_code}\\\\n\")",
+      "Bash(pip install *)",
+      "Bash(pip3 install *)"
     ]
   }
 }
