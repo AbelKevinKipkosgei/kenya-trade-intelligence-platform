@@ -1,3 +1,5 @@
+import { ThemeToggle } from "@/components/theme-toggle";
+
 const stats = [
   { label: "Total Export Value", value: "$7.2B", change: "+4.8%" },
   { label: "Total Import Value", value: "$18.6B", change: "+2.1%" },
@@ -43,8 +45,6 @@ const features = [
     ),
   },
 ];
-
-import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Home() {
   return (
@@ -113,7 +113,7 @@ export default function Home() {
             </a>
             <a
               href="#"
-              className="flex h-12 items-center justify-center rounded-full border border-zinc-300 px-6 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+              className="flex h-12 items-center justify-center rounded-full border border-stone-400 px-6 text-sm font-semibold text-zinc-800 transition-colors hover:bg-stone-200 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
               Read the Docs
             </a>
@@ -122,12 +122,12 @@ export default function Home() {
 
         <section
           id="overview"
-          className="grid grid-cols-2 gap-4 border-t border-zinc-200 py-12 dark:border-zinc-800 sm:grid-cols-4"
+          className="grid grid-cols-2 gap-4 border-t border-stone-400 py-12 dark:border-zinc-700 sm:grid-cols-4"
         >
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="flex flex-col gap-1 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="flex flex-col gap-1 rounded-2xl border border-stone-300 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
             >
               <span className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
                 {stat.value}
@@ -146,7 +146,7 @@ export default function Home() {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="flex flex-col gap-4 rounded-2xl border border-zinc-200 p-6 dark:border-zinc-800"
+              className="flex flex-col gap-4 rounded-2xl border border-stone-300 bg-white/60 p-6 dark:border-zinc-700 dark:bg-zinc-800/60"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-kenya-green/10 text-kenya-green dark:bg-kenya-green/20">
                 <svg
@@ -171,7 +171,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 border-t border-zinc-200 px-6 py-8 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500 sm:flex-row sm:px-10">
+      <footer className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 border-t border-stone-400 px-6 py-8 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-500 sm:flex-row sm:px-10">
         <span>© 2026 Kenya Trade Intelligence Platform</span>
         <span>Built for data-driven trade policy</span>
       </footer>

@@ -26,7 +26,7 @@ export function ThemeToggle() {
   const current = mounted ? (theme ?? "system") : "system";
 
   return (
-    <div className="flex items-center rounded-full border border-zinc-300 p-0.5 text-xs font-medium dark:border-zinc-700">
+    <div className="flex items-center rounded-full border border-stone-400 p-0.5 text-xs font-medium dark:border-zinc-600">
       {OPTIONS.map((option) => (
         <button
           key={option}
