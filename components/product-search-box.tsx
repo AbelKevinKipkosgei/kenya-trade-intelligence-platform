@@ -58,7 +58,7 @@ export function ProductSearchBox({ autoFocus }: { autoFocus?: boolean }) {
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => results.length > 0 && setOpen(true)}
         placeholder="Search by HS code or product name…"
-        className="w-full rounded-full border border-stone-400 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+        className="w-full rounded-full border border-stone-400 bg-white px-4 py-2.5 text-base sm:text-sm text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
       />
       {open && query.trim().length >= 2 && results.length > 0 && (
         <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-xl border border-stone-300 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800">

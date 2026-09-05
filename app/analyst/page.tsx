@@ -186,7 +186,7 @@ export default function AnalystPage() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about Kenyan trade data…"
-          className="flex-1 rounded-full border border-stone-400 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+          className="flex-1 rounded-full border border-stone-400 bg-white px-4 py-2.5 text-base sm:text-sm text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
         />
         <button
           type="submit"

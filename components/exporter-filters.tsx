@@ -38,7 +38,7 @@ export function ExporterFilters({
   }
 
   const selectClass =
-    "rounded-full border border-stone-400 bg-white px-3 py-1.5 text-xs text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50";
+    "rounded-full border border-stone-400 bg-white px-3 py-2 text-base sm:text-xs text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50";
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -47,12 +47,13 @@ export function ExporterFilters({
           e.preventDefault();
           updateParams({ q: query });
         }}
+        className="w-full sm:w-auto"
       >
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by company name…"
-          className="w-56 rounded-full border border-stone-400 bg-white px-3 py-1.5 text-xs text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+          className="w-full rounded-full border border-stone-400 bg-white px-3 py-2 text-base sm:w-56 sm:text-xs text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
         />
       </form>
       <select

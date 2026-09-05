@@ -45,11 +45,11 @@ export function SiteHeader() {
         <div className="flex-1 bg-kenya-green" />
       </div>
       <header className="flex w-full items-center justify-between px-6 py-6 sm:px-10">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-kenya-black text-sm font-bold text-white">
+        <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-kenya-black text-sm font-bold text-white">
             KE
           </span>
-          <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 max-[380px]:hidden">
             Trade Intelligence Platform
           </span>
         </Link>
@@ -73,14 +73,14 @@ export function SiteHeader() {
             onClick={() => setMobileOpen((open) => !open)}
             aria-label="Toggle navigation menu"
             aria-expanded={mobileOpen}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-400 text-zinc-700 dark:border-zinc-600 dark:text-zinc-300 xl:hidden"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-stone-400 text-zinc-700 dark:border-zinc-600 dark:text-zinc-300 xl:hidden"
           >
             {mobileOpen ? (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
@@ -89,9 +89,9 @@ export function SiteHeader() {
       </header>
 
       {mobileOpen && (
-        <nav className="flex w-full flex-col gap-1 px-6 pb-4 text-sm font-medium sm:px-10 xl:hidden">
+        <nav className="flex w-full flex-col gap-1 border-t border-stone-300 bg-[#ece6d8]/95 px-6 py-3 text-base font-medium shadow-md backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/95 sm:px-10 xl:hidden">
           {NAV_LINKS.map((link) => (
-            <div key={link.href} className="rounded-lg px-3 py-2 hover:bg-stone-200 dark:hover:bg-zinc-800">
+            <div key={link.href} className="rounded-lg px-3 py-3 hover:bg-stone-200 dark:hover:bg-zinc-800">
               <NavLink {...link} onClick={() => setMobileOpen(false)} />
             </div>
           ))}

@@ -35,7 +35,13 @@
       "Bash(pkill -f \"next-server\")",
       "Bash(curl -s http://localhost:3000/ -o /tmp/home-check.html)",
       "Bash(grep -oE '\\\\$[0-9.]+[BMK]' /tmp/home-check.html)",
-      "Bash(curl -s http://localhost:3000/)"
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(sudo -n apt-get install -y libasound2t64 libasound2)",
+      "Bash(curl -s http://localhost:3000/ -o /tmp/home2.html)",
+      "Bash(curl -s http://localhost:3000/ -o /tmp/home3.html)",
+      "Bash(curl -s http://localhost:3000/opportunities -o /tmp/opp.html)",
+      "Bash(curl -s http://localhost:3000/barriers -o /tmp/barr.html)",
+      "Bash(curl -s http://localhost:3000/exporters -o /tmp/exp.html)"
     ]
   }
 }

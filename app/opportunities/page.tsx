@@ -141,69 +141,129 @@ export default async function OpportunitiesPage({
         </div>
       )}
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-stone-300 dark:border-zinc-700">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-stone-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-            <tr>
-              <th className="px-3 py-2 font-semibold">Product</th>
-              <th className="px-3 py-2 font-semibold">Sector</th>
-              <th className="px-3 py-2 font-semibold">Market</th>
-              <th className="px-3 py-2 text-right font-semibold">Overall</th>
-              <th className="px-3 py-2 text-right font-semibold">Demand</th>
-              <th className="px-3 py-2 text-right font-semibold">Growth</th>
-              <th className="px-3 py-2 text-right font-semibold">
-                Competitiveness
-              </th>
-              <th className="px-3 py-2 text-right font-semibold">
-                Market Access
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+      {rows.length === 0 ? (
+        <p className="mt-6 rounded-2xl border border-stone-300 bg-white/70 p-5 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/70 dark:text-zinc-400">
+          No opportunity scores match these filters.
+        </p>
+      ) : (
+        <>
+          {/* Card list below sm: an 8-column table doesn't fit a phone
+              screen even with horizontal scroll, so mobile gets a
+              stacked, scannable layout instead of the desktop table. */}
+          <div className="mt-6 flex flex-col gap-3 sm:hidden">
             {rows.map((r) => (
-              <tr
+              <a
                 key={r.id}
-                className="border-t border-stone-200 dark:border-zinc-800"
+                href={`/explorer?hs=${r.hsCode}`}
+                className="rounded-2xl border border-stone-300 bg-white/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/70"
               >
-                <td className="px-3 py-2">
-                  <a
-                    href={`/explorer?hs=${r.hsCode}`}
-                    className="text-kenya-green hover:underline"
-                  >
-                    {r.productDescription}
-                  </a>
-                </td>
-                <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400">
-                  {r.sectorName}
-                </td>
-                <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">
-                  {r.countryName}
-                </td>
-                <td className="px-3 py-2 text-right font-semibold text-zinc-900 dark:text-zinc-50">
-                  {Number(r.overallScore).toFixed(1)}
-                </td>
-                <td className="px-3 py-2 text-right text-zinc-500 dark:text-zinc-400">
-                  {Number(r.demandScore).toFixed(0)}
-                </td>
-                <td className="px-3 py-2 text-right text-zinc-500 dark:text-zinc-400">
-                  {Number(r.growthScore).toFixed(0)}
-                </td>
-                <td className="px-3 py-2 text-right text-zinc-500 dark:text-zinc-400">
-                  {Number(r.competitivenessScore).toFixed(0)}
-                </td>
-                <td className="px-3 py-2 text-right text-zinc-500 dark:text-zinc-400">
-                  {Number(r.marketAccessScore).toFixed(0)}
-                </td>
-              </tr>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-kenya-green">{r.productDescription}</p>
+                    <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                      {r.sectorName} · {r.countryName}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <span className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                      {Number(r.overallScore).toFixed(1)}
+                    </span>
+                    <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      Overall
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3 grid grid-cols-4 gap-2 border-t border-stone-200 pt-3 text-center dark:border-zinc-800">
+                  <div>
+                    <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                      {Number(r.demandScore).toFixed(0)}
+                    </p>
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">Demand</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                      {Number(r.growthScore).toFixed(0)}
+                    </p>
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">Growth</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                      {Number(r.competitivenessScore).toFixed(0)}
+                    </p>
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">Competitive</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                      {Number(r.marketAccessScore).toFixed(0)}
+                    </p>
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">Access</p>
+                  </div>
+                </div>
+              </a>
             ))}
-          </tbody>
-        </table>
-        {rows.length === 0 && (
-          <p className="p-4 text-sm text-zinc-500 dark:text-zinc-400">
-            No opportunity scores match these filters.
-          </p>
-        )}
-      </div>
+          </div>
+
+          {/* Table from sm up, where 8 columns comfortably fit. */}
+          <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-stone-300 dark:border-zinc-700 sm:block">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-stone-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+                <tr>
+                  <th className="px-3 py-2 font-semibold">Product</th>
+                  <th className="px-3 py-2 font-semibold">Sector</th>
+                  <th className="px-3 py-2 font-semibold">Market</th>
+                  <th className="px-3 py-2 text-right font-semibold">Overall</th>
+                  <th className="px-3 py-2 text-right font-semibold">Demand</th>
+                  <th className="px-3 py-2 text-right font-semibold">Growth</th>
+                  <th className="px-3 py-2 text-right font-semibold">
+                    Competitiveness
+                  </th>
+                  <th className="px-3 py-2 text-right font-semibold">
+                    Market Access
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr
+                    key={r.id}
+                    className="border-t border-stone-200 dark:border-zinc-800"
+                  >
+                    <td className="px-3 py-2">
+                      <a
+                        href={`/explorer?hs=${r.hsCode}`}
+                        className="text-kenya-green hover:underline"
+                      >
+                        {r.productDescription}
+                      </a>
+                    </td>
+                    <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400">
+                      {r.sectorName}
+                    </td>
+                    <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">
+                      {r.countryName}
+                    </td>
+                    <td className="px-3 py-2 text-right font-semibold text-zinc-900 dark:text-zinc-50">
+                      {Number(r.overallScore).toFixed(1)}
+                    </td>
+                    <td className="px-3 py-2 text-right text-zinc-500 dark:text-zinc-400">
+                      {Number(r.demandScore).toFixed(0)}
+                    </td>
+                    <td className="px-3 py-2 text-right text-zinc-500 dark:text-zinc-400">
+                      {Number(r.growthScore).toFixed(0)}
+                    </td>
+                    <td className="px-3 py-2 text-right text-zinc-500 dark:text-zinc-400">
+                      {Number(r.competitivenessScore).toFixed(0)}
+                    </td>
+                    <td className="px-3 py-2 text-right text-zinc-500 dark:text-zinc-400">
+                      {Number(r.marketAccessScore).toFixed(0)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 }
