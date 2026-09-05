@@ -370,6 +370,11 @@ export default async function ExplorerPage({
                   {n.title}
                 </a>
                 <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">{n.sourceName}</span>
+                {n.sourceUrl.startsWith("https://example.com/") && (
+                  <span className="ml-2 rounded-full bg-stone-200 px-2 py-0.5 text-xs font-medium text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400">
+                    Mock article
+                  </span>
+                )}
               </li>
             ))}
           </ul>

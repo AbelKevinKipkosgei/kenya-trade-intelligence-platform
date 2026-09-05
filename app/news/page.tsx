@@ -100,6 +100,11 @@ export default async function NewsPage({
               <span className="text-xs text-zinc-500 dark:text-zinc-400">
                 {a.sourceName} · {a.publishedAt}
               </span>
+              {a.sourceUrl.startsWith("https://example.com/") && (
+                <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400">
+                  Mock article
+                </span>
+              )}
             </div>
             <p className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50">{a.title}</p>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{a.summary}</p>
