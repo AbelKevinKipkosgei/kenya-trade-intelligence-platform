@@ -1,0 +1,32 @@
+name: Recompute Market Opportunity Scores
+
+# pg_cron isn't available on Neon's free plan (confirmed directly against
+# this project: CREATE EXTENSION pg_cron is rejected with permission
+# denied even for the owner role), so scheduling lives here instead —
+# portable across whatever host the app eventually deploys to.
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # daily at 03:00 UTC
+  workflow_dispatch: {} # lets you trigger a run manually from the Actions tab
+
+jobs:
+  recompute:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm db:score
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
