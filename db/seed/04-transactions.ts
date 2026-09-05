@@ -1,6 +1,6 @@
 import { db } from "../client";
 import { tradeTransactions, marketOpportunityScores } from "../schema";
-import { randomFloat, randomInt, pick, SEED_SCALE } from "./utils";
+import { randomFloat, randomInt, pick, SEED_SCALE, checkSizeLimit, seedStopState } from "./utils";
 
 const MAJOR_PARTNERS = [
   "CHN", "IND", "ARE", "USA", "GBR", "DEU", "NLD", "UGA", "TZA", "RWA",
@@ -79,6 +79,7 @@ export async function seedTransactionsAndScores(
       console.log(`  trade_transactions: ${txTotal.toLocaleString()}`);
     }
     txBuffer = [];
+    await checkSizeLimit();
   }
 
   async function flushScores() {
@@ -86,9 +87,11 @@ export async function seedTransactionsAndScores(
     await db.insert(marketOpportunityScores).values(scoreBuffer);
     scoreTotal += scoreBuffer.length;
     scoreBuffer = [];
+    await checkSizeLimit();
   }
 
   for (const product of insertedProducts) {
+    if (seedStopState.stopped) break;
     const numPartners = Math.max(3, Math.round(randomInt(8, 40) * SEED_SCALE));
     const partnerSet = new Set<number>();
     let guard = 0;
@@ -98,6 +101,7 @@ export async function seedTransactionsAndScores(
     }
 
     for (const countryId of partnerSet) {
+      if (seedStopState.stopped) break;
       const flows: ("export" | "import")[] = [];
       const r = Math.random();
       if (r < 0.6) flows.push("export", "import");
@@ -105,6 +109,7 @@ export async function seedTransactionsAndScores(
       else flows.push("import");
 
       for (const flowType of flows) {
+        if (seedStopState.stopped) break;
         const baseMonthly = randomFloat(2, 300, 2) * 1000;
         const growthRate = randomFloat(-0.01, 0.02, 4);
         const phase = randomFloat(0, Math.PI * 2, 3);
@@ -113,6 +118,7 @@ export async function seedTransactionsAndScores(
         const keepProb = randomFloat(0.55, 0.95, 2);
 
         for (let m = 0; m < MONTHS.length; m++) {
+          if (seedStopState.stopped) break;
           if (Math.random() > keepProb) continue;
           const seasonal = 1 + 0.15 * Math.sin((m / 12) * 2 * Math.PI + phase);
           const trend = Math.pow(1 + growthRate, m);
@@ -138,6 +144,7 @@ export async function seedTransactionsAndScores(
 
       // Market Opportunity Score: quarterly, export-oriented, sparsified.
       for (let q = 0; q < QUARTERS.length; q++) {
+        if (seedStopState.stopped) break;
         if (Math.random() > 0.5) continue;
         const demand = scoreComponent();
         const growth = scoreComponent();
