@@ -64,6 +64,11 @@ export const AGENCIES = [
     description: "National statistical office; publishes official trade statistics.",
   },
   {
+    code: "KEPHIS",
+    name: "Kenya Plant Health Inspectorate Service",
+    description: "Phytosanitary inspection and certification for plant and plant-product imports and exports.",
+  },
+  {
     code: "MSEA",
     name: "Micro and Small Enterprises Authority",
     description: "Supports MSMEs, many of which are emerging exporters.",

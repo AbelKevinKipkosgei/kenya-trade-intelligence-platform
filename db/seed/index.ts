@@ -5,6 +5,7 @@ import { seedCatalog, seedAgreementMembers, seedTariffs } from "./02-catalog";
 import { seedExporters } from "./03-exporters";
 import { seedTransactionsAndScores } from "./04-transactions";
 import { seedNews } from "./05-news";
+import { ensureKephisAgency, seedProcedures } from "./06-procedures";
 import { SEED_SCALE } from "./utils";
 
 async function main() {
@@ -13,6 +14,7 @@ async function main() {
 
   const { agencyIdByCode, sectorIdByName, countryIdByIso3, countryNameById, countyIdByName, portRows } =
     await seedCore();
+  await ensureKephisAgency(agencyIdByCode);
 
   const { insertedProducts, agreementIdByCode } = await seedCatalog(sectorIdByName);
 
@@ -32,6 +34,7 @@ async function main() {
     portRows,
   );
   const newsCount = await seedNews(sectorIdByName, countryIdByIso3, productsBySector, countryNameById);
+  const procedureCount = await seedProcedures(sectorIdByName, agencyIdByCode);
 
   const elapsedMin = ((Date.now() - start) / 60000).toFixed(1);
   console.log(`\nSeed complete in ${elapsedMin} min.`);
@@ -42,6 +45,7 @@ async function main() {
     tradeTransactions: txTotal,
     marketOpportunityScores: scoreTotal,
     newsArticles: newsCount,
+    procedures: procedureCount,
   });
 
   await pool.end();

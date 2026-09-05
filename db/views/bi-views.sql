@@ -99,6 +99,23 @@ LEFT JOIN sectors s ON s.id = p.sector_id
 JOIN countries c ON c.id = tb.country_id
 JOIN agencies ag ON ag.id = tb.source_agency_id;
 
+CREATE OR REPLACE VIEW vw_procedures AS
+SELECT
+  p.id,
+  p.slug,
+  p.title,
+  p.category,
+  s.name AS sector_name,
+  p.summary,
+  p.steps,
+  jsonb_array_length(p.steps) AS step_count,
+  p.estimated_total_days,
+  a.name AS lead_agency,
+  p.last_updated
+FROM procedures p
+LEFT JOIN sectors s ON s.id = p.sector_id
+JOIN agencies a ON a.id = p.lead_agency_id;
+
 CREATE OR REPLACE VIEW vw_exporters AS
 SELECT
   e.id,
