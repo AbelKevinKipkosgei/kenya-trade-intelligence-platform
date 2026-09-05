@@ -51,7 +51,8 @@
       "WebFetch(domain:github.com)",
       "Bash(curl -s http://localhost:3000/news -o /tmp/news-verify.html -w \"%{http_code}\\\\n\")",
       "Bash(grep -n \"hover:\\\\${style.ring}\" app/getting-started/page.tsx)",
-      "Bash(curl -s http://localhost:3000/getting-started -o /tmp/gs.html)"
+      "Bash(curl -s http://localhost:3000/getting-started -o /tmp/gs.html)",
+      "Bash(curl -s \"http://localhost:3000/explorer?hs=275754\")"
     ]
   }
 }
