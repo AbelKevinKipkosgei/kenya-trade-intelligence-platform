@@ -9,7 +9,12 @@
       "Bash(curl -s \"http://localhost:3000/exporters?exportReady=false\" -o /tmp/exporters2.html)",
       "Bash(git commit -m ' *)",
       "Bash(node -e ' *)",
-      "Bash(curl -s \"http://localhost:3000/explorer?hs=093487\" -o /tmp/explorer-check.html)"
+      "Bash(curl -s \"http://localhost:3000/explorer?hs=093487\" -o /tmp/explorer-check.html)",
+      "Bash(curl -s http://localhost:3000/opportunities -o /tmp/opp-check.html)",
+      "Bash(curl -s -N -X POST http://localhost:3000/api/trade-analyst -H 'Content-Type: application/json' -d '{\"messages\":[{\"role\":\"user\",\"content\":\"How is the market opportunity score computed, and what is the top opportunity right now?\"}]}' --max-time 60)",
+      "Bash(curl -s -N -X POST http://localhost:3000/api/trade-analyst -H 'Content-Type: application/json' -d '{\"messages\":[{\"role\":\"user\",\"content\":\"How is the market opportunity score computed, and what is the top opportunity right now?\"}]}' --max-time 120)",
+      "Bash(xargs ls -la)",
+      "Bash(gh auth *)"
     ]
   }
 }
