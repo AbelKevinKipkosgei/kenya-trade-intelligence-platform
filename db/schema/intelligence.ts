@@ -63,7 +63,12 @@ export const marketOpportunityScores = pgTable(
   ],
 );
 
-/** Trade news feed — later backed by real RSS/news-API ingestion. */
+/**
+ * Trade news feed. Seeded with mock articles initially; now also backed by
+ * a real NewsAPI.org ingestion pipeline (db/ingestion/fetch-news.ts). The
+ * unique constraint on sourceUrl is what makes repeated ingestion runs
+ * idempotent (ON CONFLICT DO NOTHING) instead of accumulating duplicates.
+ */
 export const newsArticles = pgTable(
   "news_articles",
   {
@@ -71,7 +76,7 @@ export const newsArticles = pgTable(
     title: varchar("title", { length: 300 }).notNull(),
     summary: text("summary").notNull(),
     sourceName: varchar("source_name", { length: 150 }).notNull(),
-    sourceUrl: varchar("source_url", { length: 500 }).notNull(),
+    sourceUrl: varchar("source_url", { length: 500 }).notNull().unique(),
     publishedAt: timestamp("published_at").notNull(),
     category: varchar("category", { length: 30 }).notNull(), // tariff | agreement | market | policy | logistics
     relatedProductId: integer("related_product_id").references(

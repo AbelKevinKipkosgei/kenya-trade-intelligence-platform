@@ -12,6 +12,7 @@
     "db:seed": "tsx db/seed/index.ts",
     "db:views": "tsx db/views/apply.ts",
     "db:score": "tsx db/scoring/run.ts",
+    "news:fetch": "tsx db/ingestion/fetch-news.ts",
     "eval:trade-analyst": "tsx evals/trade-analyst.eval.ts"
   },
   "dependencies": {
