@@ -18,7 +18,9 @@
       "Bash(curl -s -w \"\\\\nHTTP_STATUS:%{http_code}\\\\n\" \"https://api.github.com/repos/actions/checkout/releases/latest\")",
       "Bash(curl -s \"https://raw.githubusercontent.com/actions/checkout/v7/action.yml\")",
       "Bash(curl -s \"https://raw.githubusercontent.com/actions/setup-node/v7/action.yml\")",
-      "Bash(curl -s \"https://raw.githubusercontent.com/pnpm/action-setup/v6/action.yml\")"
+      "Bash(curl -s \"https://raw.githubusercontent.com/pnpm/action-setup/v6/action.yml\")",
+      "Bash(curl -s \"http://localhost:3000/opportunities\" -o /tmp/opp-verify.html)",
+      "Bash(git commit *)"
     ]
   }
 }
