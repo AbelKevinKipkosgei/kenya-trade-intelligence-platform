@@ -256,6 +256,5 @@ export async function seedTariffs(
     }
   }
 
-  await batchInsert("tariffs", rows, 2000, (batch) => db.insert(tariffs).values(batch));
-  return rows.length;
+  return batchInsert("tariffs", rows, 2000, (batch) => db.insert(tariffs).values(batch));
 }

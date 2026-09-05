@@ -57,6 +57,5 @@ export async function seedExporters(
     });
   }
 
-  await batchInsert("exporters", rows, 1000, (batch) => db.insert(exporters).values(batch));
-  return rows.length;
+  return batchInsert("exporters", rows, 1000, (batch) => db.insert(exporters).values(batch));
 }

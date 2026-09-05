@@ -59,6 +59,5 @@ export async function seedNews(
     });
   }
 
-  await batchInsert("news_articles", rows, 1000, (batch) => db.insert(newsArticles).values(batch));
-  return rows.length;
+  return batchInsert("news_articles", rows, 1000, (batch) => db.insert(newsArticles).values(batch));
 }
