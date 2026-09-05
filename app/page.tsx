@@ -64,24 +64,18 @@ export default function Home() {
             Trade Intelligence Platform
           </span>
         </div>
-        <nav className="hidden items-center gap-8 text-sm font-medium text-zinc-600 dark:text-zinc-400 sm:flex">
-          <a
-            href="#overview"
-            className="hover:text-zinc-900 dark:hover:text-zinc-50"
-          >
-            Overview
-          </a>
-          <a
-            href="#insights"
-            className="hover:text-zinc-900 dark:hover:text-zinc-50"
-          >
-            Insights
-          </a>
+        <nav className="hidden items-center gap-6 text-sm font-medium text-zinc-600 dark:text-zinc-400 lg:flex">
           <Link href="/explorer" className="hover:text-zinc-900 dark:hover:text-zinc-50">
             Explorer
           </Link>
           <Link href="/opportunities" className="hover:text-zinc-900 dark:hover:text-zinc-50">
             Opportunities
+          </Link>
+          <Link href="/barriers" className="hover:text-zinc-900 dark:hover:text-zinc-50">
+            Barriers
+          </Link>
+          <Link href="/exporters" className="hover:text-zinc-900 dark:hover:text-zinc-50">
+            Exporters
           </Link>
           <Link href="/getting-started" className="hover:text-zinc-900 dark:hover:text-zinc-50">
             Getting Started
