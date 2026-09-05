@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { SCHEMA_CONTEXT } from "./schema-context";
 import { runReadOnlyQuery, UnsafeQueryError } from "./sql-tool";
+import { statusChunk } from "../status-protocol";
 
 const client = new Anthropic();
 
@@ -61,6 +62,8 @@ export async function* runTradeAnalystTurn(
   const messages: Anthropic.Beta.BetaMessageParam[] = [...history];
 
   for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
+    yield statusChunk(iteration === 0 ? "Thinking…" : "Reviewing the results…");
+
     const stream = client.beta.messages.stream({
       model: MODEL,
       max_tokens: MAX_TOKENS,
@@ -132,6 +135,8 @@ export async function* runTradeAnalystTurn(
     const toolUseBlocks = message.content.filter(
       (b): b is Anthropic.Beta.BetaToolUseBlock => b.type === "tool_use",
     );
+
+    yield statusChunk("Querying the trade database…");
 
     const toolResults: Anthropic.Beta.BetaToolResultBlockParam[] = [];
     for (const block of toolUseBlocks) {
