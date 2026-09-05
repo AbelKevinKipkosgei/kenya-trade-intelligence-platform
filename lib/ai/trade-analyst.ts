@@ -66,6 +66,9 @@ export async function* runTradeAnalystTurn(
       max_tokens: MAX_TOKENS,
       thinking: { type: "adaptive" },
       output_config: { effort: "high" },
+      // Explicit breakpoint: the frozen schema prompt, reused across every
+      // user's requests (1h TTL — gaps between chat turns are often well
+      // past 5 minutes but rarely past an hour).
       system: [
         {
           type: "text",
@@ -73,6 +76,12 @@ export async function* runTradeAnalystTurn(
           cache_control: { type: "ephemeral", ttl: "1h" },
         },
       ],
+      // Automatic breakpoint: walks forward onto the growing messages array
+      // on its own as this loop appends tool_use/tool_result turns, so each
+      // iteration only pays for what it just added instead of replaying the
+      // whole tool-call history at full price. Default 5m TTL is correct
+      // here — iterations are seconds apart, well under that window.
+      cache_control: { type: "ephemeral" },
       tools: [queryTool],
       messages,
     });
@@ -85,6 +94,14 @@ export async function* runTradeAnalystTurn(
 
     const message = await stream.finalMessage();
     messages.push({ role: "assistant", content: message.content });
+
+    // Cache verification per the skill's own guidance: this is the only
+    // ground truth that caching is actually working, and regressions here
+    // are silent (requests keep succeeding, the bill just goes up).
+    const { input_tokens, cache_read_input_tokens, cache_creation_input_tokens } = message.usage;
+    console.log(
+      `[trade-analyst] iteration ${iteration}: input=${input_tokens} cache_read=${cache_read_input_tokens ?? 0} cache_write=${cache_creation_input_tokens ?? 0}`,
+    );
 
     if (message.stop_reason === "pause_turn") {
       continue;
