@@ -96,14 +96,17 @@ export async function seedAgreementMembers(
 ) {
   console.log("Seeding agreement memberships...");
   const allIso3 = [...countryIdByIso3.keys()];
-  const membership: { agreementId: number; countryId: number }[] = [];
+  const membership: { agreementId: number; countryId: number; joinedDate: string | null }[] = [];
 
   const addMembers = (code: string, iso3s: Iterable<string>) => {
     const agreementId = agreementIdByCode.get(code);
     if (!agreementId) return;
+    // No per-country accession data in this mock dataset; the agreement's
+    // own entry-into-force date is a reasonable stand-in for "joined".
+    const joinedDate = TRADE_AGREEMENTS.find((a) => a.code === code)?.enteredIntoForce ?? null;
     for (const iso3 of iso3s) {
       const countryId = countryIdByIso3.get(iso3);
-      if (countryId) membership.push({ agreementId, countryId });
+      if (countryId) membership.push({ agreementId, countryId, joinedDate });
     }
   };
 
