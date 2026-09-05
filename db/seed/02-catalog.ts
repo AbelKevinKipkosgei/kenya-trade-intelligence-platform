@@ -61,13 +61,14 @@ export async function seedCatalog(sectorIdByName: Map<string, number>) {
     }
   }
 
-  const insertedProducts: { id: number; hsCode: string; sectorId: number; unit: string }[] = [];
+  const insertedProducts: { id: number; hsCode: string; sectorId: number; unit: string; description: string }[] = [];
   await batchInsert("products", productRows, 500, async (batch) => {
     const rows = await db.insert(products).values(batch).returning({
       id: products.id,
       hsCode: products.hsCode,
       sectorId: products.sectorId,
       unit: products.unit,
+      description: products.description,
     });
     insertedProducts.push(...rows);
   });

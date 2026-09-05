@@ -6,6 +6,7 @@ import { seedExporters } from "./03-exporters";
 import { seedTransactionsAndScores } from "./04-transactions";
 import { seedNews } from "./05-news";
 import { ensureKephisAgency, seedProcedures } from "./06-procedures";
+import { seedTradeBarriers } from "./07-barriers";
 import { SEED_SCALE } from "./utils";
 
 async function main() {
@@ -35,6 +36,7 @@ async function main() {
   );
   const newsCount = await seedNews(sectorIdByName, countryIdByIso3, productsBySector, countryNameById);
   const procedureCount = await seedProcedures(sectorIdByName, agencyIdByCode);
+  const barrierCount = await seedTradeBarriers(insertedProducts, countryIdByIso3, countryNameById, agencyIdByCode);
 
   const elapsedMin = ((Date.now() - start) / 60000).toFixed(1);
   console.log(`\nSeed complete in ${elapsedMin} min.`);
@@ -46,6 +48,7 @@ async function main() {
     marketOpportunityScores: scoreTotal,
     newsArticles: newsCount,
     procedures: procedureCount,
+    tradeBarriers: barrierCount,
   });
 
   await pool.end();
