@@ -36,12 +36,17 @@ export const tradeTransactions = pgTable(
       .references(() => agencies.id),
   },
   (t) => [
+    // Single composite index: covers product-only, product+country, and
+    // product+country+date lookups (leftmost-prefix). Two narrower indexes
+    // (date+flow, country-only) were dropped — at this table's row count a
+    // BI-style aggregate query (GROUP BY month, GROUP BY country) touches
+    // enough of the table that a sequential scan is competitive anyway,
+    // and the storage saved goes back into more transaction history under
+    // Neon's project size cap.
     index("tx_product_country_date_idx").on(
       t.productId,
       t.countryId,
       t.transactionDate,
     ),
-    index("tx_date_flow_idx").on(t.transactionDate, t.flowType),
-    index("tx_country_idx").on(t.countryId),
   ],
 );
