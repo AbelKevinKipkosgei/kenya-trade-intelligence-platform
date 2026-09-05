@@ -53,7 +53,9 @@
       "Bash(grep -n \"hover:\\\\${style.ring}\" app/getting-started/page.tsx)",
       "Bash(curl -s http://localhost:3000/getting-started -o /tmp/gs.html)",
       "Bash(curl -s \"http://localhost:3000/explorer?hs=275754\")",
-      "Bash(pnpm build *)"
+      "Bash(pnpm build *)",
+      "Bash(node -e \"console.log\\(require.resolve\\('next/og'\\)\\)\")",
+      "Bash(git rm *)"
     ]
   }
 }
