@@ -78,8 +78,11 @@ export default async function OpportunitiesPage({
           competitiveness, market access, competition, logistics, domestic capacity).
         </p>
         <p className="mt-2 text-xs text-amber-700 dark:text-amber-500">
-          These scores are seeded placeholders pending InsightGrid taking over the scoring
-          logic — treat rankings as illustrative, not authoritative.
+          Computed from real trade transactions, tariffs, trade barriers, and registered exporter
+          capacity. Competitiveness and competition are proxies (Kenya has no third-country trade
+          data to benchmark against rival exporters), and logistics uses regional-bloc membership
+          as a stand-in for real freight/transit data — see the AI Trade Analyst for the full
+          methodology on any figure.
         </p>
       </div>
 

@@ -11,6 +11,7 @@
     "db:studio": "drizzle-kit studio --config=drizzle.config.ts",
     "db:seed": "tsx db/seed/index.ts",
     "db:views": "tsx db/views/apply.ts",
+    "db:score": "tsx db/scoring/run.ts",
     "eval:trade-analyst": "tsx evals/trade-analyst.eval.ts"
   },
   "dependencies": {

@@ -1,10 +1,13 @@
 import "./load-env";
 import { pool, db } from "../client";
 import { products, countries, agencies, ports } from "../schema";
-import { seedTransactionsAndScores } from "./04-transactions";
+import { seedTransactions } from "./04-transactions";
 
 async function main() {
   console.log("Truncating trade_transactions and market_opportunity_scores...");
+  // market_opportunity_scores depends on trade_transactions, so it needs
+  // recomputing (pnpm db:score) after this — safest to clear it now too
+  // rather than leave stale scores keyed to data that no longer exists.
   await pool.query("TRUNCATE TABLE trade_transactions, market_opportunity_scores RESTART IDENTITY");
 
   const productRows = await db
@@ -19,14 +22,10 @@ async function main() {
 
   const portRows = await db.select({ id: ports.id, type: ports.type }).from(ports);
 
-  const { txTotal, scoreTotal } = await seedTransactionsAndScores(
-    productRows,
-    countryIdByIso3,
-    agencyIdByCode,
-    portRows,
-  );
+  const { txTotal } = await seedTransactions(productRows, countryIdByIso3, agencyIdByCode, portRows);
 
-  console.log(`Top-up complete: ${txTotal.toLocaleString()} trade_transactions, ${scoreTotal.toLocaleString()} market_opportunity_scores.`);
+  console.log(`Top-up complete: ${txTotal.toLocaleString()} trade_transactions.`);
+  console.log("Run `pnpm db:score` next to recompute market_opportunity_scores.");
   await pool.end();
 }
 

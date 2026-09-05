@@ -86,9 +86,14 @@ market_opportunity_scores(id, product_id -> products.id, country_id -> countries
                            demand_score, growth_score, competitiveness_score, market_access_score,
                            competition_score, logistics_score, domestic_capacity_score,
                            overall_score, computed_at)
-  Quarterly (period = first day of quarter) 0-100 scores. This table is a placeholder pending
-  InsightGrid (the org's analytics engine) taking over the scoring logic — treat its numbers as
-  illustrative, not authoritative, and say so if a question leans heavily on it.
+  Quarterly (period = first day of quarter) 0-100 scores, computed for real from
+  trade_transactions/tariffs/trade_barriers/exporters (see db/scoring/compute-opportunity-scores.sql)
+  — not placeholder or random data. Covers only the most recent 12 quarters. Important caveat to
+  pass along if asked about competitiveness or competition: KTIP has no third-country/global trade
+  data, so those two dimensions are proxies (competitiveness = this product's relative performance
+  vs Kenya's other products in the same market; competition = absence of flagged trade barriers),
+  not a measure against rival exporting countries. logistics_score is a regional-bloc proximity
+  proxy (EAC/COMESA membership), not real freight/transit data.
 
 news_articles(id, title, summary, source_name, source_url, published_at, category,
               related_product_id -> products.id (nullable), related_country_id -> countries.id (nullable))
