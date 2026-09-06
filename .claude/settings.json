@@ -58,7 +58,16 @@
       "Bash(git rm *)",
       "Bash(curl -s -o /tmp/apple-icon2.png http://localhost:3000/apple-icon -w \"%{http_code}\\\\n\")",
       "Bash(pip install *)",
-      "Bash(pip3 install *)"
+      "Bash(pip3 install *)",
+      "Bash(python3 -c \"import pptx; print\\(pptx.__version__\\)\")",
+      "Bash(python3 -c \"import pptx; print\\('ok', pptx.__version__\\)\")",
+      "Bash(python3 build_deck.py)",
+      "Bash(apt list *)",
+      "Bash(apt-get -s install libreoffice-impress)",
+      "Bash(python3 -c *)",
+      "Bash(fc-list)",
+      "Bash(python3)",
+      "Bash(python3 overflow_check.py)"
     ]
   }
 }
