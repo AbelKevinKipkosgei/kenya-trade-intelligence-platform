@@ -36,7 +36,7 @@ KTIP exists to solve these three problems in one system.
 
 ## 2. Solution Overview
 
-KTIP is a Next.js application backed by a single Postgres database (hosted on Neon) that models Kenya's trade data as a set of clearly-related tables — products, countries, tariffs, trade agreements, barriers, exporters, transactions, and procedures — each traceable to the government agency that is its source of record. On top of that data model sit seven purpose-built tools (detailed in [Section 6](#6-features)), each addressing one part of the problem above: exploring a product's trade profile, ranking market opportunities, monitoring active barriers, finding capable Kenyan exporters, walking through export/import procedures, tracking live trade news, and — tying it all together — an AI Trade Analyst that can answer free-form questions by querying the same live database and citing what it finds.
+KTIP is a Next.js application backed by a single Postgres database (hosted on Neon) that models Kenya's trade data as a set of clearly-related tables — products, countries, tariffs, trade agreements, barriers, exporters, transactions, and procedures — each traceable to the government agency that is its source of record. On top of that data model sit eight purpose-built tools (detailed in [Section 6](#6-features)), each addressing one part of the problem above: exploring a product's trade profile, estimating landed cost, ranking market opportunities, monitoring active barriers, finding capable Kenyan exporters, walking through export/import procedures, tracking live trade news, and — tying it all together — an AI Trade Analyst that can answer free-form questions by querying the same live database and citing what it finds.
 
 Three design decisions shape the whole system:
 
@@ -64,7 +64,7 @@ flowchart TB
 
     subgraph Data["Neon Postgres"]
         Core[("Core tables<br/>products, countries, tariffs,<br/>barriers, exporters, transactions,<br/>procedures, agencies")]
-        Scores[("market_opportunity_scores<br/>(computed in-repo, see §6.2)")]
+        Scores[("market_opportunity_scores<br/>(computed in-repo, see §6.3)")]
         Views[("vw_* BI views<br/>(read-only, denormalized)")]
     end
 
@@ -139,35 +139,39 @@ Design principles baked into the schema:
 
 Look up any product by HS code or free-text name and see its complete trade profile in one page: top export markets and import sources (with a relative-share indicator per country), tariff rates by market (color-coded MFN vs. preferential), active trade barriers, Kenyan exporters registered against that product (flagged if export-ready), related step-by-step procedures, and related news — all in parallel queries against the live database, joined by the product's ID. This is the page every other feature links back to, so a user can go from "here's a market opportunity" or "here's a barrier" straight to the full picture for that product.
 
-### 6.2. Market Opportunity Engine / Leaderboard (`/opportunities`)
+### 6.2. Landed Cost Estimator (part of `/explorer`)
+
+Given a product already open on the Explorer page, a declared shipment value, and a destination market, computes the estimated total cost of importing that shipment: the applicable import duty plus the declared value. It lives as a section on the Explorer page rather than its own nav entry — the nav was already at seven links, and this needs exactly the tariff data the Explorer page has already loaded for that product, so a separate page would just mean re-fetching the same data behind a new route. See [Section 7](#7-key-techniques--implementation-patterns) for how the rate is chosen and how the USD/KES conversion works.
+
+### 6.3. Market Opportunity Engine / Leaderboard (`/opportunities`)
 
 Ranks product–market combinations by a composite Opportunity Score built from seven dimensions, exactly as specified in the concept docs: demand, growth, competitiveness, market access, competition, logistics, and domestic capacity. Unlike most of the platform's intelligence, this scoring is computed for real from the underlying transaction, tariff, barrier, and exporter data — not seeded as placeholder noise (see [Section 7](#7-key-techniques--implementation-patterns) for the exact formula). The leaderboard is filterable by sector, market, and quarter, and every result links to the full product profile on the Explorer page. The UI is explicit about which dimensions are direct measurements versus documented proxies (see [Section 8](#8-limitations--known-errors-and-how-they-were-fixed)) rather than presenting every number with false precision.
 
-### 6.3. Trade Barrier Monitor (`/barriers`)
+### 6.4. Trade Barrier Monitor (`/barriers`)
 
 A filterable feed of non-tariff barriers, SPS/technical requirements, quotas, and licensing issues affecting Kenyan exports — each entry attributed to the Kenyan agency that reported it, with a status (active / monitoring / resolved) and an impact level. Filterable by status, barrier type, sector, and destination market.
 
-### 6.4. Kenyan Export Capacity Map (`/exporters`)
+### 6.5. Kenyan Export Capacity Map (`/exporters`)
 
 A directory of registered Kenyan manufacturers and producers, searchable by name and filterable by sector, county, and export-readiness. This is what closes the loop on the Market Opportunity Engine: once a promising product-market pair is identified, this page answers "who in Kenya can actually supply it" — each exporter shows employee count, annual capacity, certifications, and contact info where available.
 
-### 6.5. Trade Agreement & Market Access Intelligence
+### 6.6. Trade Agreement & Market Access Intelligence
 
 Rather than a standalone page, this is woven directly into the Explorer's tariff table and the Opportunity Engine's market-access score: every tariff rate is linked to the specific trade agreement it derives from (EAC, COMESA, AfCFTA, AGOA, EU-EPA, WTO-MFN, or bilateral), and agreement membership dates are tracked per country so eligibility is queryable, not asserted.
 
-### 6.6. Getting Started (`/getting-started`)
+### 6.7. Getting Started (`/getting-started`)
 
 A step-by-step procedures browser, grouped by category (Importing, Exporting, Certification, Licensing, Customs & Duties), each with a quick-nav strip, a lead-agency and estimated-duration badge, and a numbered step timeline including required documents and fees per step. This is the piece the concept docs identified as missing from typical trade-data platforms: quantitative data alone doesn't help a first-time exporter who doesn't know which agency to visit first.
 
-### 6.7. Trade News (`/news`)
+### 6.8. Trade News (`/news`)
 
 A categorized (tariff / agreement / market / policy / logistics) feed of Kenya trade news, filterable by category and related market. Most of the 3,000+ articles are part of the seeded mock dataset (clearly labeled "Mock article"), but the feed is also backed by a real, live ingestion pipeline: a scheduled job pulls actual Kenya trade/tariff/agreement news from [NewsAPI.org](https://newsapi.org) every six hours, filters it for relevance, categorizes it, and inserts it idempotently. See [Section 7](#7-key-techniques--implementation-patterns) for exactly how the relevance filtering works and why.
 
-### 6.8. AI Trade Analyst (`/analyst`)
+### 6.9. AI Trade Analyst (`/analyst`)
 
 A chat interface for asking free-form questions about Kenyan trade — tariffs, barriers, exporters, market opportunities — answered by Claude Opus 5, grounded entirely in the live database via a single read-only SQL tool. Every answer is the result of a query the model actually ran against the real data; the model cannot free-hallucinate a number, and if it doesn't have data for something, it says so rather than inventing an answer. Conversations persist per-browser (localStorage) across refreshes, responses stream with a live "Thinking… / Querying the trade database…" status indicator, and the interface degrades gracefully with a rate limit (10/min, 60/hour per IP) to bound API cost exposure on a public route.
 
-### 6.9. Trade Intelligence Dashboard
+### 6.10. Trade Intelligence Dashboard
 
 Per the architectural boundary in [Section 11](#11-external-analytics-insightgrid), general trend dashboards and BI-style analytics are intentionally not built in this repository — that's InsightGrid's job, fed by the `vw_*` views. The homepage (`/`) does surface a small set of real, live headline statistics (current-year export/import totals, top export partner, active trade barrier count) computed directly from the database, but this is deliberately a summary strip, not a dashboard.
 
@@ -186,6 +190,8 @@ The Opportunity Score is computed with real SQL, not placeholder randomness (`db
 - Competitiveness — a percentile rank of a product's performance within a specific market relative to Kenya's other products sold there (not against rival exporting countries — see limitations).
 
 Every dimension is documented inline in the SQL and in the UI as either a direct measurement or an explicit proxy, per the concept docs' explainability requirement.
+
+The Landed Cost Estimator (`components/landed-cost-calculator.tsx`, `lib/forex.ts`) picks, per destination market, the best (lowest) tariff rate the product actually qualifies for — the same "lowest applicable rate" logic the Opportunity Score's market-access dimension uses — since a market can have both an MFN rate and a preferential rate under an agreement, and only the lower one is what an exporter would actually pay. Duty is calculated as declared value × that rate, and shown as a total alongside the declared value. For the USD/KES conversion, rather than hardcoding an exchange rate that would silently go stale, the Explorer page fetches a live rate server-side from a free, no-key API (`open.er-api.com`, backed by exchangerate-api.com's free tier, rates updated daily), cached for an hour via Next's fetch cache so repeated page views don't each trigger an external call. The rate itself is disclosed inline rather than hidden behind the converted figures, and if the forex API is ever unreachable, the KES figures are simply omitted with a note instead of the page breaking.
 
 BI views as the external-analytics boundary (`db/views/bi-views.sql`, applied via `pnpm db:views`) — six flattened, fully-joined, zero-storage-cost SQL views (`vw_trade_transactions`, `vw_market_opportunity`, `vw_tariffs`, `vw_trade_barriers`, `vw_procedures`, `vw_exporters`) so a BI tool never needs to understand the normalized schema or write its own joins — see [Section 11](#11-external-analytics-insightgrid).
 
@@ -215,6 +221,7 @@ A deliberate mobile-first pass — the 8-column Opportunity Leaderboard table re
 - Mock data stands in for real agency feeds — all trade transactions, tariffs, barriers, and exporter records are synthetically generated (structurally realistic, at real-world scale) pending an actual integration with KRA/KEPROBA/KEBS/EPZA/KenTrade/KPA systems. Seeded news articles link to a placeholder `example.com` URL and are labeled "Mock article" wherever shown, specifically so they're never confused with the real, live-ingested articles.
 - News relevance filtering is heuristic, not semantic — the dual-regex approach materially improved on NewsAPI's raw boolean search (from ~90% noise down to a handful of clearly on-topic articles per fetch) but it's keyword-based, not an LLM classifier — a documented, deliberate cost/complexity trade-off, with LLM-based classification identified as a future upgrade path if warranted.
 - Rate limiting is in-memory, per-instance — fine for a single self-hosted Node process; would need a Postgres- or Redis-backed limiter before running multiple instances.
+- The Landed Cost Estimator's USD/KES conversion depends on a free, third-party forex API with no uptime guarantee — the page degrades gracefully (KES figures are omitted with a note) if it's unreachable, but the rate itself is indicative, not an authoritative customs valuation.
 - `users` table is a schema scaffold only — role field (`public / exporter / officer / admin`) exists but isn't wired into any authentication/authorization flow yet — no login exists today.
 
 ### Errors encountered during development, and their fixes
