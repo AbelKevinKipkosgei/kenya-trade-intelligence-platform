@@ -26,6 +26,30 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   };
 }
 
+// Next.js/Turbopack's dev-mode component-performance instrumentation calls
+// performance.measure() around a client-side route transition, and can end
+// up with a start mark after the end mark — the browser rejects that as a
+// negative duration, crashing navigation with "Failed to execute 'measure'
+// on 'Performance': '<PageName>' cannot have a negative time stamp."
+// Confirmed upstream Next.js bug (github.com/vercel/next.js/issues/86060),
+// not an application bug — no notFound()/redirect in this codebase
+// triggers it, it's the dev overlay's own instrumentation racing itself.
+// Swallow only that exact failure so a route transition never crashes on
+// what is purely diagnostic instrumentation.
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  const originalMeasure = window.performance.measure.bind(window.performance);
+  window.performance.measure = ((...args: Parameters<Performance["measure"]>) => {
+    try {
+      return originalMeasure(...args);
+    } catch (err) {
+      if (err instanceof DOMException && err.message.includes("cannot have a negative time stamp")) {
+        return undefined as unknown as PerformanceMeasure;
+      }
+      throw err;
+    }
+  }) as Performance["measure"];
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const [store] = useState(() => makeStore());
 
