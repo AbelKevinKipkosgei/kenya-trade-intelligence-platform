@@ -15,6 +15,7 @@ import {
   procedures,
 } from "@/db/schema";
 import { ProductSearchBox } from "@/components/product-search-box";
+import { LandedCostCalculator } from "@/components/landed-cost-calculator";
 
 export const revalidate = 3600;
 
@@ -395,6 +396,31 @@ export default async function ExplorerPage({
           </div>
         )}
       </section>
+
+      {tariffRows.length > 0 && (
+        <section className="mt-6 rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70">
+          <SectionHeading
+            bg="bg-indigo-500/10"
+            text="text-indigo-600 dark:text-indigo-400"
+            title="Landed Cost Estimator"
+            icon={
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 7.5v9m3.75-9v9M8.25 7.5v9M4.5 7.5h15M5.25 7.5v9a2.25 2.25 0 002.25 2.25h9a2.25 2.25 0 002.25-2.25v-9M4.5 7.5L6 4.5h12l1.5 3"
+              />
+            }
+          />
+          <LandedCostCalculator
+            rows={tariffRows.map((t) => ({
+              countryName: t.countryName,
+              ratePercent: Number(t.ratePercent),
+              rateType: t.rateType,
+              agreementCode: t.agreementCode,
+            }))}
+          />
+        </section>
+      )}
 
       <section className="mt-6 rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70">
         <SectionHeading
