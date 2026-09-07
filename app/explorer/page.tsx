@@ -16,6 +16,7 @@ import {
 } from "@/db/schema";
 import { ProductSearchBox } from "@/components/product-search-box";
 import { LandedCostCalculator } from "@/components/landed-cost-calculator";
+import { getUsdToKesRate } from "@/lib/forex";
 
 export const revalidate = 3600;
 
@@ -256,7 +257,7 @@ export default async function ExplorerPage({
     );
   }
 
-  const [exportMarkets, importMarkets, tariffRows, barrierRows, exporterRows, newsRows, procedureRows] =
+  const [exportMarkets, importMarkets, tariffRows, barrierRows, exporterRows, newsRows, procedureRows, usdToKesRate] =
     await Promise.all([
       loadTopMarkets(product.id, "export"),
       loadTopMarkets(product.id, "import"),
@@ -265,6 +266,7 @@ export default async function ExplorerPage({
       loadExporters(product.id),
       loadNews(product.id),
       loadProcedures(product.sectorId),
+      getUsdToKesRate(),
     ]);
 
   return (
@@ -418,6 +420,7 @@ export default async function ExplorerPage({
               rateType: t.rateType,
               agreementCode: t.agreementCode,
             }))}
+            usdToKesRate={usdToKesRate}
           />
         </section>
       )}
