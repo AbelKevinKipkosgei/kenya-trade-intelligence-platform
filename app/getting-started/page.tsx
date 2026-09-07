@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { procedures, sectors, agencies, type ProcedureStep } from "@/db/schema";
+import { ProcedureBrowser } from "@/components/procedure-browser";
 
 export const revalidate = 3600;
 
@@ -103,145 +104,17 @@ export default async function GettingStartedPage() {
   return (
     <div className="mx-auto flex min-h-full w-full max-w-4xl flex-1 flex-col px-6 py-10 sm:px-10">
       <div className="mb-8">
-        <span className="inline-flex rounded-full bg-kenya-green/10 px-3 py-1 text-xs font-semibold text-kenya-green dark:bg-kenya-green/20">
+        <span className="inline-flex border border-kenya-green/40 bg-kenya-green/10 px-3 py-1 text-xs font-semibold text-kenya-green">
           {rows.length} procedures across {agencyCount} agencies
         </span>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Getting Started
-        </h1>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Getting Started</h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Step-by-step procedures across Kenya&apos;s trade agencies. Ask the{" "}
-          <a
-            href="/analyst"
-            className="font-medium text-kenya-green hover:underline"
-          >
-            AI Trade Analyst
-          </a>{" "}
+          <a href="/analyst" className="font-medium text-kenya-green hover:underline">AI Trade Analyst</a>{" "}
           if you want this walked through for your specific product.
         </p>
-
-        <nav className="mt-5 flex flex-wrap gap-2">
-          {presentCategories.map((category) => {
-            const style = CATEGORY_STYLES[category];
-            return (
-              <a
-                key={category}
-                href={`#${category}`}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${style.bg} ${style.text} hover:brightness-95 dark:hover:brightness-125`}
-              >
-                {CATEGORY_LABELS[category] ?? category}
-                <span className="ml-1.5 opacity-60">{grouped.get(category)!.length}</span>
-              </a>
-            );
-          })}
-        </nav>
       </div>
-
-      <div className="flex flex-col gap-12">
-        {presentCategories.map((category) => {
-          const style = CATEGORY_STYLES[category];
-          return (
-            <section key={category} id={category} className="scroll-mt-6">
-              <div className="mb-4 flex items-center gap-3">
-                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${style.bg} ${style.text}`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    {CATEGORY_ICONS[category]}
-                  </svg>
-                </span>
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                  {CATEGORY_LABELS[category] ?? category}
-                </h2>
-                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                  {grouped.get(category)!.length}{" "}
-                  {grouped.get(category)!.length === 1 ? "procedure" : "procedures"}
-                </span>
-              </div>
-              <div className="flex flex-col gap-4">
-                {grouped.get(category)!.map((proc) => {
-                  const steps = (proc.steps as ProcedureStep[]).sort((a, b) => a.order - b.order);
-                  return (
-                    <article
-                      key={proc.id}
-                      className={`rounded-2xl border border-stone-300 bg-white/70 p-5 ring-1 ring-transparent transition-shadow hover:shadow-sm ${style.cardHover} dark:border-zinc-700 dark:bg-zinc-800/70`}
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-                            {proc.title}
-                          </h3>
-                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                            <span className="rounded-full bg-stone-200 px-2 py-0.5 text-[11px] font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
-                              {proc.leadAgencyName}
-                            </span>
-                            {proc.sectorName && (
-                              <span className="rounded-full bg-stone-200 px-2 py-0.5 text-[11px] font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
-                                {proc.sectorName}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        {proc.estimatedTotalDays && (
-                          <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${style.bg} ${style.text}`}>
-                            ~{proc.estimatedTotalDays} days total
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-                        {proc.summary}
-                      </p>
-
-                      <ol className="mt-5 flex flex-col">
-                        {steps.map((step, i) => {
-                          const isLast = i === steps.length - 1;
-                          const hasMeta =
-                            !!step.documentsRequired?.length || !!step.fees || !!step.estimatedDays;
-                          return (
-                            <li key={step.order} className="flex gap-3">
-                              <div className="flex flex-col items-center">
-                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-kenya-green text-[11px] font-semibold text-white">
-                                  {step.order}
-                                </span>
-                                {!isLast && <span className="mt-1 w-px flex-1 bg-kenya-green/25" />}
-                              </div>
-                              <div className={isLast ? "pb-0.5" : "pb-4"}>
-                                <div className="pt-0.5 text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                                  {step.title}
-                                </div>
-                                <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
-                                  {step.description}
-                                </p>
-                                {hasMeta && (
-                                  <div className="mt-1.5 flex flex-wrap gap-1.5">
-                                    {step.documentsRequired?.length ? (
-                                      <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[11px] text-zinc-600 dark:bg-zinc-700/60 dark:text-zinc-400">
-                                        Documents: {step.documentsRequired.join(", ")}
-                                      </span>
-                                    ) : null}
-                                    {step.fees ? (
-                                      <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[11px] text-zinc-600 dark:bg-zinc-700/60 dark:text-zinc-400">
-                                        Fees: {step.fees}
-                                      </span>
-                                    ) : null}
-                                    {step.estimatedDays ? (
-                                      <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[11px] text-zinc-600 dark:bg-zinc-700/60 dark:text-zinc-400">
-                                        ~{step.estimatedDays} days
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                )}
-                              </div>
-                            </li>
-                          );
-                        })}
-                      </ol>
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
-          );
-        })}
-      </div>
+      <ProcedureBrowser procedures={rows.map((row) => ({ ...row, steps: row.steps as ProcedureStep[] }))} agencyCount={agencyCount} />
     </div>
   );
 }

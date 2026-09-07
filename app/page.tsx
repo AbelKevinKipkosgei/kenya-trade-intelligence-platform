@@ -393,16 +393,6 @@ export default async function Home() {
         </section>
       </main>
 
-      <footer className="mx-auto flex w-full max-w-6xl flex-col gap-3 border-t border-zinc-200 px-6 py-8 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:px-10">
-        <span className="font-semibold text-zinc-800 dark:text-zinc-200">
-          Kenya Trade Intelligence Platform
-        </span>
-        <span>
-          Powered by the State Department for Trade. Data sourced from Kenya
-          Revenue Authority, KNBS, and partner agencies.
-        </span>
-        <span>Data updated {dataAsOf} · Public information service</span>
-      </footer>
     </div>
   );
 }
