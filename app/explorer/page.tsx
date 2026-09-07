@@ -28,10 +28,27 @@ const PROCEDURE_CATEGORY_LABELS: Record<string, string> = {
   customs: "Customs & Duties",
 };
 
-function SectionIcon({ bg, text, children }: { bg: string; text: string; children: React.ReactNode }) {
+function SectionIcon({
+  bg,
+  text,
+  children,
+}: {
+  bg: string;
+  text: string;
+  children: React.ReactNode;
+}) {
   return (
-    <span className={`flex h-8 w-8 shrink-0 items-center justify-center border ${bg} ${text}`}>
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <span
+      className={`flex h-8 w-8 shrink-0 items-center justify-center border ${bg} ${text}`}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-4 w-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
+      >
         {children}
       </svg>
     </span>
@@ -54,20 +71,33 @@ function SectionHeading({
       <SectionIcon bg={bg} text={text}>
         {icon}
       </SectionIcon>
-      <h2 className="text-lg font-semibold tracking-tight text-ktp-navy dark:text-zinc-50">{title}</h2>
+      <h2 className="text-lg font-semibold tracking-tight text-ktp-navy dark:text-zinc-50">
+        {title}
+      </h2>
     </div>
   );
 }
 
-function MarketList({ rows }: { rows: { countryId: number; countryName: string; totalValue: string }[] }) {
+function MarketList({
+  rows,
+}: {
+  rows: { countryId: number; countryName: string; totalValue: string }[];
+}) {
   const max = Math.max(...rows.map((m) => Number(m.totalValue)), 1);
   return (
     <ul className="flex flex-col gap-4">
       {rows.map((m, index) => (
         <li key={m.countryId} className="flex flex-col gap-1.5">
           <div className="flex items-end justify-between gap-3">
-            <span className="text-sm text-zinc-700 dark:text-zinc-300">{m.countryName}</span>
-            <span data-display="true" className="text-xl font-semibold leading-none text-ktp-navy dark:text-zinc-50">{formatUsd(m.totalValue)}</span>
+            <span className="text-sm text-zinc-700 dark:text-zinc-300">
+              {m.countryName}
+            </span>
+            <span
+              data-display="true"
+              className="text-xl font-semibold leading-none text-ktp-navy dark:text-zinc-50"
+            >
+              {formatUsd(m.totalValue)}
+            </span>
           </div>
           <div className="h-2 w-full bg-zinc-200 dark:bg-zinc-700">
             <div
@@ -105,7 +135,10 @@ async function loadProduct(hsCode: string) {
   return product ?? null;
 }
 
-async function loadTopMarkets(productId: number, flowType: "export" | "import") {
+async function loadTopMarkets(
+  productId: number,
+  flowType: "export" | "import",
+) {
   return db
     .select({
       countryId: countries.id,
@@ -115,7 +148,12 @@ async function loadTopMarkets(productId: number, flowType: "export" | "import") 
     })
     .from(tradeTransactions)
     .innerJoin(countries, eq(countries.id, tradeTransactions.countryId))
-    .where(and(eq(tradeTransactions.productId, productId), eq(tradeTransactions.flowType, flowType)))
+    .where(
+      and(
+        eq(tradeTransactions.productId, productId),
+        eq(tradeTransactions.flowType, flowType),
+      ),
+    )
     .groupBy(countries.id, countries.name)
     .orderBy(desc(sql`sum(${tradeTransactions.valueUsd})`))
     .limit(8);
@@ -151,7 +189,12 @@ async function loadBarriers(productId: number) {
     .from(tradeBarriers)
     .innerJoin(countries, eq(countries.id, tradeBarriers.countryId))
     .innerJoin(agencies, eq(agencies.id, tradeBarriers.sourceAgencyId))
-    .where(and(eq(tradeBarriers.productId, productId), eq(tradeBarriers.status, "active")))
+    .where(
+      and(
+        eq(tradeBarriers.productId, productId),
+        eq(tradeBarriers.status, "active"),
+      ),
+    )
     .orderBy(desc(tradeBarriers.reportedDate))
     .limit(10);
 }
@@ -187,7 +230,11 @@ async function loadNews(productId: number) {
 
 async function loadProcedures(sectorId: number) {
   return db
-    .select({ id: procedures.id, title: procedures.title, category: procedures.category })
+    .select({
+      id: procedures.id,
+      title: procedures.title,
+      category: procedures.category,
+    })
     .from(procedures)
     .where(or(eq(procedures.sectorId, sectorId), isNull(procedures.sectorId)))
     .limit(6);
@@ -214,7 +261,14 @@ export default async function ExplorerPage({
     return (
       <div className="mx-auto flex min-h-full w-full max-w-3xl flex-1 flex-col px-6 py-10 sm:px-10">
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-kenya-green/10 text-kenya-green dark:bg-kenya-green/20">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -226,8 +280,9 @@ export default async function ExplorerPage({
           Market &amp; Product Explorer
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Look up a product by HS code or name to see export performance, top markets, tariffs,
-          active barriers, capable exporters, and related news in one place.
+          Look up a product by HS code or name to see export performance, top
+          markets, tariffs, active barriers, capable exporters, and related news
+          in one place.
         </p>
         <div className="mt-6">
           <ProductSearchBox autoFocus />
@@ -248,7 +303,8 @@ export default async function ExplorerPage({
                 href={`/explorer?hs=${s.hsCode}`}
                 className="rounded-xl border border-stone-300 bg-white/60 px-4 py-3 text-sm text-zinc-700 transition-colors hover:border-kenya-green hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300 dark:hover:text-zinc-50"
               >
-                <span className="font-medium">{s.hsCode}</span> – {s.description}
+                <span className="font-medium">{s.hsCode}</span> –{" "}
+                {s.description}
               </a>
             ))}
           </div>
@@ -257,17 +313,25 @@ export default async function ExplorerPage({
     );
   }
 
-  const [exportMarkets, importMarkets, tariffRows, barrierRows, exporterRows, newsRows, procedureRows, usdToKesRate] =
-    await Promise.all([
-      loadTopMarkets(product.id, "export"),
-      loadTopMarkets(product.id, "import"),
-      loadTariffs(product.id),
-      loadBarriers(product.id),
-      loadExporters(product.id),
-      loadNews(product.id),
-      loadProcedures(product.sectorId),
-      getUsdToKesRate(),
-    ]);
+  const [
+    exportMarkets,
+    importMarkets,
+    tariffRows,
+    barrierRows,
+    exporterRows,
+    newsRows,
+    procedureRows,
+    usdToKesRate,
+  ] = await Promise.all([
+    loadTopMarkets(product.id, "export"),
+    loadTopMarkets(product.id, "import"),
+    loadTariffs(product.id),
+    loadBarriers(product.id),
+    loadExporters(product.id),
+    loadNews(product.id),
+    loadProcedures(product.sectorId),
+    getUsdToKesRate(),
+  ]);
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-4xl flex-1 flex-col px-6 py-10 sm:px-10">
@@ -278,28 +342,38 @@ export default async function ExplorerPage({
       <div className="mb-10 border-t-4 border-ktp-navy bg-ktp-surface p-7 dark:border-zinc-500 dark:bg-zinc-900 sm:p-9">
         <div className="flex flex-col gap-7 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-start gap-4">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-kenya-green text-kenya-green">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-              />
-            </svg>
-          </span>
-          <div>
-            <span className="text-xs font-bold uppercase tracking-[0.14em] text-kenya-green">
-              {product.sectorName}
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-kenya-green text-kenya-green">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+                />
+              </svg>
             </span>
-            <h1 className="mt-1 text-3xl font-semibold leading-none tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">
-              {product.description}
-            </h1>
-            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-              HS Code {product.hsCode} · Traded in {product.unit}
-            </p>
+            <div>
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-kenya-green">
+                {product.sectorName}
+              </span>
+              <h1 className="mt-1 text-3xl font-semibold leading-none tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">
+                {product.description}
+              </h1>
+              <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+                HS Code {product.hsCode} · Traded in {product.unit}
+              </p>
+            </div>
           </div>
-          </div>
-          <div aria-label="Trade route marker" className="flex shrink-0 items-center gap-2 text-ktp-navy dark:text-zinc-300">
+          <div
+            aria-label="Trade route marker"
+            className="flex shrink-0 items-center gap-2 text-ktp-navy dark:text-zinc-300"
+          >
             <span className="h-2.5 w-2.5 rounded-full border-2 border-kenya-green bg-white dark:bg-zinc-900" />
             <span className="h-px w-14 bg-ktp-navy dark:bg-zinc-500" />
             <span className="h-2.5 w-2.5 rounded-full bg-ktp-navy" />
@@ -324,7 +398,9 @@ export default async function ExplorerPage({
             }
           />
           {exportMarkets.length === 0 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">No export transactions recorded.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              No export transactions recorded.
+            </p>
           ) : (
             <MarketList rows={exportMarkets} />
           )}
@@ -344,7 +420,9 @@ export default async function ExplorerPage({
             }
           />
           {importMarkets.length === 0 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">No import transactions recorded.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              No import transactions recorded.
+            </p>
           ) : (
             <MarketList rows={importMarkets} />
           )}
@@ -365,7 +443,9 @@ export default async function ExplorerPage({
           }
         />
         {tariffRows.length === 0 ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">No tariff data recorded.</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            No tariff data recorded.
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
@@ -379,7 +459,14 @@ export default async function ExplorerPage({
               </thead>
               <tbody>
                 {tariffRows.map((t, i) => (
-                  <tr key={i} className={t.rateType === "preferential" ? "bg-kenya-green/[0.07]" : "bg-white dark:bg-zinc-900"}>
+                  <tr
+                    key={i}
+                    className={
+                      t.rateType === "preferential"
+                        ? "bg-kenya-green/[0.07]"
+                        : "bg-white dark:bg-zinc-900"
+                    }
+                  >
                     <td className="border-b border-zinc-200 px-3 py-3 pr-4 text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
                       {t.countryName}
                     </td>
@@ -394,7 +481,9 @@ export default async function ExplorerPage({
                             : "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
                         }`}
                       >
-                        <span aria-hidden="true">{t.rateType === "preferential" ? "✓" : "—"}</span>
+                        <span aria-hidden="true">
+                          {t.rateType === "preferential" ? "✓" : "—"}
+                        </span>
                         {t.rateType}
                       </span>
                     </td>
@@ -457,7 +546,9 @@ export default async function ExplorerPage({
             {barrierRows.map((b) => (
               <li key={b.id} className="text-sm">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium text-zinc-900 dark:text-zinc-50">{b.countryName}</span>
+                  <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                    {b.countryName}
+                  </span>
                   <span className="inline-flex items-center gap-1 border border-kenya-red/40 bg-kenya-red/10 px-2 py-1 text-xs font-bold uppercase tracking-wide text-kenya-red">
                     <span aria-hidden="true">!</span>
                     {b.impactLevel} impact
@@ -466,7 +557,9 @@ export default async function ExplorerPage({
                     {b.barrierType} · {b.agencyName}
                   </span>
                 </div>
-                <p className="mt-0.5 text-zinc-600 dark:text-zinc-400">{b.description}</p>
+                <p className="mt-0.5 text-zinc-600 dark:text-zinc-400">
+                  {b.description}
+                </p>
               </li>
             ))}
           </ul>
@@ -494,7 +587,10 @@ export default async function ExplorerPage({
           ) : (
             <ul className="flex flex-col gap-2">
               {exporterRows.map((e) => (
-                <li key={e.id} className="flex items-center justify-between gap-2 text-sm">
+                <li
+                  key={e.id}
+                  className="flex items-center justify-between gap-2 text-sm"
+                >
                   <span className="flex flex-wrap items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
                     {e.name}
                     {e.exportReady && (
@@ -504,7 +600,9 @@ export default async function ExplorerPage({
                       </span>
                     )}
                   </span>
-                  <span className="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">{e.countyName}</span>
+                  <span className="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
+                    {e.countyName}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -525,7 +623,9 @@ export default async function ExplorerPage({
             }
           />
           {procedureRows.length === 0 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">No related procedures found.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              No related procedures found.
+            </p>
           ) : (
             <ul className="flex flex-col gap-2">
               {procedureRows.map((p) => (
@@ -536,7 +636,7 @@ export default async function ExplorerPage({
                   >
                     {p.title}
                   </a>
-                    <span className="ml-2 inline-block border border-zinc-300 bg-zinc-100 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                  <span className="ml-2 inline-block border border-zinc-300 bg-zinc-100 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                     {PROCEDURE_CATEGORY_LABELS[p.category] ?? p.category}
                   </span>
                 </li>
@@ -571,7 +671,9 @@ export default async function ExplorerPage({
                 >
                   {n.title}
                 </a>
-                <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">{n.sourceName}</span>
+                <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
+                  {n.sourceName}
+                </span>
                 {n.sourceUrl.startsWith("https://example.com/") && (
                   <span className="ml-2 inline-block border border-zinc-300 bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
                     Mock article

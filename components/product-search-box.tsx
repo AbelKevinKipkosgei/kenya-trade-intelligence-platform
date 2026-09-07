@@ -20,7 +20,9 @@ export function ProductSearchBox({ autoFocus }: { autoFocus?: boolean }) {
     }
     const controller = new AbortController();
     const timeout = setTimeout(() => {
-      fetch(`/api/products/search?q=${encodeURIComponent(query)}`, { signal: controller.signal })
+      fetch(`/api/products/search?q=${encodeURIComponent(query)}`, {
+        signal: controller.signal,
+      })
         .then((res) => res.json())
         .then((data: { results: Result[] }) => {
           setResults(data.results);
@@ -36,7 +38,10 @@ export function ProductSearchBox({ autoFocus }: { autoFocus?: boolean }) {
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     }
@@ -69,8 +74,12 @@ export function ProductSearchBox({ autoFocus }: { autoFocus?: boolean }) {
               onClick={() => select(r.hsCode)}
               className="flex w-full flex-col items-start gap-0.5 px-4 py-2.5 text-left text-sm hover:bg-stone-100 dark:hover:bg-zinc-700"
             >
-              <span className="font-medium text-zinc-900 dark:text-zinc-50">{r.hsCode}</span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">{r.description}</span>
+              <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                {r.hsCode}
+              </span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                {r.description}
+              </span>
             </button>
           ))}
         </div>

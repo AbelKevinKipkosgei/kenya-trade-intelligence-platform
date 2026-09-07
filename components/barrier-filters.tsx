@@ -54,21 +54,33 @@ export function BarrierFilters({
 
   return (
     <div className="flex flex-wrap gap-2">
-      <select value={selectedStatus} onChange={(e) => updateParam("status", e.target.value)} className={selectClass}>
+      <select
+        value={selectedStatus}
+        onChange={(e) => updateParam("status", e.target.value)}
+        className={selectClass}
+      >
         {STATUS_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
           </option>
         ))}
       </select>
-      <select value={selectedType} onChange={(e) => updateParam("type", e.target.value)} className={selectClass}>
+      <select
+        value={selectedType}
+        onChange={(e) => updateParam("type", e.target.value)}
+        className={selectClass}
+      >
         {TYPE_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
           </option>
         ))}
       </select>
-      <select value={selectedSector} onChange={(e) => updateParam("sector", e.target.value)} className={selectClass}>
+      <select
+        value={selectedSector}
+        onChange={(e) => updateParam("sector", e.target.value)}
+        className={selectClass}
+      >
         <option value="">All sectors</option>
         {sectors.map((s) => (
           <option key={s.value} value={s.value}>
@@ -76,7 +88,11 @@ export function BarrierFilters({
           </option>
         ))}
       </select>
-      <select value={selectedCountry} onChange={(e) => updateParam("country", e.target.value)} className={selectClass}>
+      <select
+        value={selectedCountry}
+        onChange={(e) => updateParam("country", e.target.value)}
+        className={selectClass}
+      >
         <option value="">All markets</option>
         {countries.map((c) => (
           <option key={c.value} value={c.value}>

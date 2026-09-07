@@ -17,7 +17,8 @@ const barlowCondensed = Barlow_Condensed({
 
 export const metadata: Metadata = {
   title: "Kenya Trade Intelligence Platform",
-  description: "Real-time trade data, tariffs, and market intelligence for Kenya.",
+  description:
+    "Real-time trade data, tariffs, and market intelligence for Kenya.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

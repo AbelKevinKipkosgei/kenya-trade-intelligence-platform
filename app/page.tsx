@@ -1,6 +1,12 @@
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { tradeTransactions, countries, exporters, tradeBarriers, ports } from "@/db/schema";
+import {
+  tradeTransactions,
+  countries,
+  exporters,
+  tradeBarriers,
+  ports,
+} from "@/db/schema";
 
 export const revalidate = 3600;
 
@@ -19,42 +25,53 @@ async function loadStats() {
     })
     .from(tradeTransactions);
 
-  const [flowTotals, topPartnerRows, exporterCountRows, activeBarrierRows, portCountRows] =
-    await Promise.all([
-      db
-        .select({
-          flowType: tradeTransactions.flowType,
-          total: sql<string>`sum(${tradeTransactions.valueUsd})`,
-        })
-        .from(tradeTransactions)
-        .where(sql`extract(year from ${tradeTransactions.transactionDate}) = ${latestYear}`)
-        .groupBy(tradeTransactions.flowType),
-      db
-        .select({
-          countryName: countries.name,
-          total: sql<string>`sum(${tradeTransactions.valueUsd})`,
-        })
-        .from(tradeTransactions)
-        .innerJoin(countries, eq(countries.id, tradeTransactions.countryId))
-        .where(
-          and(
-            eq(tradeTransactions.flowType, "export"),
-            sql`extract(year from ${tradeTransactions.transactionDate}) = ${latestYear}`,
-          ),
-        )
-        .groupBy(countries.name)
-        .orderBy(sql`sum(${tradeTransactions.valueUsd}) desc`)
-        .limit(1),
-      db.select({ count: sql<string>`count(*)` }).from(exporters),
-      db
-        .select({ count: sql<string>`count(*)` })
-        .from(tradeBarriers)
-        .where(eq(tradeBarriers.status, "active")),
-      db.select({ count: sql<string>`count(*)` }).from(ports),
-    ]);
+  const [
+    flowTotals,
+    topPartnerRows,
+    exporterCountRows,
+    activeBarrierRows,
+    portCountRows,
+  ] = await Promise.all([
+    db
+      .select({
+        flowType: tradeTransactions.flowType,
+        total: sql<string>`sum(${tradeTransactions.valueUsd})`,
+      })
+      .from(tradeTransactions)
+      .where(
+        sql`extract(year from ${tradeTransactions.transactionDate}) = ${latestYear}`,
+      )
+      .groupBy(tradeTransactions.flowType),
+    db
+      .select({
+        countryName: countries.name,
+        total: sql<string>`sum(${tradeTransactions.valueUsd})`,
+      })
+      .from(tradeTransactions)
+      .innerJoin(countries, eq(countries.id, tradeTransactions.countryId))
+      .where(
+        and(
+          eq(tradeTransactions.flowType, "export"),
+          sql`extract(year from ${tradeTransactions.transactionDate}) = ${latestYear}`,
+        ),
+      )
+      .groupBy(countries.name)
+      .orderBy(sql`sum(${tradeTransactions.valueUsd}) desc`)
+      .limit(1),
+    db.select({ count: sql<string>`count(*)` }).from(exporters),
+    db
+      .select({ count: sql<string>`count(*)` })
+      .from(tradeBarriers)
+      .where(eq(tradeBarriers.status, "active")),
+    db.select({ count: sql<string>`count(*)` }).from(ports),
+  ]);
 
-  const exportTotal = Number(flowTotals.find((f) => f.flowType === "export")?.total ?? 0);
-  const importTotal = Number(flowTotals.find((f) => f.flowType === "import")?.total ?? 0);
+  const exportTotal = Number(
+    flowTotals.find((f) => f.flowType === "export")?.total ?? 0,
+  );
+  const importTotal = Number(
+    flowTotals.find((f) => f.flowType === "import")?.total ?? 0,
+  );
 
   return {
     latestYear,
@@ -165,9 +182,10 @@ const FEATURES = [
 export default async function Home() {
   const stats = await loadStats();
   const dataAsOf = stats.latestDate
-    ? new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" }).format(
-        new Date(stats.latestDate),
-      )
+    ? new Intl.DateTimeFormat("en-GB", {
+        month: "long",
+        year: "numeric",
+      }).format(new Date(stats.latestDate))
     : "latest available";
 
   const statCards = [
@@ -180,7 +198,10 @@ export default async function Home() {
       value: usdCompact.format(stats.importTotal),
     },
     { label: "Top export partner", value: stats.topPartner },
-    { label: "Active trade barriers", value: `${stats.activeBarriers.toLocaleString()} Active` },
+    {
+      label: "Active trade barriers",
+      value: `${stats.activeBarriers.toLocaleString()} Active`,
+    },
   ];
 
   return (
@@ -198,8 +219,9 @@ export default async function Home() {
               Kenya&apos;s trade intelligence, grounded in evidence.
             </h1>
             <p className="max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-300">
-              A public data platform for understanding export performance, market access, trade
-              barriers, and opportunities across Kenya&apos;s trading relationships.
+              A public data platform for understanding export performance,
+              market access, trade barriers, and opportunities across
+              Kenya&apos;s trading relationships.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <a
@@ -223,13 +245,19 @@ export default async function Home() {
             <p className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white">
               {stats.exporterCount.toLocaleString()}
             </p>
-            <p className="text-sm text-zinc-600 dark:text-zinc-300">registered exporters</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-300">
+              registered exporters
+            </p>
             <div className="my-5 border-t border-zinc-200 dark:border-zinc-700" />
             <p className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white">
               {stats.portCount}
             </p>
-            <p className="text-sm text-zinc-600 dark:text-zinc-300">trade gateways monitored</p>
-            <p className="mt-5 text-xs text-zinc-500 dark:text-zinc-400">Data updated {dataAsOf}</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-300">
+              trade gateways monitored
+            </p>
+            <p className="mt-5 text-xs text-zinc-500 dark:text-zinc-400">
+              Data updated {dataAsOf}
+            </p>
           </aside>
         </section>
 
@@ -257,13 +285,15 @@ export default async function Home() {
 
         <section id="features" className="py-16">
           <div className="mb-8 flex flex-col gap-2">
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-kenya-green">Explore the platform</p>
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-kenya-green">
+              Explore the platform
+            </p>
             <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
               Tools for the full trade workflow
             </h2>
             <p className="max-w-2xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-              Start with the core intelligence workflow, then move into the operational tools that
-              support decisions and action.
+              Start with the core intelligence workflow, then move into the
+              operational tools that support decisions and action.
             </p>
           </div>
           <div className="grid gap-4 lg:grid-cols-3">
@@ -302,12 +332,23 @@ export default async function Home() {
                 className="flex min-h-44 flex-col gap-4 border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-500 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-600 dark:hover:bg-zinc-900"
               >
                 <span className="flex h-9 w-9 items-center justify-center border border-zinc-300 text-zinc-700 dark:border-zinc-600 dark:text-zinc-300">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
                     {feature.icon}
                   </svg>
                 </span>
-                <h3 className="text-base font-semibold text-zinc-950 dark:text-zinc-50">{feature.title}</h3>
-                <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{feature.description}</p>
+                <h3 className="text-base font-semibold text-zinc-950 dark:text-zinc-50">
+                  {feature.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                  {feature.description}
+                </p>
               </a>
             ))}
           </div>
@@ -320,16 +361,32 @@ export default async function Home() {
                 className="mt-10 grid gap-6 border-l-4 border-kenya-red bg-zinc-950 p-6 text-white transition-colors hover:bg-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-8"
               >
                 <span className="flex h-12 w-12 items-center justify-center border border-white/40 text-white">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
                     {analyst.icon}
                   </svg>
                 </span>
                 <span>
-                  <span className="block text-xs font-bold uppercase tracking-[0.12em] text-[#91c98f]">AI Trade Analyst</span>
-                  <span className="mt-2 block text-lg font-semibold">Ask a question. Get a data-grounded answer.</span>
-                  <span className="mt-2 block text-sm text-zinc-300">“Which markets show the strongest opportunity for Kenyan avocado exports?”</span>
+                  <span className="block text-xs font-bold uppercase tracking-[0.12em] text-[#91c98f]">
+                    AI Trade Analyst
+                  </span>
+                  <span className="mt-2 block text-lg font-semibold">
+                    Ask a question. Get a data-grounded answer.
+                  </span>
+                  <span className="mt-2 block text-sm text-zinc-300">
+                    “Which markets show the strongest opportunity for Kenyan
+                    avocado exports?”
+                  </span>
                 </span>
-                <span className="text-sm font-semibold text-white">Open analyst &rarr;</span>
+                <span className="text-sm font-semibold text-white">
+                  Open analyst &rarr;
+                </span>
               </a>
             );
           })()}
@@ -337,8 +394,13 @@ export default async function Home() {
       </main>
 
       <footer className="mx-auto flex w-full max-w-6xl flex-col gap-3 border-t border-zinc-200 px-6 py-8 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:px-10">
-        <span className="font-semibold text-zinc-800 dark:text-zinc-200">Kenya Trade Intelligence Platform</span>
-        <span>Powered by the State Department for Trade. Data sourced from Kenya Revenue Authority, KNBS, and partner agencies.</span>
+        <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+          Kenya Trade Intelligence Platform
+        </span>
+        <span>
+          Powered by the State Department for Trade. Data sourced from Kenya
+          Revenue Authority, KNBS, and partner agencies.
+        </span>
         <span>Data updated {dataAsOf} · Public information service</span>
       </footer>
     </div>
