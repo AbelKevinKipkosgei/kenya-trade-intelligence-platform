@@ -165,6 +165,7 @@ async function loadTariffs(productId: number) {
       countryName: countries.name,
       ratePercent: tariffs.ratePercent,
       rateType: tariffs.rateType,
+      rateSource: tariffs.rateSource,
       agreementCode: tradeAgreements.code,
     })
     .from(tariffs)
@@ -454,7 +455,8 @@ export default async function ExplorerPage({
                   <th className="px-3 py-3 pr-4">Market</th>
                   <th className="px-3 py-3 pr-4">Rate</th>
                   <th className="px-3 py-3 pr-4">Type</th>
-                  <th className="px-3 py-3">Agreement</th>
+                  <th className="px-3 py-3 pr-4">Agreement</th>
+                  <th className="px-3 py-3">Source</th>
                 </tr>
               </thead>
               <tbody>
@@ -487,8 +489,24 @@ export default async function ExplorerPage({
                         {t.rateType}
                       </span>
                     </td>
-                    <td className="border-b border-zinc-200 px-3 py-3 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                    <td className="border-b border-zinc-200 px-3 py-3 pr-4 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
                       {t.agreementCode ?? "–"}
+                    </td>
+                    <td className="border-b border-zinc-200 px-3 py-3 dark:border-zinc-800">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                          t.rateSource === "real"
+                            ? "bg-blue-500/10 text-blue-700 dark:text-blue-400"
+                            : "bg-stone-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"
+                        }`}
+                        title={
+                          t.rateSource === "real"
+                            ? "Sourced from the World Bank's WITS/TRAINS database"
+                            : "Estimated — no verified rate available for this pair"
+                        }
+                      >
+                        {t.rateSource === "real" ? "Verified" : "Estimated"}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -517,6 +535,7 @@ export default async function ExplorerPage({
               countryName: t.countryName,
               ratePercent: Number(t.ratePercent),
               rateType: t.rateType,
+              rateSource: t.rateSource,
               agreementCode: t.agreementCode,
             }))}
             usdToKesRate={usdToKesRate}

@@ -1,0 +1,35 @@
+name: Sync Real MFN Tariffs
+
+# Overwrites MFN tariff rows with real, sourced rates from the World
+# Bank's WITS/TRAINS database (see db/tariffs/fetch-real-mfn-rates.ts).
+# Runs here instead of locally so it isn't tied to a laptop staying on —
+# a single WITS request measured at ~5 seconds, times ~1,300 products x
+# ~20 major partner countries, means this genuinely runs for hours.
+# Resumable (skips product/country pairs already verified real), so
+# re-triggering after a failure or a GitHub Actions timeout picks up
+# where the last run left off instead of starting over.
+
+on:
+  workflow_dispatch: {} # trigger manually from the Actions tab
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340 # stay under the 360-minute GitHub Actions job cap
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.25.0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm tariffs:sync-real
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
