@@ -93,13 +93,13 @@ function ProcedureCard({ procedure, open, onToggle }: { procedure: Procedure; op
   );
 }
 
-export function ProcedureBrowser({ procedures, agencyCount }: { procedures: Procedure[]; agencyCount: number }) {
+export function ProcedureBrowser({ procedures }: { procedures: Procedure[] }) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [direction, setDirection] = useState<"all" | "import" | "export">("all");
   const [sector, setSector] = useState("all");
   const [guided, setGuided] = useState(false);
   const [openId, setOpenId] = useState<number | null>(null);
-  const firstMatchRef = useRef<HTMLElement | null>(null);
+  const firstMatchRef = useRef<HTMLDivElement | null>(null);
 
   const categories = useMemo(() => CATEGORY_ORDER.filter((category) => procedures.some((procedure) => procedure.category === category)), [procedures]);
   const sectors = useMemo(() => [...new Set(procedures.map((procedure) => procedure.sectorName).filter(Boolean) as string[])].sort(), [procedures]);
@@ -112,8 +112,11 @@ export function ProcedureBrowser({ procedures, agencyCount }: { procedures: Proc
     return guided ? filtered.slice(0, 2) : filtered;
   }, [procedures, selectedCategory, guided, direction, sector]);
 
+  // Scrolling to the first guided match is the only genuine effect here —
+  // collapsing an open card is a direct reaction to a filter change, so
+  // that reset lives in the event handlers below instead (chooseGuidedDirection,
+  // chooseGuidedSector, browseAll, and the category button already do this).
   useEffect(() => {
-    setOpenId(null);
     if (!guided || visibleProcedures.length === 0) return;
     const timer = window.setTimeout(() => firstMatchRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
     return () => window.clearTimeout(timer);
@@ -123,12 +126,14 @@ export function ProcedureBrowser({ procedures, agencyCount }: { procedures: Proc
     setGuided(true);
     setDirection(value);
     setSelectedCategory("all");
+    setOpenId(null);
   }
 
   function chooseGuidedSector(value: string) {
     setGuided(true);
     setSector(value);
     setSelectedCategory("all");
+    setOpenId(null);
   }
 
   function browseAll() {
