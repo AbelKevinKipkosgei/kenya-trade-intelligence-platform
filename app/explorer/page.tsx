@@ -30,7 +30,7 @@ const PROCEDURE_CATEGORY_LABELS: Record<string, string> = {
 
 function SectionIcon({ bg, text, children }: { bg: string; text: string; children: React.ReactNode }) {
   return (
-    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${bg} ${text}`}>
+    <span className={`flex h-8 w-8 shrink-0 items-center justify-center border ${bg} ${text}`}>
       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         {children}
       </svg>
@@ -50,11 +50,11 @@ function SectionHeading({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="mb-3 flex items-center gap-2.5">
+    <div className="mb-4 flex items-center gap-3 border-b border-zinc-200 pb-3 dark:border-zinc-700">
       <SectionIcon bg={bg} text={text}>
         {icon}
       </SectionIcon>
-      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{title}</h2>
+      <h2 className="text-lg font-semibold tracking-tight text-ktp-navy dark:text-zinc-50">{title}</h2>
     </div>
   );
 }
@@ -62,16 +62,16 @@ function SectionHeading({
 function MarketList({ rows }: { rows: { countryId: number; countryName: string; totalValue: string }[] }) {
   const max = Math.max(...rows.map((m) => Number(m.totalValue)), 1);
   return (
-    <ul className="flex flex-col gap-3">
-      {rows.map((m) => (
-        <li key={m.countryId} className="flex flex-col gap-1">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-zinc-700 dark:text-zinc-300">{m.countryName}</span>
-            <span className="font-medium text-zinc-900 dark:text-zinc-50">{formatUsd(m.totalValue)}</span>
+    <ul className="flex flex-col gap-4">
+      {rows.map((m, index) => (
+        <li key={m.countryId} className="flex flex-col gap-1.5">
+          <div className="flex items-end justify-between gap-3">
+            <span className="text-sm text-zinc-700 dark:text-zinc-300">{m.countryName}</span>
+            <span data-display="true" className="text-xl font-semibold leading-none text-ktp-navy dark:text-zinc-50">{formatUsd(m.totalValue)}</span>
           </div>
-          <div className="h-1 w-full rounded-full bg-stone-200 dark:bg-zinc-700">
+          <div className="h-2 w-full bg-zinc-200 dark:bg-zinc-700">
             <div
-              className="h-1 rounded-full bg-kenya-green"
+              className={`h-2 ${index === 0 ? "bg-kenya-green" : index < 3 ? "bg-ktp-navy" : "bg-zinc-500"}`}
               style={{ width: `${(Number(m.totalValue) / max) * 100}%` }}
             />
           </div>
@@ -271,13 +271,14 @@ export default async function ExplorerPage({
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-4xl flex-1 flex-col px-6 py-10 sm:px-10">
-      <div className="mb-6">
+      <div className="mb-7">
         <ProductSearchBox />
       </div>
 
-      <div className="mb-8 rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70">
-        <div className="flex items-start gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-kenya-green/10 text-kenya-green dark:bg-kenya-green/20">
+      <div className="mb-10 border-t-4 border-ktp-navy bg-ktp-surface p-7 dark:border-zinc-500 dark:bg-zinc-900 sm:p-9">
+        <div className="flex flex-col gap-7 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-kenya-green text-kenya-green">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path
                 strokeLinecap="round"
@@ -287,23 +288,31 @@ export default async function ExplorerPage({
             </svg>
           </span>
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wide text-kenya-green">
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-kenya-green">
               {product.sectorName}
             </span>
-            <h1 className="mt-0.5 text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            <h1 className="mt-1 text-3xl font-semibold leading-none tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">
               {product.description}
             </h1>
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
               HS Code {product.hsCode} · Traded in {product.unit}
             </p>
+          </div>
+          </div>
+          <div aria-label="Trade route marker" className="flex shrink-0 items-center gap-2 text-ktp-navy dark:text-zinc-300">
+            <span className="h-2.5 w-2.5 rounded-full border-2 border-kenya-green bg-white dark:bg-zinc-900" />
+            <span className="h-px w-14 bg-ktp-navy dark:bg-zinc-500" />
+            <span className="h-2.5 w-2.5 rounded-full bg-ktp-navy" />
+            <span className="h-px w-14 bg-ktp-navy dark:bg-zinc-500" />
+            <span className="h-2.5 w-2.5 rounded-full border-2 border-kenya-red bg-white dark:bg-zinc-900" />
           </div>
         </div>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <section className="rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70">
+        <section className="border-t-2 border-kenya-green bg-white p-6 shadow-[0_1px_0_#d9e2e8] dark:bg-zinc-900">
           <SectionHeading
-            bg="bg-kenya-green/10"
+            bg="border-kenya-green/30"
             text="text-kenya-green"
             title="Top Export Markets"
             icon={
@@ -321,10 +330,10 @@ export default async function ExplorerPage({
           )}
         </section>
 
-        <section className="rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70">
+        <section className="border-t-2 border-ktp-navy bg-white p-6 shadow-[0_1px_0_#d9e2e8] dark:bg-zinc-900">
           <SectionHeading
-            bg="bg-blue-500/10"
-            text="text-blue-600 dark:text-blue-400"
+            bg="border-ktp-navy/30"
+            text="text-ktp-navy dark:text-zinc-300"
             title="Top Import Sources"
             icon={
               <path
@@ -342,10 +351,10 @@ export default async function ExplorerPage({
         </section>
       </div>
 
-      <section className="mt-6 rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70">
+      <section className="mt-8 border border-zinc-300 bg-white p-6 shadow-[0_2px_0_#d9e2e8] dark:border-zinc-700 dark:bg-zinc-900 sm:p-8">
         <SectionHeading
-          bg="bg-amber-500/10"
-          text="text-amber-700 dark:text-amber-500"
+          bg="border-ktp-amber/40"
+          text="text-ktp-amber dark:text-amber-400"
           title="Tariff Rates by Market"
           icon={
             <path
@@ -359,36 +368,37 @@ export default async function ExplorerPage({
           <p className="text-sm text-zinc-500 dark:text-zinc-400">No tariff data recorded.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="text-zinc-500 dark:text-zinc-400">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-ktp-navy text-xs uppercase tracking-wide text-white">
                 <tr>
-                  <th className="border-b border-stone-300 py-2 pr-4 dark:border-zinc-700">Market</th>
-                  <th className="border-b border-stone-300 py-2 pr-4 dark:border-zinc-700">Rate</th>
-                  <th className="border-b border-stone-300 py-2 pr-4 dark:border-zinc-700">Type</th>
-                  <th className="border-b border-stone-300 py-2 dark:border-zinc-700">Agreement</th>
+                  <th className="px-3 py-3 pr-4">Market</th>
+                  <th className="px-3 py-3 pr-4">Rate</th>
+                  <th className="px-3 py-3 pr-4">Type</th>
+                  <th className="px-3 py-3">Agreement</th>
                 </tr>
               </thead>
               <tbody>
                 {tariffRows.map((t, i) => (
-                  <tr key={i}>
-                    <td className="border-b border-stone-200 py-2 pr-4 text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
+                  <tr key={i} className={t.rateType === "preferential" ? "bg-kenya-green/[0.07]" : "bg-white dark:bg-zinc-900"}>
+                    <td className="border-b border-zinc-200 px-3 py-3 pr-4 text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
                       {t.countryName}
                     </td>
-                    <td className="border-b border-stone-200 py-2 pr-4 font-medium text-zinc-900 dark:border-zinc-800 dark:text-zinc-50">
+                    <td className="border-b border-zinc-200 px-3 py-3 pr-4 font-bold text-ktp-navy dark:border-zinc-800 dark:text-zinc-50">
                       {Number(t.ratePercent).toFixed(1)}%
                     </td>
-                    <td className="border-b border-stone-200 py-2 pr-4 dark:border-zinc-800">
+                    <td className="border-b border-zinc-200 px-3 py-3 pr-4 dark:border-zinc-800">
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                        className={`inline-flex items-center gap-1 border px-2 py-1 text-[11px] font-bold uppercase tracking-wide ${
                           t.rateType === "preferential"
-                            ? "bg-kenya-green/10 text-kenya-green"
-                            : "bg-stone-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300"
+                            ? "border-kenya-green/40 bg-kenya-green/10 text-kenya-green"
+                            : "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
                         }`}
                       >
+                        <span aria-hidden="true">{t.rateType === "preferential" ? "✓" : "—"}</span>
                         {t.rateType}
                       </span>
                     </td>
-                    <td className="border-b border-stone-200 py-2 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                    <td className="border-b border-zinc-200 px-3 py-3 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
                       {t.agreementCode ?? "–"}
                     </td>
                   </tr>
@@ -400,10 +410,10 @@ export default async function ExplorerPage({
       </section>
 
       {tariffRows.length > 0 && (
-        <section className="mt-6 rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70">
+        <section className="mt-8 border-l-4 border-ktp-amber bg-amber-50/60 p-6 dark:bg-amber-950/20">
           <SectionHeading
-            bg="bg-indigo-500/10"
-            text="text-indigo-600 dark:text-indigo-400"
+            bg="border-ktp-amber/40"
+            text="text-ktp-amber dark:text-amber-400"
             title="Landed Cost Estimator"
             icon={
               <path
@@ -425,9 +435,9 @@ export default async function ExplorerPage({
         </section>
       )}
 
-      <section className="mt-6 rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70">
+      <section className="mt-8 border-l-4 border-kenya-red bg-white p-6 shadow-[0_1px_0_#d9e2e8] dark:bg-zinc-900">
         <SectionHeading
-          bg="bg-kenya-red/10"
+          bg="border-kenya-red/40"
           text="text-kenya-red"
           title="Active Trade Barriers"
           icon={
@@ -448,7 +458,8 @@ export default async function ExplorerPage({
               <li key={b.id} className="text-sm">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-zinc-900 dark:text-zinc-50">{b.countryName}</span>
-                  <span className="rounded-full bg-kenya-red/10 px-2 py-0.5 text-xs font-medium text-kenya-red">
+                  <span className="inline-flex items-center gap-1 border border-kenya-red/40 bg-kenya-red/10 px-2 py-1 text-xs font-bold uppercase tracking-wide text-kenya-red">
+                    <span aria-hidden="true">!</span>
                     {b.impactLevel} impact
                   </span>
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -463,10 +474,10 @@ export default async function ExplorerPage({
       </section>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2">
-        <section className="rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70">
+        <section className="border-t border-ktp-navy/40 bg-ktp-surface p-6 dark:bg-zinc-900">
           <SectionHeading
-            bg="bg-violet-500/10"
-            text="text-violet-600 dark:text-violet-400"
+            bg="border-ktp-navy/30"
+            text="text-ktp-navy dark:text-zinc-300"
             title="Kenyan Exporters (Export Capacity)"
             icon={
               <path
@@ -487,7 +498,8 @@ export default async function ExplorerPage({
                   <span className="flex flex-wrap items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
                     {e.name}
                     {e.exportReady && (
-                      <span className="rounded-full bg-kenya-green/10 px-2 py-0.5 text-[11px] font-medium text-kenya-green">
+                      <span className="inline-flex items-center gap-1 border border-kenya-green/40 bg-kenya-green/10 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-kenya-green">
+                        <span aria-hidden="true">✓</span>
                         Export-ready
                       </span>
                     )}
@@ -499,10 +511,10 @@ export default async function ExplorerPage({
           )}
         </section>
 
-        <section className="rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70">
+        <section className="border-t border-ktp-amber/50 bg-amber-50/40 p-6 dark:bg-amber-950/10">
           <SectionHeading
-            bg="bg-cyan-500/10"
-            text="text-cyan-700 dark:text-cyan-400"
+            bg="border-ktp-amber/40"
+            text="text-ktp-amber dark:text-amber-400"
             title="Related Procedures"
             icon={
               <path
@@ -524,7 +536,7 @@ export default async function ExplorerPage({
                   >
                     {p.title}
                   </a>
-                  <span className="ml-2 rounded-full bg-stone-200 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                    <span className="ml-2 inline-block border border-zinc-300 bg-zinc-100 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                     {PROCEDURE_CATEGORY_LABELS[p.category] ?? p.category}
                   </span>
                 </li>
@@ -535,10 +547,10 @@ export default async function ExplorerPage({
       </div>
 
       {newsRows.length > 0 && (
-        <section className="mt-6 rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70">
+        <section className="mt-8 border-t border-zinc-400 bg-white p-6 dark:bg-zinc-900">
           <SectionHeading
-            bg="bg-zinc-500/10"
-            text="text-zinc-600 dark:text-zinc-400"
+            bg="border-zinc-400"
+            text="text-zinc-700 dark:text-zinc-300"
             title="Related News"
             icon={
               <path
@@ -561,7 +573,7 @@ export default async function ExplorerPage({
                 </a>
                 <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">{n.sourceName}</span>
                 {n.sourceUrl.startsWith("https://example.com/") && (
-                  <span className="ml-2 rounded-full bg-stone-200 px-2 py-0.5 text-xs font-medium text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400">
+                  <span className="ml-2 inline-block border border-zinc-300 bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
                     Mock article
                   </span>
                 )}

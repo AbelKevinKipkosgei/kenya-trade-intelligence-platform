@@ -12,9 +12,10 @@ const usdCompact = new Intl.NumberFormat("en-US", {
 });
 
 async function loadStats() {
-  const [{ latestYear }] = await db
+  const [{ latestYear, latestDate }] = await db
     .select({
       latestYear: sql<number>`extract(year from max(${tradeTransactions.transactionDate}))::int`,
+      latestDate: sql<Date>`max(${tradeTransactions.transactionDate})`,
     })
     .from(tradeTransactions);
 
@@ -57,6 +58,7 @@ async function loadStats() {
 
   return {
     latestYear,
+    latestDate,
     exportTotal,
     importTotal,
     topPartner: topPartnerRows[0]?.countryName ?? "—",
@@ -162,89 +164,116 @@ const FEATURES = [
 
 export default async function Home() {
   const stats = await loadStats();
+  const dataAsOf = stats.latestDate
+    ? new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" }).format(
+        new Date(stats.latestDate),
+      )
+    : "latest available";
 
   const statCards = [
     {
-      label: `Total Export Value (${stats.latestYear})`,
+      label: "Total export value",
       value: usdCompact.format(stats.exportTotal),
     },
     {
-      label: `Total Import Value (${stats.latestYear})`,
+      label: "Total import value",
       value: usdCompact.format(stats.importTotal),
     },
-    { label: "Top Export Partner", value: stats.topPartner },
-    { label: "Active Trade Barriers", value: String(stats.activeBarriers) },
+    { label: "Top export partner", value: stats.topPartner },
+    { label: "Active trade barriers", value: `${stats.activeBarriers.toLocaleString()} Active` },
   ];
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-linear-to-b from-[#ece6d8] to-stone-200 dark:from-[#1c1c1e] dark:to-zinc-900">
+    <div className="flex min-h-full flex-1 flex-col bg-white dark:bg-zinc-950">
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 sm:px-10">
-        <section className="flex flex-col items-start gap-6 py-20 sm:py-28">
-          <span className="rounded-full bg-kenya-green/10 px-3 py-1 text-xs font-semibold text-kenya-green dark:bg-kenya-green/20">
-            {stats.exporterCount.toLocaleString()} exporters · {stats.portCount} trade gateways
-            monitored
-          </span>
-          <h1 className="max-w-2xl text-4xl font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-6xl">
-            Understand Kenya&apos;s trade flows, in real time.
-          </h1>
-          <p className="max-w-xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
-            A unified view of exports, imports, tariffs, market opportunities, trade barriers, and
-            export capacity – built for policymakers, exporters, and analysts who need answers
-            fast.
-          </p>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <a
-              href="/explorer"
-              className="flex h-12 items-center justify-center rounded-full bg-kenya-green px-6 text-sm font-semibold text-white transition-colors hover:bg-kenya-green/90"
-            >
-              Explore Products &amp; Markets
-            </a>
-            <a
-              href="/analyst"
-              className="flex h-12 items-center justify-center rounded-full border border-stone-400 px-6 text-sm font-semibold text-zinc-800 transition-colors hover:bg-stone-200 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >
-              Ask the AI Trade Analyst
-            </a>
+        <section className="grid gap-10 border-b border-zinc-200 py-16 sm:py-24 lg:grid-cols-[1.15fr_0.85fr] lg:gap-20 dark:border-zinc-800">
+          <div className="flex flex-col items-start gap-6">
+            <div className="border-l-4 border-kenya-red pl-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+              State Department for Trade
+              <span className="mt-1 block text-xs font-normal text-zinc-500 dark:text-zinc-400">
+                Republic of Kenya
+              </span>
+            </div>
+            <h1 className="max-w-3xl text-4xl font-semibold leading-[1.08] tracking-tight text-zinc-950 dark:text-white sm:text-6xl">
+              Kenya&apos;s trade intelligence, grounded in evidence.
+            </h1>
+            <p className="max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-300">
+              A public data platform for understanding export performance, market access, trade
+              barriers, and opportunities across Kenya&apos;s trading relationships.
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <a
+                href="/analyst"
+                className="flex h-12 items-center justify-center border border-kenya-green bg-kenya-green px-6 text-sm font-semibold text-white transition-colors hover:bg-[#004d00] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red"
+              >
+                Ask the AI Trade Analyst
+              </a>
+              <a
+                href="/explorer"
+                className="flex h-12 items-center justify-center border border-zinc-400 px-6 text-sm font-semibold text-zinc-900 transition-colors hover:border-zinc-900 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red dark:border-zinc-600 dark:text-zinc-100 dark:hover:border-zinc-300 dark:hover:bg-zinc-900"
+              >
+                Explore Products &amp; Markets
+              </a>
+            </div>
           </div>
+          <aside className="self-end border-t-4 border-kenya-black bg-zinc-50 p-6 dark:bg-zinc-900">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-kenya-green">
+              Platform coverage
+            </p>
+            <p className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white">
+              {stats.exporterCount.toLocaleString()}
+            </p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-300">registered exporters</p>
+            <div className="my-5 border-t border-zinc-200 dark:border-zinc-700" />
+            <p className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white">
+              {stats.portCount}
+            </p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-300">trade gateways monitored</p>
+            <p className="mt-5 text-xs text-zinc-500 dark:text-zinc-400">Data updated {dataAsOf}</p>
+          </aside>
         </section>
 
         <section
           id="overview"
-          className="grid grid-cols-2 gap-4 border-t border-stone-400 py-12 dark:border-zinc-700 sm:grid-cols-4"
+          className="grid grid-cols-1 gap-0 border-b border-zinc-200 py-10 dark:border-zinc-800 sm:grid-cols-2 lg:grid-cols-4"
         >
           {statCards.map((stat) => (
             <div
               key={stat.label}
-              className="flex flex-col gap-1 rounded-2xl border border-stone-300 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
+              className="min-w-0 border-l border-zinc-200 px-5 py-4 first:border-l-0 dark:border-zinc-800"
             >
-              <span className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+              <div className="block break-words text-2xl font-semibold leading-tight tracking-tight text-zinc-950 dark:text-zinc-50">
                 {stat.value}
-              </span>
-              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              </div>
+              <div className="mt-2 block max-w-[15rem] text-xs font-semibold uppercase leading-snug tracking-wide text-zinc-700 dark:text-zinc-300">
                 {stat.label}
-              </span>
+              </div>
+              <div className="mt-2 block text-xs leading-snug text-zinc-500 dark:text-zinc-400">
+                Data as of {dataAsOf}
+              </div>
             </div>
           ))}
         </section>
 
         <section id="features" className="py-16">
           <div className="mb-8 flex flex-col gap-2">
-            <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-              Everything in one platform
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-kenya-green">Explore the platform</p>
+            <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+              Tools for the full trade workflow
             </h2>
             <p className="max-w-2xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-              Seven tools covering the full trade intelligence workflow, from spotting an
-              opportunity to acting on it.
+              Start with the core intelligence workflow, then move into the operational tools that
+              support decisions and action.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((feature) => (
+          <div className="grid gap-4 lg:grid-cols-3">
+            {FEATURES.slice(0, 3).map((feature) => (
               <a
                 key={feature.title}
                 href={feature.href}
-                className="flex flex-col gap-4 rounded-2xl border border-stone-300 bg-white/60 p-6 transition hover:border-kenya-green/60 hover:bg-white dark:border-zinc-700 dark:bg-zinc-800/60 dark:hover:bg-zinc-800"
+                className="flex min-h-64 flex-col gap-5 border-t-4 border-zinc-300 bg-zinc-50 p-6 transition-colors hover:border-kenya-green hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-kenya-green/10 text-kenya-green dark:bg-kenya-green/20">
+                <span className="flex h-10 w-10 items-center justify-center border border-kenya-green/30 text-kenya-green dark:border-kenya-green/50">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -265,12 +294,52 @@ export default async function Home() {
               </a>
             ))}
           </div>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            {FEATURES.slice(3, 6).map((feature) => (
+              <a
+                key={feature.title}
+                href={feature.href}
+                className="flex min-h-44 flex-col gap-4 border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-500 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-600 dark:hover:bg-zinc-900"
+              >
+                <span className="flex h-9 w-9 items-center justify-center border border-zinc-300 text-zinc-700 dark:border-zinc-600 dark:text-zinc-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    {feature.icon}
+                  </svg>
+                </span>
+                <h3 className="text-base font-semibold text-zinc-950 dark:text-zinc-50">{feature.title}</h3>
+                <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{feature.description}</p>
+              </a>
+            ))}
+          </div>
+
+          {(() => {
+            const analyst = FEATURES[6];
+            return (
+              <a
+                href={analyst.href}
+                className="mt-10 grid gap-6 border-l-4 border-kenya-red bg-zinc-950 p-6 text-white transition-colors hover:bg-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-8"
+              >
+                <span className="flex h-12 w-12 items-center justify-center border border-white/40 text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    {analyst.icon}
+                  </svg>
+                </span>
+                <span>
+                  <span className="block text-xs font-bold uppercase tracking-[0.12em] text-[#91c98f]">AI Trade Analyst</span>
+                  <span className="mt-2 block text-lg font-semibold">Ask a question. Get a data-grounded answer.</span>
+                  <span className="mt-2 block text-sm text-zinc-300">“Which markets show the strongest opportunity for Kenyan avocado exports?”</span>
+                </span>
+                <span className="text-sm font-semibold text-white">Open analyst &rarr;</span>
+              </a>
+            );
+          })()}
         </section>
       </main>
 
-      <footer className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 border-t border-stone-400 px-6 py-8 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-500 sm:flex-row sm:px-10">
-        <span>© 2026 Kenya Trade Intelligence Platform</span>
-        <span>Built for data-driven trade policy</span>
+      <footer className="mx-auto flex w-full max-w-6xl flex-col gap-3 border-t border-zinc-200 px-6 py-8 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400 sm:px-10">
+        <span className="font-semibold text-zinc-800 dark:text-zinc-200">Kenya Trade Intelligence Platform</span>
+        <span>Powered by the State Department for Trade. Data sourced from Kenya Revenue Authority, KNBS, and partner agencies.</span>
+        <span>Data updated {dataAsOf} · Public information service</span>
       </footer>
     </div>
   );

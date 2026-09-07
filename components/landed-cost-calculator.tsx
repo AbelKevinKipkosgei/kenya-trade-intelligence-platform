@@ -48,7 +48,7 @@ export function LandedCostCalculator({
   if (bestByMarket.length === 0) return null;
 
   const selectClass =
-    "rounded-full border border-stone-400 bg-white px-3 py-2 text-base sm:text-xs text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50";
+    "border border-zinc-400 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-kenya-green sm:text-xs dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50";
 
   return (
     <div>
@@ -71,14 +71,14 @@ export function LandedCostCalculator({
             inputMode="decimal"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            className="w-40 rounded-full border border-stone-400 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 sm:text-xs"
+            className="w-40 border border-zinc-400 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 sm:text-xs"
           />
         </label>
       </div>
 
       {isValid && selected && (
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-xl bg-stone-100 p-3 dark:bg-zinc-700/50">
+          <div className="border-t-2 border-ktp-navy bg-zinc-100 p-3 dark:bg-zinc-800">
             <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               Applicable rate
             </p>
@@ -90,7 +90,7 @@ export function LandedCostCalculator({
               {selected.agreementCode ? ` · ${selected.agreementCode}` : ""}
             </p>
           </div>
-          <div className="rounded-xl bg-stone-100 p-3 dark:bg-zinc-700/50">
+          <div className="border-t-2 border-ktp-amber bg-zinc-100 p-3 dark:bg-zinc-800">
             <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               Import duty
             </p>
@@ -99,7 +99,7 @@ export function LandedCostCalculator({
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{formatKes(duty * usdToKesRate)}</p>
             )}
           </div>
-          <div className="rounded-xl bg-kenya-green/10 p-3">
+          <div className="border-t-2 border-kenya-green bg-kenya-green/10 p-3">
             <p className="text-[11px] font-medium uppercase tracking-wide text-kenya-green">
               Estimated landed cost
             </p>

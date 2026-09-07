@@ -50,7 +50,7 @@ export function BarrierFilters({
   }
 
   const selectClass =
-    "rounded-full border border-stone-400 bg-white px-3 py-2 text-base sm:text-xs text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50";
+    "border border-zinc-400 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-kenya-green sm:text-xs dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50";
 
   return (
     <div className="flex flex-wrap gap-2">
