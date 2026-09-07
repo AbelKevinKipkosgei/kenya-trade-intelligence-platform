@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
+import { ScrollToTop } from "./scroll-to-top";
 
 const NAV_LINKS = [
   { href: "/explorer", label: "Explorer" },
@@ -53,21 +54,21 @@ export function SiteHeader() {
         <div className="flex-1 bg-kenya-red" />
         <div className="flex-1 bg-kenya-green" />
       </div>
-      <header className="flex w-full items-center justify-between border-b border-zinc-200 bg-white px-6 py-5 dark:border-zinc-800 dark:bg-zinc-950 sm:px-10">
-        <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2">
+      <header className="flex w-full items-center justify-between gap-2 border-b border-zinc-200 bg-white px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950 sm:gap-3 sm:px-10 sm:py-5">
+        <Link href="/" className="flex min-w-0 flex-1 items-center gap-2">
           <Image
             src="/logo/logo.jpg"
             alt="Coat of arms of Kenya"
             width={44}
             height={44}
-            className="h-11 w-11 shrink-0 object-contain"
+            className="h-9 w-9 shrink-0 object-contain sm:h-11 sm:w-11"
             priority
           />
-          <span className="max-[380px]:hidden">
-            <span className="block text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
+          <span className="min-w-0">
+            <span className="block text-[9px] font-bold uppercase leading-tight tracking-[0.08em] text-zinc-500 dark:text-zinc-400 sm:text-[10px] sm:tracking-[0.12em]">
               State Department for Trade
             </span>
-            <span className="block text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <span className="block text-[11px] font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-sm">
               Kenya Trade Intelligence Platform
             </span>
           </span>
@@ -80,7 +81,9 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-3">
-          <ThemeToggle />
+          <div className="hidden sm:block">
+            <ThemeToggle />
+          </div>
           <Link
             href="/getting-started"
             className="hidden border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red dark:border-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 sm:inline-block"
@@ -128,6 +131,8 @@ export function SiteHeader() {
           </button>
         </div>
       </header>
+
+      <ScrollToTop />
 
       {mobileOpen && (
         <nav className="flex w-full flex-col gap-1 border-t border-zinc-200 bg-white px-6 py-3 text-base font-medium shadow-md dark:border-zinc-700 dark:bg-zinc-900 sm:px-10 xl:hidden">
