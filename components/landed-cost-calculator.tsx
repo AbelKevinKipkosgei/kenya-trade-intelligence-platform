@@ -6,6 +6,7 @@ type TariffOption = {
   countryName: string;
   ratePercent: number;
   rateType: string;
+  rateSource: string;
   agreementCode: string | null;
 };
 
@@ -89,6 +90,15 @@ export function LandedCostCalculator({
               {selected.rateType}
               {selected.agreementCode ? ` · ${selected.agreementCode}` : ""}
             </p>
+            <span
+              className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                selected.rateSource === "real"
+                  ? "bg-blue-500/10 text-blue-700 dark:text-blue-400"
+                  : "bg-stone-200 text-zinc-500 dark:bg-zinc-600 dark:text-zinc-400"
+              }`}
+            >
+              {selected.rateSource === "real" ? "Verified rate" : "Estimated rate"}
+            </span>
           </div>
           <div className="rounded-xl bg-stone-100 p-3 dark:bg-zinc-700/50">
             <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">

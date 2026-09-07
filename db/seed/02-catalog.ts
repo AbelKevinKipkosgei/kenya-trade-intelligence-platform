@@ -10,6 +10,7 @@ import {
   AGOA_ELIGIBLE,
   EU_MEMBERS,
 } from "./reference-data";
+import { HS6_CODES_BY_CHAPTER } from "./hs6-reference";
 import { batchInsert, pick, randomInt, randomFloat, SEED_SCALE } from "./utils";
 
 const SECTOR_UNITS: Record<string, string[]> = {
@@ -108,20 +109,16 @@ export async function seedCatalog(sectorIdByName: Map<string, number>) {
     if (!sectorId) continue;
     const units = SECTOR_UNITS[sector] ?? ["units"];
     const names = SECTOR_PRODUCT_NAMES[sector] ?? [title];
-    const count = Math.max(1, Math.round(randomInt(25, 45) * SEED_SCALE));
 
-    for (let i = 0; i < count; i++) {
-      let code: string;
-      let attempts = 0;
-      do {
-        const heading = String(randomInt(1, 99)).padStart(2, "0");
-        const subheading = String(randomInt(1, 99)).padStart(2, "0");
-        code = `${chapter}${heading}${subheading}`;
-        attempts++;
-      } while (usedCodes.has(code) && attempts < 20);
-      if (usedCodes.has(code)) continue;
+    // Real HS-6 codes for this chapter (see hs6-reference.ts) — genuine,
+    // lookup-able codes instead of an arbitrary chapter+random-digits
+    // scheme, since real tariff data is indexed by these exact codes.
+    const available = (HS6_CODES_BY_CHAPTER[chapter] ?? []).filter((c) => !usedCodes.has(c.code));
+    const count = Math.min(available.length, Math.max(1, Math.round(randomInt(25, 45) * SEED_SCALE)));
+    const chosen = faker.helpers.arrayElements(available, count);
+
+    for (const { code } of chosen) {
       usedCodes.add(code);
-
       productRows.push({
         hsCode: code,
         description: `${title} – ${pick(names)}`,

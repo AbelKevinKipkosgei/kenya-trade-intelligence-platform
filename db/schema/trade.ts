@@ -54,7 +54,17 @@ export const agreementMembers = pgTable(
   ],
 );
 
-/** A tariff rate applicable to a product when traded with a given country. */
+/**
+ * A tariff rate applicable to a product when traded with a given country.
+ * rateSource distinguishes a genuine, sourced rate from an estimated one —
+ * see db/tariffs/fetch-real-mfn-rates.ts, which overwrites MFN rows with
+ * real WITS/TRAINS data where available and leaves the rest on the
+ * synthetic generator's estimate. Preferential rates (EAC/COMESA/AGOA/
+ * AfCFTA/EU/UK) stay estimated for now — real-world eligibility for those
+ * depends on product-specific rules of origin and exclusions that a
+ * blanket lookup can't safely capture without risking a confidently
+ * wrong "real" figure.
+ */
 export const tariffs = pgTable(
   "tariffs",
   {
@@ -68,6 +78,7 @@ export const tariffs = pgTable(
     agreementId: integer("agreement_id").references(() => tradeAgreements.id),
     ratePercent: numeric("rate_percent", { precision: 6, scale: 3 }).notNull(),
     rateType: varchar("rate_type", { length: 20 }).notNull(), // mfn | preferential | specific
+    rateSource: varchar("rate_source", { length: 20 }).notNull().default("estimated"), // real | estimated
     effectiveFrom: date("effective_from").notNull(),
     effectiveTo: date("effective_to"),
     sourceAgencyId: integer("source_agency_id")

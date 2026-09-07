@@ -70,7 +70,8 @@ SELECT
   t.rate_type,
   t.effective_from,
   t.effective_to,
-  ag.name AS source_agency
+  ag.name AS source_agency,
+  t.rate_source
 FROM tariffs t
 JOIN products p ON p.id = t.product_id
 JOIN sectors s ON s.id = p.sector_id

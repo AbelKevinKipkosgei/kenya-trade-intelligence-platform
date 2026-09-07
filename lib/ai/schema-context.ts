@@ -60,9 +60,14 @@ agreement_members(id, agreement_id -> trade_agreements.id, country_id -> countri
   Which countries belong to which agreement.
 
 tariffs(id, product_id -> products.id, country_id -> countries.id, agreement_id -> trade_agreements.id,
-        rate_percent, rate_type, effective_from, effective_to, source_agency_id -> agencies.id)
+        rate_percent, rate_type, rate_source, effective_from, effective_to, source_agency_id -> agencies.id)
   rate_type is one of: mfn, preferential, specific. A product/country pair can have multiple rows —
   one mfn baseline plus preferential rows per applicable agreement.
+  rate_source is one of: real, estimated. "real" means the MFN rate was sourced from the World
+  Bank's WITS/TRAINS database for a genuine reported observation; everything else (all preferential
+  rates, and any MFN row with no reported figure) is "estimated" — a plausible synthetic value, not
+  a verified one. Always mention when a rate you're citing is estimated rather than verified,
+  especially for cost-sensitive questions (e.g. landed cost, duty owed).
 
 trade_barriers(id, product_id -> products.id (nullable), country_id -> countries.id,
                source_agency_id -> agencies.id, barrier_type, description, status, impact_level,
