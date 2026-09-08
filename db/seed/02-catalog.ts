@@ -3,6 +3,7 @@ import { db } from "../client";
 import { products, tradeAgreements, agreementMembers, tariffs } from "../schema";
 import {
   HS_CHAPTERS,
+  NAME_TO_CHAPTER,
   TRADE_AGREEMENTS,
   EAC_MEMBERS,
   COMESA_MEMBERS,
@@ -108,7 +109,16 @@ export async function seedCatalog(sectorIdByName: Map<string, number>) {
     const sectorId = sectorIdByName.get(sector);
     if (!sectorId) continue;
     const units = SECTOR_UNITS[sector] ?? ["units"];
-    const names = SECTOR_PRODUCT_NAMES[sector] ?? [title];
+    const allNames = SECTOR_PRODUCT_NAMES[sector] ?? [title];
+    // A name with an entry in NAME_TO_CHAPTER only belongs in that specific
+    // chapter (e.g. "Baby Corn" is chapter 07 only, never any other chapter
+    // its sector spans); a name with no entry is chapter-agnostic and can
+    // still land in any of its sector's chapters, as before. Without this
+    // filter a real vegetable could get labeled with a cut-flowers
+    // description purely because both share the "Agriculture &
+    // Horticulture" sector — see NAME_TO_CHAPTER's doc comment.
+    const names = allNames.filter((name) => !NAME_TO_CHAPTER[name] || NAME_TO_CHAPTER[name] === chapter);
+    const namesForChapter = names.length > 0 ? names : allNames;
 
     // Real HS-6 codes for this chapter (see hs6-reference.ts) — genuine,
     // lookup-able codes instead of an arbitrary chapter+random-digits
@@ -121,7 +131,7 @@ export async function seedCatalog(sectorIdByName: Map<string, number>) {
       usedCodes.add(code);
       productRows.push({
         hsCode: code,
-        description: `${title} – ${pick(names)}`,
+        description: `${title} – ${pick(namesForChapter)}`,
         sectorId,
         unit: pick(units),
       });
