@@ -387,4 +387,79 @@ export const HS_CHAPTERS: { chapter: string; title: string; sector: string }[] =
   { chapter: "69", title: "Ceramic products", sector: "Manufacturing (General)" },
   { chapter: "76", title: "Aluminium and articles thereof", sector: "Manufacturing (General)" },
   { chapter: "85", title: "Electrical machinery, telecommunications equipment", sector: "ICT & Digital Services" },
+  // Added to fix product names that don't semantically belong to any of
+  // their sector's original chapters — see NAME_TO_CHAPTER below. Two of
+  // these reuse a chapter already listed under a different sector (real
+  // HS chapters aren't sector-exclusive in the first place), the same
+  // pattern already used for chapter 85 above.
+  { chapter: "23", title: "Residues and waste from the food industries; prepared animal fodder", sector: "Fisheries & Aquaculture" },
+  { chapter: "71", title: "Natural or cultured pearls, precious or semi-precious stones, precious metals", sector: "Handicrafts & Furniture" },
+  { chapter: "68", title: "Articles of stone, plaster, cement, asbestos, mica or similar materials", sector: "Handicrafts & Furniture" },
+  { chapter: "39", title: "Plastics and articles thereof", sector: "Manufacturing (General)" },
+  { chapter: "15", title: "Animal or vegetable fats and oils and their cleavage products", sector: "Manufacturing (General)" },
+  { chapter: "22", title: "Beverages, spirits and vinegar", sector: "Manufacturing (General)" },
+  { chapter: "96", title: "Miscellaneous manufactured articles", sector: "Manufacturing (General)" },
 ];
+
+/**
+ * Which real HS chapter each specific product name actually belongs to.
+ * Without this, the seed generator picked a random chapter within a
+ * sector and a random name from that sector's pool independently, so a
+ * name like "Baby Corn" (a vegetable) could land under chapter 06 (live
+ * plants/cut flowers) purely by chance — every product using that name
+ * ended up with a description sourced from the wrong chapter entirely,
+ * not just an imprecise one. This map is the actual source of truth for
+ * chapter assignment now; HS_CHAPTERS above still supplies each chapter's
+ * title/sector, but a sector's *set* of chapters is no longer picked
+ * from directly — see backfill-correct-chapters.ts and 02-catalog.ts.
+ */
+export const NAME_TO_CHAPTER: Record<string, string> = {
+  // Agriculture & Horticulture
+  "Fresh Cut Roses": "06",
+  "Cut Foliage": "06",
+  "French Beans": "07",
+  "Snow Peas": "07",
+  "Fresh Chillies": "07",
+  "Baby Corn": "07",
+  "Runner Beans": "07",
+  "Avocados": "08",
+  "Mangoes": "08",
+  "Passion Fruit": "08",
+  "Macadamia Nuts": "08",
+  "Pineapples": "08",
+  // Fisheries & Aquaculture
+  "Nile Perch Fillets": "03",
+  "Frozen Tilapia": "03",
+  "Dried Fish": "03",
+  "Farmed Prawns": "03",
+  "Fish Maws": "03",
+  "Smoked Fish": "03",
+  "Fish Meal": "23",
+  // Leather & Footwear
+  "Raw Hides": "41",
+  "Tanned Leather": "41",
+  "Leather Handbags": "42",
+  "Leather Belts": "42",
+  "Safety Boots": "64",
+  "Sports Shoes": "64",
+  "School Shoes": "64",
+  "Sandals": "64",
+  // Handicrafts & Furniture
+  "Wooden Furniture": "94",
+  "Wicker Chairs": "94",
+  "Sisal Baskets": "46",
+  "Woven Mats": "46",
+  "Wood Carvings": "44",
+  "Soapstone Carvings": "68",
+  "Beaded Jewelry": "71",
+  // Manufacturing (General)
+  "Exercise Books": "48",
+  "Cardboard Packaging": "48",
+  "Ceramic Tiles": "69",
+  "Ceramic Tableware": "69",
+  "Packaged Snacks": "19",
+  "Plastic Containers": "39",
+  "Cooking Oil": "15",
+  "Bottled Water": "22",
+  "Ballpoint Pens": "96",
+};
