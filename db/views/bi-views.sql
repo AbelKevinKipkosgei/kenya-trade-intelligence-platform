@@ -24,7 +24,12 @@ SELECT
   tt.value_usd,
   tt.quantity,
   tt.unit,
-  a.name AS source_agency
+  a.name AS source_agency,
+  -- Appended at the end, not inserted alongside country_name above:
+  -- CREATE OR REPLACE VIEW can only add columns at the end of the
+  -- existing list, not reorder/insert into the middle (Postgres error
+  -- 42P16 otherwise).
+  c.iso3 AS country_iso3
 FROM trade_transactions tt
 JOIN products p ON p.id = tt.product_id
 JOIN sectors s ON s.id = p.sector_id
