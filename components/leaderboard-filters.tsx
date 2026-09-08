@@ -11,6 +11,7 @@ export function LeaderboardFilters({
   selectedSector,
   selectedCountry,
   selectedPeriod,
+  productSearch,
 }: {
   sectors: Option[];
   countries: Option[];
@@ -18,6 +19,7 @@ export function LeaderboardFilters({
   selectedSector: string;
   selectedCountry: string;
   selectedPeriod: string;
+  productSearch: string;
 }) {
   const router = useRouter();
 
@@ -27,8 +29,20 @@ export function LeaderboardFilters({
       country: selectedCountry,
       period: selectedPeriod,
     });
+    if (productSearch) params.set("search", productSearch);
     if (value) params.set(key, value);
     else params.delete(key);
+    router.push(`/opportunities?${params.toString()}`);
+  }
+
+  function searchProducts(formData: FormData) {
+    const params = new URLSearchParams({
+      sector: selectedSector,
+      country: selectedCountry,
+      period: selectedPeriod,
+    });
+    const search = String(formData.get("search") ?? "").trim();
+    if (search) params.set("search", search);
     router.push(`/opportunities?${params.toString()}`);
   }
 
@@ -37,6 +51,16 @@ export function LeaderboardFilters({
 
   return (
     <div className="flex flex-wrap gap-2">
+      <form action={searchProducts} className="order-first flex min-w-60 flex-1 sm:order-0 sm:flex-none">
+        <input
+          type="search"
+          name="search"
+          defaultValue={productSearch}
+          placeholder="Search products or HS codes"
+          aria-label="Search products or HS codes"
+          className={`${selectClass} w-full`}
+        />
+      </form>
       <select
         value={selectedPeriod}
         onChange={(e) => updateParam("period", e.target.value)}

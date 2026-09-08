@@ -1,4 +1,4 @@
-import { eq, and, desc, sql, type SQL } from "drizzle-orm";
+import { eq, and, desc, ilike, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
   marketOpportunityScores,
@@ -31,9 +31,15 @@ function formatPeriodLabel(period: string): string {
 export default async function OpportunitiesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sector?: string; country?: string; period?: string }>;
+  searchParams: Promise<{
+    sector?: string;
+    country?: string;
+    period?: string;
+    search?: string;
+  }>;
 }) {
   const params = await searchParams;
+  const productSearch = params.search?.trim() ?? "";
   const periods = await loadPeriods();
   const selectedPeriod =
     params.period && periods.includes(params.period)
@@ -63,6 +69,19 @@ export default async function OpportunitiesPage({
     conditions.push(
       eq(marketOpportunityScores.countryId, Number(params.country)),
     );
+  if (productSearch) {
+    const terms = productSearch.split(/\s+/).filter(Boolean);
+    conditions.push(
+      and(
+        ...terms.map((term) =>
+          or(
+            ilike(products.description, `%${term}%`),
+            ilike(products.hsCode, `%${term}%`),
+          ),
+        ),
+      )!,
+    );
+  }
 
   const rows = await db
     .select({
@@ -118,6 +137,7 @@ export default async function OpportunitiesPage({
         selectedSector={params.sector ?? ""}
         selectedCountry={params.country ?? ""}
         selectedPeriod={selectedPeriod}
+        productSearch={productSearch}
       />
 
       {top && (
