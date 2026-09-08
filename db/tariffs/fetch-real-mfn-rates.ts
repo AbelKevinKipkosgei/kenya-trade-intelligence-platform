@@ -45,10 +45,19 @@ const ISO3_TO_NUMERIC = new Map(
 
 const CONCURRENCY = 20;
 const CURRENT_YEAR = new Date().getFullYear();
-// Just the most recent year: MFN schedules rarely change year to year for
-// a given product, and a single WITS request measured at ~5 seconds means
-// every extra year tried meaningfully adds to the runtime.
-const YEARS_TO_TRY = [CURRENT_YEAR - 1];
+// Confirmed empirically (not assumed): WITS/TRAINS has real reporting lag.
+// CURRENT_YEAR-1 and CURRENT_YEAR-2 came back empty for every country
+// tested (USA, Egypt, Uganda) — countries typically haven't submitted
+// their tariff schedule to WITS that recently. CURRENT_YEAR-3 is where
+// data actually starts appearing for normal reporters; a first attempt at
+// just CURRENT_YEAR-1 (to save time) was a real bug, not a speed win — it
+// wasted the entire request budget on years that are essentially always
+// empty, silently starving the sync of real data. Two years tried, not
+// three: catches the common case without paying for a much deeper (and
+// much slower) search for occasional slow reporters like Egypt, which
+// fall back to the estimated rate instead — an honest, graceful miss, not
+// a bug.
+const YEARS_TO_TRY = [CURRENT_YEAR - 3, CURRENT_YEAR - 4];
 
 async function fetchMfnRate(reporterNumeric: string, hsCode: string): Promise<number | null> {
   for (const year of YEARS_TO_TRY) {
