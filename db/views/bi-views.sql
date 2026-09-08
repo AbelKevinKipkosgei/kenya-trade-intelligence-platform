@@ -117,6 +117,30 @@ FROM procedures p
 LEFT JOIN sectors s ON s.id = p.sector_id
 JOIN agencies a ON a.id = p.lead_agency_id;
 
+CREATE OR REPLACE VIEW vw_news_articles AS
+SELECT
+  n.id,
+  n.title,
+  n.summary,
+  n.source_name,
+  n.source_url,
+  n.published_at,
+  date_trunc('month', n.published_at)::date AS published_month,
+  n.category,
+  p.hs_code AS related_product_hs_code,
+  p.description AS related_product_description,
+  c.name AS related_country_name,
+  c.region AS related_country_region,
+  -- Seeded mock articles use a placeholder example.com URL (see
+  -- db/seed/05-news.ts) since they stand in for coverage that doesn't
+  -- actually exist; real articles come from the NewsAPI.org ingestion
+  -- pipeline (db/ingestion/fetch-news.ts). Flagged here so a chart never
+  -- silently mixes synthetic volume with real, live coverage.
+  n.source_url LIKE 'https://example.com/%' AS is_mock
+FROM news_articles n
+LEFT JOIN products p ON p.id = n.related_product_id
+LEFT JOIN countries c ON c.id = n.related_country_id;
+
 CREATE OR REPLACE VIEW vw_exporters AS
 SELECT
   e.id,

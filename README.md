@@ -193,7 +193,7 @@ Every dimension is documented inline in the SQL and in the UI as either a direct
 
 The Landed Cost Estimator (`components/landed-cost-calculator.tsx`, `lib/forex.ts`) picks, per destination market, the best (lowest) tariff rate the product actually qualifies for — the same "lowest applicable rate" logic the Opportunity Score's market-access dimension uses — since a market can have both an MFN rate and a preferential rate under an agreement, and only the lower one is what an exporter would actually pay. Duty is calculated as declared value × that rate, and shown as a total alongside the declared value. For the USD/KES conversion, rather than hardcoding an exchange rate that would silently go stale, the Explorer page fetches a live rate server-side from a free, no-key API (`open.er-api.com`, backed by exchangerate-api.com's free tier, rates updated daily), cached for an hour via Next's fetch cache so repeated page views don't each trigger an external call. The rate itself is disclosed inline rather than hidden behind the converted figures, and if the forex API is ever unreachable, the KES figures are simply omitted with a note instead of the page breaking.
 
-BI views as the external-analytics boundary (`db/views/bi-views.sql`, applied via `pnpm db:views`) — six flattened, fully-joined, zero-storage-cost SQL views (`vw_trade_transactions`, `vw_market_opportunity`, `vw_tariffs`, `vw_trade_barriers`, `vw_procedures`, `vw_exporters`) so a BI tool never needs to understand the normalized schema or write its own joins — see [Section 11](#11-external-analytics-insightgrid).
+BI views as the external-analytics boundary (`db/views/bi-views.sql`, applied via `pnpm db:views`) — seven flattened, fully-joined, zero-storage-cost SQL views (`vw_trade_transactions`, `vw_market_opportunity`, `vw_tariffs`, `vw_trade_barriers`, `vw_news_articles`, `vw_procedures`, `vw_exporters`) so a BI tool never needs to understand the normalized schema or write its own joins — see [Section 11](#11-external-analytics-insightgrid).
 
 AI Trade Analyst internals (`lib/ai/trade-analyst.ts`, `lib/ai/sql-tool.ts`):
 
@@ -315,12 +315,13 @@ Both scheduled jobs run as GitHub Actions (chosen after confirming `pg_cron` isn
 
 InsightGrid is the organization's existing BI/analytics tool, and general trend dashboards, cross-cutting analytics, and visual reporting are deliberately not built inside this platform — building that here would duplicate work the organization already has a dedicated tool for. Instead, KTIP's database exposes a purpose-built integration surface for exactly this:
 
-Six read-only SQL views (`db/views/bi-views.sql`, applied with `pnpm db:views`) — plain views with zero storage cost, never materialized, so they always reflect live data:
+Seven read-only SQL views (`db/views/bi-views.sql`, applied with `pnpm db:views`) — plain views with zero storage cost, never materialized, so they always reflect live data:
 
 - `vw_trade_transactions` — every transaction joined out to product, sector, country (with region/bloc-membership flags), port, and source agency — the main fact table InsightGrid would query most heavily.
 - `vw_market_opportunity` — every opportunity score joined to its product/sector/country, with all seven score dimensions as columns.
-- `vw_tariffs` — every tariff rate joined to product, country, and the trade agreement (if any) it derives from.
+- `vw_tariffs` — every tariff rate joined to product, country, and the trade agreement (if any) it derives from, with a rate_source column distinguishing a real, WITS-sourced rate from an estimated one.
 - `vw_trade_barriers` — every barrier joined to product, country, and the reporting agency.
+- `vw_news_articles` — every article joined to its related product/country, with an is_mock flag so a chart never silently mixes seeded mock volume with real, live-ingested coverage.
 - `vw_procedures` — every procedure joined to its sector and lead agency, with step count pre-computed.
 - `vw_exporters` — every exporter joined to county, sector, and primary product, with certifications and export-readiness.
 
