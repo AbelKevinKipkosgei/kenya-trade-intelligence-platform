@@ -68,3 +68,10 @@ export function randomFloat(min: number, max: number, decimals = 2): number {
   const factor = 10 ** decimals;
   return Math.round(value * factor) / factor;
 }
+
+/** Uniform-random date between two ISO date strings (inclusive of start, exclusive of end). */
+export function randomDate(startIso: string, endIso: string): Date {
+  const start = new Date(startIso).getTime();
+  const end = new Date(endIso).getTime();
+  return new Date(start + Math.random() * (end - start));
+}

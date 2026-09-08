@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { db } from "../client";
 import { exporters } from "../schema";
-import { batchInsert, pick, randomInt, SEED_SCALE } from "./utils";
+import { batchInsert, pick, randomDate, randomInt, SEED_SCALE } from "./utils";
 
 const CERTIFICATIONS = [
   "KEBS Diamond Mark",
@@ -54,6 +54,12 @@ export async function seedExporters(
       contactEmail: faker.internet.email().toLowerCase(),
       registeredWithAgencyId: Math.random() > 0.5 ? keprobaId : epzaId,
       description: `${sectorName} producer based in ${countyName} County.`,
+      // Spread registrations across a real historical window instead of
+      // leaving this on its defaultNow() default — every row would
+      // otherwise carry the exact seed-run timestamp, making a
+      // "registered exporters over time" chart show one spike instead of
+      // a genuine trend.
+      createdAt: randomDate("2014-01-01", "2024-12-31"),
     });
   }
 

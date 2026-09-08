@@ -155,7 +155,8 @@ SELECT
   e.capacity_unit,
   e.certifications,
   e.export_ready,
-  ag.name AS registered_with_agency
+  ag.name AS registered_with_agency,
+  e.created_at AS registered_at
 FROM exporters e
 JOIN counties co ON co.id = e.county_id
 JOIN sectors s ON s.id = e.sector_id
