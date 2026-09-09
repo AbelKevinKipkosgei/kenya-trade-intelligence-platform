@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { href: "/opportunities", label: "Opportunities" },
   { href: "/barriers", label: "Barriers" },
   { href: "/exporters", label: "Exporters" },
+  { href: "/dashboards", label: "Dashboards" },
   { href: "/news", label: "News" },
   { href: "/getting-started", label: "Getting Started" },
   { href: "/analyst", label: "AI Analyst" },
