@@ -121,8 +121,8 @@ The schema is organized into six logical groups, each in its own file under `db/
 - Reference / core (`core.ts`) — `agencies`, `countries`, `sectors`, `counties`, `ports`: 13 agencies · 250 countries · 14 sectors · 47 counties · 12 ports.
 - Trade catalog (`trade.ts`) — `products`, `trade_agreements`, `agreement_members`, `tariffs`, `trade_barriers`: 1,307 products · 8 agreements · 395 memberships · 79,528 tariffs · 4,000 barriers.
 - Export capacity (`exporters.ts`) — `exporters`: 5,000 rows.
-- Transactions (`transactions.ts`) — `trade_transactions`: 2,709,265 rows.
-- Intelligence (`intelligence.ts`) — `market_opportunity_scores`, `news_articles`: 311,468 scores · 3,004 articles (3,000 seeded mock + live NewsAPI ingestion).
+- Transactions (`transactions.ts`) — `trade_transactions`: 2,708,389 rows.
+- Intelligence (`intelligence.ts`) — `market_opportunity_scores`, `news_articles`: 311,217 scores · 3,004 articles (3,000 seeded mock + live NewsAPI ingestion).
 - Procedures (`procedures.ts`) — `procedures`: 10 rows.
 - Users (`users.ts`) — `users`: schema scaffold only (role field: `public | exporter | officer | admin`) — not yet wired into auth.
 
@@ -240,6 +240,8 @@ A deliberate mobile-first pass — the 8-column Opportunity Leaderboard table re
 - `drizzle-kit push` blocked on adding a `UNIQUE` constraint to `news_articles.source_url`. Root cause: the table already had 3,000 seeded rows; drizzle-kit's interactive TTY prompt (unavailable non-interactively) defaulted to suggesting a destructive truncate. Fix: verified zero duplicate `source_url` values existed first, applied the constraint directly via raw `ALTER TABLE ... ADD CONSTRAINT ... UNIQUE` SQL, then re-ran `drizzle-kit push` to confirm the schema and database were back in sync.
 - The Opportunity Leaderboard was unusable on a phone. Root cause: an 8-column table with only horizontal-scroll as a mobile fallback — comparing a row meant constant side-scrolling. Fix: added a stacked card view (overall score prominent, four sub-scores in a small grid) below the `sm` breakpoint, keeping the table for larger screens.
 - Clicking a news article often didn't go anywhere real. Root cause: seeded mock articles use a placeholder `example.com` URL as a stand-in for a real source, which resolves to a generic placeholder page regardless of path. Fix: labeled every article sourced from that placeholder domain with a "Mock article" badge (kept clickable, since the placeholder link itself is harmless) so it's clear which articles are real, live-ingested coverage.
+- Several ports converged to near-identical aggregate trade values (all six land border posts, both airports, both seaports pairwise), and the two Inland Container Depots had zero transactions, ever. Root cause: the seed generator picked a specific port uniformly at random within its type, independent of transaction value — over millions of rows this converges every port in a type toward an equal share purely by the law of large numbers — and never handled the `icd` port type at all. Fix: replaced the uniform pick with sourced, weighted port pools (real 2024/2025 published throughput figures for Port of Mombasa vs. Lamu Port and JKIA vs. Moi International; directional estimates, clearly labeled as such, for the six land borders and two ICDs — see the citations in `db/seed/04-transactions.ts`) and added the missing `icd` case.
+- Correcting that port assignment on already-seeded data via an in-place `UPDATE` failed outright against Neon's 512MB project cap, even batched with `VACUUM` between batches. Root cause: Postgres's MVCC writes a new row version on every `UPDATE` rather than overwriting in place; plain `VACUUM` only reclaims trailing empty pages, and batching in ascending ID order never reaches the trailing pages until the whole table is done, so the bloat accumulates instead of getting reclaimed mid-run. Fix: `TRUNCATE` + a fresh `INSERT` via the corrected seed script instead of correcting rows in place — a clean rebuild carries none of the old-row-version overhead an `UPDATE` does — followed by recomputing `market_opportunity_scores`. Also added retry-wrapping around the transaction insert loop after a transient Neon connection drop killed one reseed attempt partway through.
 
 ## 9. Getting Started (Local Development)
 
@@ -317,7 +319,7 @@ InsightGrid is the organization's existing BI/analytics tool, and general trend 
 
 Seven read-only SQL views (`db/views/bi-views.sql`, applied with `pnpm db:views`) — plain views with zero storage cost, never materialized, so they always reflect live data:
 
-- `vw_trade_transactions` — every transaction joined out to product, sector, country (with region/bloc-membership flags), port, and source agency — the main fact table InsightGrid would query most heavily.
+- `vw_trade_transactions` — every transaction joined out to product, sector, country (with region/bloc-membership flags and an ISO-3 code for map-based tools), port, and source agency, with calendar month pre-extracted (independent of year) for seasonality analysis — the main fact table InsightGrid would query most heavily.
 - `vw_market_opportunity` — every opportunity score joined to its product/sector/country, with all seven score dimensions as columns.
 - `vw_tariffs` — every tariff rate joined to product, country, and the trade agreement (if any) it derives from, with a rate_source column distinguishing a real, WITS-sourced rate from an estimated one.
 - `vw_trade_barriers` — every barrier joined to product, country, and the reporting agency.
