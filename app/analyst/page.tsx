@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Show, SignInButton } from "@clerk/nextjs";
 import { MarkdownMessage } from "@/components/markdown-message";
 import { parseStatusStream } from "@/lib/status-protocol";
 
@@ -110,92 +111,114 @@ export default function AnalystPage() {
     }
   }
 
-  return (
-    <div className="mx-auto flex min-h-full w-full max-w-3xl flex-1 flex-col px-6 py-10 sm:px-10">
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            AI Trade Analyst
-          </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Ask about Kenyan exports, imports, tariffs, or trade barriers. Answers are grounded in
-            the KTIP database and cite their source.
-          </p>
-        </div>
-        {messages.length > 0 && (
-          <button
-            type="button"
-            onClick={clearConversation}
-            className="shrink-0 rounded-full border border-stone-400 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-zinc-500 hover:text-zinc-900 dark:border-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-50"
-          >
-            Clear
-          </button>
-        )}
-      </div>
-
-      {messages.length === 0 && (
-        <div className="mb-6 flex flex-col gap-2">
-          {SUGGESTIONS.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => send(s)}
-              className="rounded-xl border border-stone-300 bg-white/60 px-4 py-3 text-left text-sm text-zinc-700 transition-colors hover:border-kenya-green hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300 dark:hover:text-zinc-50"
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto">
-        {messages.map((m, i) =>
-          m.role === "user" ? (
-            <div
-              key={i}
-              className="max-w-[85%] self-end whitespace-pre-wrap rounded-2xl bg-kenya-green px-4 py-3 text-sm leading-relaxed text-white"
-            >
-              {m.content}
-            </div>
-          ) : (
-            <div
-              key={i}
-              className="w-full max-w-full self-start rounded-2xl border border-stone-300 bg-white/70 px-4 py-3 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800/70 dark:text-zinc-200"
-            >
-              {m.content ? (
-                <MarkdownMessage content={m.content} />
-              ) : isStreaming && i === messages.length - 1 ? (
-                <span className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-kenya-green" />
-                  {m.status ?? "Thinking…"}
-                </span>
-              ) : null}
-            </div>
-          ),
-        )}
-      </div>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          send(input);
-        }}
-        className="mt-6 flex gap-2"
-      >
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about Kenyan trade data…"
-          className="flex-1 rounded-full border border-stone-400 bg-white px-4 py-2.5 text-base sm:text-sm text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
-        />
+  const signInPrompt = (
+    <div className="mx-auto flex min-h-full w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 py-10 text-center sm:px-10">
+      <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        AI Trade Analyst
+      </h1>
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        Sign in to ask questions about Kenyan exports, imports, tariffs, or trade barriers —
+        answers are grounded in the KTIP database and cite their source.
+      </p>
+      <SignInButton>
         <button
-          type="submit"
-          disabled={isStreaming || !input.trim()}
-          className="rounded-full bg-kenya-green px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-kenya-green/90 disabled:opacity-50"
+          type="button"
+          className="mt-2 flex h-12 items-center justify-center border border-kenya-green bg-kenya-green px-6 text-sm font-semibold text-white transition-colors hover:bg-[#004d00] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red"
         >
-          Send
+          Sign in to continue
         </button>
-      </form>
+      </SignInButton>
     </div>
+  );
+
+  return (
+    <Show when="signed-in" fallback={signInPrompt}>
+      <div className="mx-auto flex min-h-full w-full max-w-3xl flex-1 flex-col px-6 py-10 sm:px-10">
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+              AI Trade Analyst
+            </h1>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Ask about Kenyan exports, imports, tariffs, or trade barriers. Answers are grounded in
+              the KTIP database and cite their source.
+            </p>
+          </div>
+          {messages.length > 0 && (
+            <button
+              type="button"
+              onClick={clearConversation}
+              className="shrink-0 rounded-full border border-stone-400 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-zinc-500 hover:text-zinc-900 dark:border-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-50"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        {messages.length === 0 && (
+          <div className="mb-6 flex flex-col gap-2">
+            {SUGGESTIONS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => send(s)}
+                className="rounded-xl border border-stone-300 bg-white/60 px-4 py-3 text-left text-sm text-zinc-700 transition-colors hover:border-kenya-green hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300 dark:hover:text-zinc-50"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto">
+          {messages.map((m, i) =>
+            m.role === "user" ? (
+              <div
+                key={i}
+                className="max-w-[85%] self-end whitespace-pre-wrap rounded-2xl bg-kenya-green px-4 py-3 text-sm leading-relaxed text-white"
+              >
+                {m.content}
+              </div>
+            ) : (
+              <div
+                key={i}
+                className="w-full max-w-full self-start rounded-2xl border border-stone-300 bg-white/70 px-4 py-3 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800/70 dark:text-zinc-200"
+              >
+                {m.content ? (
+                  <MarkdownMessage content={m.content} />
+                ) : isStreaming && i === messages.length - 1 ? (
+                  <span className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-kenya-green" />
+                    {m.status ?? "Thinking…"}
+                  </span>
+                ) : null}
+              </div>
+            ),
+          )}
+        </div>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(input);
+          }}
+          className="mt-6 flex gap-2"
+        >
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask about Kenyan trade data…"
+            className="flex-1 rounded-full border border-stone-400 bg-white px-4 py-2.5 text-base sm:text-sm text-zinc-900 outline-none focus:border-kenya-green dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+          />
+          <button
+            type="submit"
+            disabled={isStreaming || !input.trim()}
+            className="rounded-full bg-kenya-green px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-kenya-green/90 disabled:opacity-50"
+          >
+            Send
+          </button>
+        </form>
+      </div>
+    </Show>
   );
 }
