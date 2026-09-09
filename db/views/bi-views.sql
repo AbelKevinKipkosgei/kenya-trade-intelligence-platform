@@ -29,7 +29,12 @@ SELECT
   -- CREATE OR REPLACE VIEW can only add columns at the end of the
   -- existing list, not reorder/insert into the middle (Postgres error
   -- 42P16 otherwise).
-  c.iso3 AS country_iso3
+  c.iso3 AS country_iso3,
+  -- Calendar month (1-12), independent of year — for a seasonality
+  -- heatmap (month x year) you want every January stacked together
+  -- across years, not date_trunc('month', ...), which would give a
+  -- distinct value per year-month combination instead.
+  extract(month FROM tt.transaction_date)::int AS transaction_month
 FROM trade_transactions tt
 JOIN products p ON p.id = tt.product_id
 JOIN sectors s ON s.id = p.sector_id
