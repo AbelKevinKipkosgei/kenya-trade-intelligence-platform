@@ -20,7 +20,7 @@ async function main() {
   const agencyRows = await db.select({ id: agencies.id, code: agencies.code }).from(agencies);
   const agencyIdByCode = new Map(agencyRows.map((r) => [r.code, r.id]));
 
-  const portRows = await db.select({ id: ports.id, type: ports.type }).from(ports);
+  const portRows = await db.select({ id: ports.id, name: ports.name, type: ports.type }).from(ports);
 
   const { txTotal } = await seedTransactions(productRows, countryIdByIso3, agencyIdByCode, portRows);
 
