@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 import { ThemeToggle } from "./theme-toggle";
 import { ScrollToTop } from "./scroll-to-top";
 
@@ -14,7 +15,6 @@ const NAV_LINKS = [
   { href: "/exporters", label: "Exporters" },
   { href: "/dashboards", label: "Dashboards" },
   { href: "/news", label: "News" },
-  { href: "/getting-started", label: "Getting Started" },
   { href: "/analyst", label: "AI Analyst" },
 ];
 
@@ -85,12 +85,21 @@ export function SiteHeader() {
           <div className="hidden sm:block">
             <ThemeToggle />
           </div>
-          <Link
-            href="/getting-started"
-            className="hidden border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red dark:border-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 sm:inline-block"
+          <Show
+            when="signed-in"
+            fallback={
+              <SignInButton mode="modal">
+                <button
+                  type="button"
+                  className="hidden border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red dark:border-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 sm:inline-block"
+                >
+                  Sign In
+                </button>
+              </SignInButton>
+            }
           >
-            Get Started
-          </Link>
+            <UserButton />
+          </Show>
           <button
             type="button"
             onClick={() => setMobileOpen((open) => !open)}
