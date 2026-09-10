@@ -15,10 +15,12 @@ interface County {
 }
 
 interface ExporterOnboardingProps {
+  // Unused here — /api/user/profile derives the user from the session
+  // server-side, not from the request body.
   userId: number;
 }
 
-export function ExporterOnboarding({ userId }: ExporterOnboardingProps) {
+export function ExporterOnboarding({}: ExporterOnboardingProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -93,7 +95,7 @@ export function ExporterOnboarding({ userId }: ExporterOnboardingProps) {
       // Success - redirect to dashboard
       router.push("/dashboard");
       router.refresh();
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
       setLoading(false);
     }
@@ -125,7 +127,11 @@ export function ExporterOnboarding({ userId }: ExporterOnboardingProps) {
             onChange={(e) =>
               setFormData({
                 ...formData,
-                businessType: e.target.value as any,
+                businessType: e.target.value as
+                  | "manufacturer"
+                  | "trader"
+                  | "cooperative"
+                  | "sme",
               })
             }
             className="mt-2 block w-full border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 focus:border-kenya-green focus:outline-none focus:ring-1 focus:ring-kenya-green dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"

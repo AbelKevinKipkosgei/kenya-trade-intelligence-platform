@@ -20,7 +20,7 @@ interface WatchlistsViewProps {
 
 export function WatchlistsView({ initialWatchlists }: WatchlistsViewProps) {
   const router = useRouter();
-  const [watchlists, setWatchlists] = useState(initialWatchlists);
+  const [watchlists] = useState(initialWatchlists);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -85,7 +85,7 @@ export function WatchlistsView({ initialWatchlists }: WatchlistsViewProps) {
       router.refresh();
       setShowCreateModal(false);
       setLoading(false);
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
       setLoading(false);
     }
@@ -122,7 +122,7 @@ export function WatchlistsView({ initialWatchlists }: WatchlistsViewProps) {
       router.refresh();
       setShowEditModal(false);
       setLoading(false);
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
       setLoading(false);
     }
@@ -150,7 +150,7 @@ export function WatchlistsView({ initialWatchlists }: WatchlistsViewProps) {
       router.refresh();
       setShowDeleteModal(false);
       setLoading(false);
-    } catch (err) {
+    } catch {
       setLoading(false);
     }
   };
@@ -412,7 +412,7 @@ export function WatchlistsView({ initialWatchlists }: WatchlistsViewProps) {
               Delete Watchlist
             </h2>
             <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-              Are you sure you want to delete "{selectedWatchlist.name}"? This
+              Are you sure you want to delete &ldquo;{selectedWatchlist.name}&rdquo;? This
               will remove all {selectedWatchlist.itemCount} tracked items. This
               action cannot be undone.
             </p>

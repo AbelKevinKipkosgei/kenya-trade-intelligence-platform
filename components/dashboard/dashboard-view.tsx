@@ -1,12 +1,56 @@
 "use client";
 
-import Link from "next/link";
 import { StatsCards } from "./stats-cards";
 import { RecentActivity } from "./recent-activity";
 import { WatchlistPreview } from "./watchlist-preview";
 import { ExporterRecommendations } from "./exporter-recommendations";
 import { OfficerOverview } from "./officer-overview";
 import { QuickActions } from "./quick-actions";
+
+export interface ExporterRoleData {
+  profile: {
+    businessName: string | null;
+    sectorName: string | null;
+    productsOffered: string[] | null;
+    primaryMarkets: string[] | null;
+  } | null;
+  opportunities: Array<{
+    id: number;
+    productDescription: string;
+    hsCode: string;
+    countryName: string;
+    overallScore: string;
+  }>;
+  barriers: Array<{
+    id: number;
+    countryName: string;
+    barrierType: string;
+    description: string;
+    impactLevel: string;
+  }>;
+}
+
+export interface OfficerRoleData {
+  profile: {
+    agencyName: string | null;
+    department: string | null;
+    level: string | null;
+  } | null;
+  sectorStats: Array<{
+    sectorName: string;
+    exporterCount: number;
+    opportunityCount: number;
+  }>;
+  recentBarriers: Array<{
+    id: number;
+    countryName: string;
+    productDescription: string | null;
+    sectorName: string | null;
+    barrierType: string;
+    impactLevel: string;
+    reportedDate: string;
+  }>;
+}
 
 interface DashboardViewProps {
   userName: string;
@@ -24,7 +68,7 @@ interface DashboardViewProps {
     id: number;
     itemType: string;
     itemName: string;
-    itemMeta: Record<string, any> | null;
+    itemMeta: Record<string, unknown> | null;
     watchlistName: string;
     addedAt: Date;
   }>;
@@ -35,7 +79,10 @@ interface DashboardViewProps {
     isDefault: boolean;
     itemCount: number;
   }>;
-  roleSpecificData: any;
+  // Shape depends on userRole (exporter vs officer) — the page only ever
+  // populates one or the other, never both, so a discriminated cast at the
+  // two render sites below is correct rather than a workaround.
+  roleSpecificData: ExporterRoleData | OfficerRoleData | null;
 }
 
 export function DashboardView({
@@ -76,10 +123,12 @@ export function DashboardView({
 
             {/* Role-Specific Section */}
             {userRole === "exporter" && roleSpecificData && (
-              <ExporterRecommendations data={roleSpecificData} />
+              <ExporterRecommendations
+                data={roleSpecificData as ExporterRoleData}
+              />
             )}
             {userRole === "officer" && roleSpecificData && (
-              <OfficerOverview data={roleSpecificData} />
+              <OfficerOverview data={roleSpecificData as OfficerRoleData} />
             )}
           </div>
 

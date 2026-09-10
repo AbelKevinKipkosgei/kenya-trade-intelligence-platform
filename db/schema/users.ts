@@ -9,7 +9,7 @@ import {
   timestamp,
   index,
 } from "drizzle-orm/pg-core";
-import { agencies, counties, sectors } from "./core";
+import { agencies, sectors } from "./core";
 import { exporters } from "./exporters";
 
 /**
@@ -130,18 +130,24 @@ export const watchlistItems = pgTable(
     watchlistId: integer("watchlist_id")
       .notNull()
       .references(() => watchlists.id, { onDelete: "cascade" }),
-    itemType: varchar("item_type", { length: 40 }).notNull(), // product | country | opportunity | barrier | exporter
+    itemType: varchar("item_type", { length: 40 })
+      .$type<"product" | "country" | "opportunity" | "barrier" | "exporter">()
+      .notNull(),
     itemId: integer("item_id").notNull(), // Foreign key to respective table
 
     // Denormalized for quick display without joins
     itemName: varchar("item_name", { length: 300 }).notNull(),
+    // Field names here match what every call site actually writes (see
+    // AddToWatchlist usages in app/explorer, app/opportunities, etc.) —
+    // "sector", not "sectorName". The [key: string] escape hatch is
+    // deliberate: different item types carry genuinely different shapes.
     itemMeta: jsonb("item_meta").$type<{
       hsCode?: string;
       iso3?: string;
       productId?: number;
       countryId?: number;
-      sectorName?: string;
-      [key: string]: any;
+      sector?: string;
+      [key: string]: unknown;
     }>(), // Additional context (HS code, ISO code, etc.)
 
     notes: text("notes"),

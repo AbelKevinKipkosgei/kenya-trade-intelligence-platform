@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/auth";
 import { db } from "@/db/client";
 import { watchlists, watchlistItems } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
@@ -32,6 +32,9 @@ export async function GET() {
 
     return NextResponse.json({ watchlists: userWatchlists });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("Fetch watchlists error:", error);
     return NextResponse.json(
       { error: "Failed to fetch watchlists" },
@@ -79,6 +82,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ watchlist, success: true }, { status: 201 });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("Create watchlist error:", error);
     return NextResponse.json(
       { error: "Failed to create watchlist" },
@@ -131,6 +137,9 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("Delete watchlist error:", error);
     return NextResponse.json(
       { error: "Failed to delete watchlist" },
@@ -201,6 +210,9 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ watchlist: updated, success: true });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("Update watchlist error:", error);
     return NextResponse.json(
       { error: "Failed to update watchlist" },

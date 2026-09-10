@@ -15,7 +15,9 @@ export const authConfig = {
       const isLoggedIn = !!auth?.user;
       const pathname = nextUrl.pathname;
 
-      // Public routes
+      // Public routes — /analyst is deliberately NOT here: every call it
+      // makes is a real, metered LLM request, so it's gated behind sign-in
+      // to tie usage to an account instead of anonymous traffic.
       const publicRoutes = [
         "/",
         "/explorer",
@@ -24,7 +26,6 @@ export const authConfig = {
         "/exporters",
         "/dashboards",
         "/news",
-        "/analyst",
         "/getting-started",
       ];
 

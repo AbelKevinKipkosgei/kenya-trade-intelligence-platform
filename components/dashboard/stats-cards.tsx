@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 interface StatsCardsProps {
   stats: {
     totalWatchlists: number;
@@ -16,7 +18,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
   return (
     <section className="grid grid-cols-2 gap-0 border-b border-zinc-200 pb-10 dark:border-zinc-800 lg:grid-cols-4">
       {/* Primary stat: Tracked Items - most actionable for returning users */}
-      <a
+      <Link
         href="/watchlists"
         className="group border-r border-zinc-200 pr-6 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900/50 sm:pr-8"
       >
@@ -29,10 +31,10 @@ export function StatsCards({ stats }: StatsCardsProps) {
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           across {stats.totalWatchlists} {stats.totalWatchlists === 1 ? 'watchlist' : 'watchlists'}
         </p>
-      </a>
+      </Link>
 
       {/* Secondary stat: Active Barriers - actionable alert */}
-      <a
+      <Link
         href="/barriers"
         className="group border-r border-zinc-200 pl-6 pr-6 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900/50 sm:px-8"
       >
@@ -45,10 +47,10 @@ export function StatsCards({ stats }: StatsCardsProps) {
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           affecting tracked items
         </p>
-      </a>
+      </Link>
 
       {/* Tertiary stat: Opportunities */}
-      <a
+      <Link
         href="/opportunities"
         className="group border-r border-zinc-200 pl-6 pr-6 pt-6 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900/50 sm:px-8 lg:pt-0"
       >
@@ -61,10 +63,10 @@ export function StatsCards({ stats }: StatsCardsProps) {
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           tracked markets
         </p>
-      </a>
+      </Link>
 
       {/* Tertiary stat: Products */}
-      <a
+      <Link
         href="/explorer"
         className="group pl-6 pt-6 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50 sm:pl-8 lg:pt-0"
       >
@@ -77,7 +79,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           in watchlists
         </p>
-      </a>
+      </Link>
     </section>
   );
 }

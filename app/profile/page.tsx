@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { db } from "@/db/client";
 import { userProfiles, users, sectors, counties, agencies } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -10,7 +10,13 @@ import { ProfileView } from "@/components/profile/profile-view";
  * Displays user information and profile data with edit capability.
  */
 export default async function ProfilePage() {
-  const session = await requireAuth();
+  // requireAuth() throws on no session, which crashes to a generic 500
+  // instead of a sign-in prompt — redirect() is the correct way to gate
+  // a page.
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/auth/signin");
+  }
   const userId = parseInt(session.user.id);
 
   // Fetch user data

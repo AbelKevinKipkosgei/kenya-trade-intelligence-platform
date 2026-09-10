@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 
-export default auth((req) => {
+export default auth(() => {
   // The auth function automatically handles authentication
   // You can add custom logic here if needed
 });

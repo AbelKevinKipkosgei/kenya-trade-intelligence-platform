@@ -1,5 +1,5 @@
 import { redirect, notFound } from "next/navigation";
-import { requireAuth } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { db } from "@/db/client";
 import { watchlists, watchlistItems } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -16,7 +16,13 @@ interface PageProps {
  * Shows all items in a specific watchlist grouped by type.
  */
 export default async function WatchlistDetailPage({ params }: PageProps) {
-  const session = await requireAuth();
+  // requireAuth() throws on no session, which crashes to a generic 500
+  // instead of a sign-in prompt — redirect() is the correct way to gate
+  // a page.
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/auth/signin");
+  }
   const userId = parseInt(session.user.id);
   const { id } = await params;
   const watchlistId = parseInt(id);

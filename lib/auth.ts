@@ -27,15 +27,6 @@ declare module "next-auth" {
 }
 
 /**
- * Extended JWT type with custom fields.
- */
-interface JWT {
-  id?: string;
-  role?: UserRole;
-  emailVerified?: boolean;
-}
-
-/**
  * NextAuth.js configuration for self-hosted authentication.
  * Uses JWT sessions (stateless) for scalability and Postgres for user storage.
  * Government email domain validation enforced at signup, not here.
@@ -100,7 +91,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user.fullName,
           role: user.role,
           emailVerified: user.emailVerified,
-        } as any;
+        };
       },
     }),
   ],
@@ -117,11 +108,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     async session({ session, token }) {
-      // Add custom fields to session from JWT
+      // Add custom fields to session from JWT.
+      //
+      // Two casts are unavoidable here, not shortcuts around a type we could
+      // otherwise satisfy cleanly:
+      // - `token`'s custom fields (id/role/emailVerified) come back as
+      //   `unknown`, since JWT's real shape (from @auth/core) is
+      //   `Record<string, unknown> & DefaultJWT` — augmenting next-auth/jwt
+      //   to narrow them doesn't work: that module's .d.ts is a bare
+      //   `export * from "@auth/core/jwt"` re-export, and TS's ambient
+      //   `declare module` augmentation can't resolve subpath-exports
+      //   packages shaped that way (confirmed: a plain `import type` of the
+      //   same specifier resolves fine — only the augmentation form fails
+      //   with "module cannot be found").
+      // - `session.user`'s augmented type (above) declares `emailVerified:
+      //   boolean`, but the Auth.js adapter contract's `AdapterUser`
+      //   declares `emailVerified: Date | null` — this app stores it as a
+      //   boolean instead, so the merged type is unusable for a direct
+      //   assignment.
       if (session.user && token) {
-        (session.user as any).id = (token.id as string) || "";
-        (session.user as any).role = (token.role as UserRole) || "public";
-        (session.user as any).emailVerified = Boolean(token.emailVerified);
+        const user = session.user as unknown as {
+          id: string;
+          role: UserRole;
+          emailVerified: boolean;
+        };
+        user.id = (token.id as string) || "";
+        user.role = (token.role as UserRole) || "public";
+        user.emailVerified = Boolean(token.emailVerified);
       }
       return session;
     },
@@ -150,6 +163,16 @@ export async function requireAuth() {
     throw new Error("Unauthorized");
   }
   return session;
+}
+
+/**
+ * True if `error` is the specific "Unauthorized" thrown by requireAuth().
+ * Route handlers that wrap requireAuth() in a generic try/catch can use
+ * this to return 401 instead of letting an auth failure fall through to
+ * the same 500 used for genuine server errors.
+ */
+export function isUnauthorizedError(error: unknown): boolean {
+  return error instanceof Error && error.message === "Unauthorized";
 }
 
 /**

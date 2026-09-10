@@ -4,7 +4,7 @@ interface Activity {
   id: number;
   itemType: string;
   itemName: string;
-  itemMeta: Record<string, any> | null;
+  itemMeta: Record<string, unknown> | null;
   watchlistName: string;
   addedAt: Date;
 }

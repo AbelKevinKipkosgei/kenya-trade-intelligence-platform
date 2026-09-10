@@ -1,4 +1,5 @@
-import { requireAuth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 import { db } from "@/db/client";
 import {
   watchlists,
@@ -13,7 +14,11 @@ import {
   agencies,
 } from "@/db/schema";
 import { eq, desc, sql, and } from "drizzle-orm";
-import { DashboardView } from "@/components/dashboard/dashboard-view";
+import {
+  DashboardView,
+  type ExporterRoleData,
+  type OfficerRoleData,
+} from "@/components/dashboard/dashboard-view";
 
 export const revalidate = 60; // Revalidate every minute
 
@@ -22,7 +27,13 @@ export const revalidate = 60; // Revalidate every minute
  * Shows personalized stats, activity, and recommendations.
  */
 export default async function DashboardPage() {
-  const session = await requireAuth();
+  // requireAuth() throws on no session, which crashes to a generic 500
+  // instead of a sign-in prompt — redirect() is the correct way to gate
+  // a page.
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/auth/signin");
+  }
   const userId = parseInt(session.user.id);
   const userRole = session.user.role;
 
@@ -73,8 +84,10 @@ export default async function DashboardPage() {
     .orderBy(desc(watchlists.isDefault), desc(watchlists.createdAt))
     .limit(3);
 
-  // Fetch role-specific data
-  let roleSpecificData: any = null;
+  // Fetch role-specific data. Shape depends on userRole (exporter vs
+  // officer) — matches the ExporterRoleData/OfficerRoleData union in
+  // DashboardView, which casts based on the same userRole check.
+  let roleSpecificData: ExporterRoleData | OfficerRoleData | null = null;
 
   if (userRole === "exporter") {
     // Fetch exporter profile with sector info

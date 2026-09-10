@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { db } from "@/db/client";
 import { watchlists, watchlistItems } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
@@ -10,7 +10,14 @@ import { WatchlistsView } from "@/components/watchlist/watchlists-view";
  * Shows all user watchlists with item counts and management options.
  */
 export default async function WatchlistsPage() {
-  const session = await requireAuth();
+  // requireAuth() throws on no session, which crashes to a generic 500
+  // instead of a sign-in prompt — redirect() is the correct way to gate
+  // a page (also a safety net in dev, where the edge middleware doesn't
+  // consistently redirect unauthenticated requests here either).
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/auth/signin");
+  }
   const userId = parseInt(session.user.id);
 
   // Fetch all watchlists with item counts
@@ -40,7 +47,7 @@ export default async function WatchlistsPage() {
               My Watchlists
             </h1>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Track products, markets, and opportunities you're monitoring
+              Track products, markets, and opportunities you&apos;re monitoring
             </p>
           </div>
         </div>

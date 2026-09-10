@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/auth";
+import Link from "next/link";
+import { auth } from "@/lib/auth";
 import { db } from "@/db/client";
 import { userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -12,7 +13,13 @@ import { OfficerOnboarding } from "@/components/onboarding/officer-onboarding";
  * If profile already exists, redirects to dashboard.
  */
 export default async function OnboardingPage() {
-  const session = await requireAuth();
+  // requireAuth() throws on no session, which crashes to a generic 500
+  // instead of a sign-in prompt — redirect() is the correct way to gate
+  // a page.
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/auth/signin");
+  }
   const userId = parseInt(session.user.id);
 
   // Check if user has already completed onboarding
@@ -53,7 +60,7 @@ export default async function OnboardingPage() {
               Welcome to KTIP
             </h1>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Let's set up your profile to personalize your experience
+              Let&apos;s set up your profile to personalize your experience
             </p>
           </div>
         </div>
@@ -64,18 +71,18 @@ export default async function OnboardingPage() {
         {role === "public" && (
           <div className="border-t-4 border-kenya-black bg-white p-8 dark:bg-zinc-900">
             <h2 className="text-xl font-semibold text-zinc-950 dark:text-white">
-              You're all set!
+              You&apos;re all set!
             </h2>
             <p className="mt-4 text-zinc-600 dark:text-zinc-400">
-              As a public user, you have access to browse the platform's trade
-              intelligence data.
+              As a public user, you have access to browse the
+              platform&apos;s trade intelligence data.
             </p>
-            <a
+            <Link
               href="/dashboard"
               className="mt-6 inline-flex h-11 items-center justify-center border border-kenya-green bg-kenya-green px-6 text-sm font-semibold text-white transition-colors hover:bg-[#004d00]"
             >
               Go to Dashboard
-            </a>
+            </Link>
           </div>
         )}
       </main>

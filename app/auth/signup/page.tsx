@@ -87,7 +87,7 @@ export default function SignUpPage() {
       // Successfully logged in - redirect to onboarding
       router.push("/onboarding");
       router.refresh();
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }

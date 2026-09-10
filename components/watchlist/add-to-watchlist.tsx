@@ -10,11 +10,17 @@ interface Watchlist {
   itemCount: number;
 }
 
+interface WatchlistMembership {
+  watchlistId: number;
+  watchlistName: string;
+  itemId: number;
+}
+
 interface AddToWatchlistProps {
   itemType: "product" | "country" | "opportunity" | "barrier" | "exporter";
   itemId: number;
   itemName: string;
-  itemMeta?: Record<string, any>;
+  itemMeta?: Record<string, unknown>;
   variant?: "button" | "icon";
   size?: "sm" | "md";
 }
@@ -27,7 +33,7 @@ export function AddToWatchlist({
   variant = "icon",
   size = "md",
 }: AddToWatchlistProps) {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -35,35 +41,40 @@ export function AddToWatchlist({
   const [inWatchlists, setInWatchlists] = useState<number[]>([]);
   const [error, setError] = useState("");
 
-  // Fetch user's watchlists and check if item is already tracked
+  // Fetch user's watchlists and check if item is already tracked, whenever
+  // the dropdown opens. Defined inline (not as hoisted useCallbacks) since
+  // they're only ever called from here — this also keeps the async fetches
+  // scoped to the effect that owns them, matching React's recommended
+  // data-fetching-effect shape.
   useEffect(() => {
-    if (status === "authenticated" && showDropdown) {
-      fetchWatchlists();
-      checkWatchlistStatus();
-    }
-  }, [status, showDropdown]);
+    if (status !== "authenticated" || !showDropdown) return;
 
-  const fetchWatchlists = async () => {
-    try {
-      const response = await fetch("/api/watchlists");
-      const data = await response.json();
-      setWatchlists(data.watchlists || []);
-    } catch (err) {
-      console.error("Failed to fetch watchlists:", err);
-    }
-  };
+    const fetchWatchlists = async () => {
+      try {
+        const response = await fetch("/api/watchlists");
+        const data = await response.json();
+        setWatchlists(data.watchlists || []);
+      } catch (err) {
+        console.error("Failed to fetch watchlists:", err);
+      }
+    };
 
-  const checkWatchlistStatus = async () => {
-    try {
-      const response = await fetch(
-        `/api/watchlists/check?itemType=${itemType}&itemId=${itemId}`
-      );
-      const data = await response.json();
-      setInWatchlists(data.watchlists.map((w: any) => w.watchlistId));
-    } catch (err) {
-      console.error("Failed to check watchlist status:", err);
-    }
-  };
+    const checkWatchlistStatus = async () => {
+      try {
+        const response = await fetch(
+          `/api/watchlists/check?itemType=${itemType}&itemId=${itemId}`
+        );
+        const data = await response.json();
+        const memberships: WatchlistMembership[] = data.watchlists || [];
+        setInWatchlists(memberships.map((w) => w.watchlistId));
+      } catch (err) {
+        console.error("Failed to check watchlist status:", err);
+      }
+    };
+
+    fetchWatchlists();
+    checkWatchlistStatus();
+  }, [status, showDropdown, itemType, itemId]);
 
   const handleAddToWatchlist = async (watchlistId: number) => {
     setLoading(true);
@@ -98,7 +109,7 @@ export function AddToWatchlist({
       setInWatchlists([...inWatchlists, watchlistId]);
       setShowDropdown(false);
       setLoading(false);
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
       setLoading(false);
     }
@@ -114,8 +125,9 @@ export function AddToWatchlist({
         `/api/watchlists/check?itemType=${itemType}&itemId=${itemId}`
       );
       const checkData = await checkResponse.json();
-      const watchlistItem = checkData.watchlists.find(
-        (w: any) => w.watchlistId === watchlistId
+      const memberships: WatchlistMembership[] = checkData.watchlists || [];
+      const watchlistItem = memberships.find(
+        (w) => w.watchlistId === watchlistId
       );
 
       if (!watchlistItem) {
@@ -139,7 +151,7 @@ export function AddToWatchlist({
       // Success - update local state
       setInWatchlists(inWatchlists.filter((id) => id !== watchlistId));
       setLoading(false);
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
       setLoading(false);
     }

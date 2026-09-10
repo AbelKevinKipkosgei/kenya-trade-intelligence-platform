@@ -40,6 +40,9 @@ interface County {
 interface ProfileEditFormProps {
   user: User;
   profile: Profile | null;
+  // Not read here — this form re-fetches its own reference lists (sectors,
+  // agencies, counties) below rather than using the profile's current
+  // values, which the caller fetches for a read-only profile view.
   sector: Sector | null;
   agency: Agency | null;
   counties: County[];
@@ -50,9 +53,6 @@ interface ProfileEditFormProps {
 export function ProfileEditForm({
   user,
   profile,
-  sector,
-  agency,
-  counties: initialCounties,
   onCancel,
   onSave,
 }: ProfileEditFormProps) {
@@ -108,7 +108,7 @@ export function ProfileEditForm({
     setLoading(true);
 
     try {
-      const payload: any = { bio: formData.bio || null };
+      const payload: Record<string, unknown> = { bio: formData.bio || null };
 
       if (user.role === "exporter") {
         payload.businessType = formData.businessType;
@@ -142,7 +142,7 @@ export function ProfileEditForm({
       }
 
       onSave();
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
       setLoading(false);
     }

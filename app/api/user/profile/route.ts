@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/auth";
 import { db } from "@/db/client";
 import { userProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -28,6 +28,9 @@ export async function GET() {
 
     return NextResponse.json({ profile });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("Get profile error:", error);
     return NextResponse.json(
       { error: "Failed to fetch profile" },
@@ -74,6 +77,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ profile, success: true });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("Update profile error:", error);
     return NextResponse.json(
       { error: "Failed to update profile" },
@@ -118,6 +124,9 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ profile, success: true });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("Patch profile error:", error);
     return NextResponse.json(
       { error: "Failed to update profile" },

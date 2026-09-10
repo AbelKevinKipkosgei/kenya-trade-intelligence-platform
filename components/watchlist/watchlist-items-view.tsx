@@ -8,27 +8,32 @@ interface WatchlistItem {
   id: number;
   watchlistId: number;
   itemType: "product" | "country" | "opportunity" | "barrier" | "exporter";
-  itemId: string;
+  itemId: number;
   itemName: string;
-  itemMeta: Record<string, any> | null;
+  // Matches the fields every AddToWatchlist call site actually sends (see
+  // app/explorer, app/opportunities, etc.) — "hsCode" and "sector".
+  itemMeta: { hsCode?: string; sector?: string; [key: string]: unknown } | null;
   notes: string | null;
   alertsEnabled: boolean;
   addedAt: Date;
 }
 
 interface WatchlistItemsViewProps {
+  // Unused — every mutation here identifies items by their own id and
+  // re-syncs via router.refresh() rather than needing the parent watchlist.
   watchlistId: number;
   watchlistName: string;
   initialItems: WatchlistItem[];
 }
 
 export function WatchlistItemsView({
-  watchlistId,
   watchlistName,
   initialItems,
 }: WatchlistItemsViewProps) {
   const router = useRouter();
-  const [items, setItems] = useState(initialItems);
+  // Mutations call router.refresh() to re-sync from the server instead of
+  // updating this list locally, so it's never reassigned after init.
+  const [items] = useState(initialItems);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<WatchlistItem | null>(null);
@@ -88,7 +93,7 @@ export function WatchlistItemsView({
       router.refresh();
       setShowEditModal(false);
       setLoading(false);
-    } catch (err) {
+    } catch {
       setLoading(false);
     }
   };
@@ -114,7 +119,7 @@ export function WatchlistItemsView({
       router.refresh();
       setShowDeleteModal(false);
       setLoading(false);
-    } catch (err) {
+    } catch {
       setLoading(false);
     }
   };
@@ -331,9 +336,9 @@ export function WatchlistItemsView({
                       </Link>
                       {item.itemMeta && Object.keys(item.itemMeta).length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-                          {item.itemMeta.code && (
+                          {item.itemMeta.hsCode && (
                             <span className="rounded bg-zinc-100 px-2 py-1 dark:bg-zinc-800">
-                              {item.itemMeta.code}
+                              {item.itemMeta.hsCode}
                             </span>
                           )}
                           {item.itemMeta.sector && (
@@ -502,7 +507,7 @@ export function WatchlistItemsView({
               Remove Item
             </h2>
             <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-              Remove "{selectedItem.itemName}" from "{watchlistName}"?
+              Remove &ldquo;{selectedItem.itemName}&rdquo; from &ldquo;{watchlistName}&rdquo;?
             </p>
 
             <div className="mt-6 flex gap-3">

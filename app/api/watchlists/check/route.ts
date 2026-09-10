@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, isUnauthorizedError } from "@/lib/auth";
 import { db } from "@/db/client";
 import { watchlists, watchlistItems } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
+
+const VALID_ITEM_TYPES = ["product", "country", "opportunity", "barrier", "exporter"] as const;
+type ItemType = (typeof VALID_ITEM_TYPES)[number];
+
+function isValidItemType(value: string): value is ItemType {
+  return (VALID_ITEM_TYPES as readonly string[]).includes(value);
+}
 
 /**
  * GET /api/watchlists/check?itemType={type}&itemId={id}
@@ -23,6 +30,9 @@ export async function GET(request: Request) {
         { error: "itemType and itemId are required" },
         { status: 400 }
       );
+    }
+    if (!isValidItemType(itemType)) {
+      return NextResponse.json({ error: "Invalid itemType" }, { status: 400 });
     }
 
     // Find all watchlists for this user that contain this item
@@ -47,6 +57,9 @@ export async function GET(request: Request) {
       watchlists: results,
     });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("Check watchlist error:", error);
     return NextResponse.json(
       { error: "Failed to check watchlist status" },
