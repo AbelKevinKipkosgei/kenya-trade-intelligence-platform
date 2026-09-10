@@ -223,18 +223,26 @@ export default async function Home() {
               market access, trade barriers, and opportunities across
               Kenya&apos;s trading relationships.
             </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col items-start gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <a
+                  href="/analyst"
+                  className="flex h-12 items-center justify-center border border-kenya-green bg-kenya-green px-6 text-sm font-semibold text-white transition-colors hover:bg-[#004d00] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red"
+                >
+                  Ask the AI Trade Analyst
+                </a>
+                <a
+                  href="/explorer"
+                  className="flex h-12 items-center justify-center border border-zinc-400 px-6 text-sm font-semibold text-zinc-900 transition-colors hover:border-zinc-900 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red dark:border-zinc-600 dark:text-zinc-100 dark:hover:border-zinc-300 dark:hover:bg-zinc-900"
+                >
+                  Explore Products &amp; Markets
+                </a>
+              </div>
               <a
-                href="/analyst"
-                className="flex h-12 items-center justify-center border border-kenya-green bg-kenya-green px-6 text-sm font-semibold text-white transition-colors hover:bg-[#004d00] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red"
+                href="/getting-started"
+                className="text-sm text-zinc-600 underline decoration-zinc-400 underline-offset-4 transition-colors hover:text-zinc-900 hover:decoration-zinc-600 dark:text-zinc-400 dark:decoration-zinc-600 dark:hover:text-zinc-200 dark:hover:decoration-zinc-400"
               >
-                Ask the AI Trade Analyst
-              </a>
-              <a
-                href="/explorer"
-                className="flex h-12 items-center justify-center border border-zinc-400 px-6 text-sm font-semibold text-zinc-900 transition-colors hover:border-zinc-900 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red dark:border-zinc-600 dark:text-zinc-100 dark:hover:border-zinc-300 dark:hover:bg-zinc-900"
-              >
-                Explore Products &amp; Markets
+                New here? See the Getting Started guide →
               </a>
             </div>
           </div>

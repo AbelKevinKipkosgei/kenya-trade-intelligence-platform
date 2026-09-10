@@ -16,6 +16,7 @@ import {
 } from "@/db/schema";
 import { ProductSearchBox } from "@/components/product-search-box";
 import { LandedCostCalculator } from "@/components/landed-cost-calculator";
+import { AddToWatchlist } from "@/components/watchlist/add-to-watchlist";
 import { getUsdToKesRate } from "@/lib/forex";
 
 export const revalidate = 3600;
@@ -342,7 +343,7 @@ export default async function ExplorerPage({
 
       <div className="mb-10 border-t-4 border-ktp-navy bg-ktp-surface p-7 dark:border-zinc-500 dark:bg-zinc-900 sm:p-9">
         <div className="flex flex-col gap-7 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-4 flex-1">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-kenya-green text-kenya-green">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -359,16 +360,34 @@ export default async function ExplorerPage({
                 />
               </svg>
             </span>
-            <div>
-              <span className="text-xs font-bold uppercase tracking-[0.14em] text-kenya-green">
-                {product.sectorName}
-              </span>
-              <h1 className="mt-1 text-3xl font-semibold leading-none tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">
-                {product.description}
-              </h1>
-              <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-                HS Code {product.hsCode} · Traded in {product.unit}
-              </p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs font-bold uppercase tracking-[0.14em] text-kenya-green">
+                    {product.sectorName}
+                  </span>
+                  <h1 className="mt-1 text-3xl font-semibold leading-none tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">
+                    {product.description}
+                  </h1>
+                  <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+                    HS Code {product.hsCode} · Traded in {product.unit}
+                  </p>
+                </div>
+                <div className="shrink-0 pt-1">
+                  <AddToWatchlist
+                    itemType="product"
+                    itemId={product.id}
+                    itemName={product.description}
+                    itemMeta={{
+                      hsCode: product.hsCode,
+                      sector: product.sectorName,
+                      unit: product.unit,
+                    }}
+                    variant="icon"
+                    size="md"
+                  />
+                </div>
+              </div>
             </div>
           </div>
           <div

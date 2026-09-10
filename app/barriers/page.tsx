@@ -2,6 +2,7 @@ import { eq, and, desc, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
 import { tradeBarriers, products, sectors, countries, agencies } from "@/db/schema";
 import { BarrierFilters } from "@/components/barrier-filters";
+import { AddToWatchlist } from "@/components/watchlist/add-to-watchlist";
 
 export const revalidate = 3600;
 
@@ -41,6 +42,7 @@ export default async function BarriersPage({
     db
       .select({
         id: tradeBarriers.id,
+        countryId: tradeBarriers.countryId,
         hsCode: products.hsCode,
         productDescription: products.description,
         sectorName: sectors.name,
@@ -104,27 +106,46 @@ export default async function BarriersPage({
             key={b.id}
             className="rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70"
           >
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-semibold text-zinc-900 dark:text-zinc-50">{b.countryName}</span>
-              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${IMPACT_STYLES[b.impactLevel] ?? ""}`}>
-                {b.impactLevel} impact
-              </span>
-              <span className="rounded-full bg-stone-200 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
-                {b.status}
-              </span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {b.barrierType} · {b.agencyName} · reported {b.reportedDate}
-              </span>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-50">{b.countryName}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${IMPACT_STYLES[b.impactLevel] ?? ""}`}>
+                    {b.impactLevel} impact
+                  </span>
+                  <span className="rounded-full bg-stone-200 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
+                    {b.status}
+                  </span>
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {b.barrierType} · {b.agencyName} · reported {b.reportedDate}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{b.description}</p>
+                {b.hsCode && (
+                  <a
+                    href={`/explorer?hs=${b.hsCode}`}
+                    className="mt-2 inline-block text-xs font-medium text-kenya-green hover:underline"
+                  >
+                    {b.productDescription} ({b.sectorName}) →
+                  </a>
+                )}
+              </div>
+              <div className="shrink-0">
+                <AddToWatchlist
+                  itemType="barrier"
+                  itemId={b.id}
+                  itemName={`${b.barrierType} barrier in ${b.countryName}`}
+                  itemMeta={{
+                    countryId: b.countryId,
+                    type: b.barrierType,
+                    impact: b.impactLevel,
+                    status: b.status,
+                  }}
+                  variant="icon"
+                  size="sm"
+                />
+              </div>
             </div>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{b.description}</p>
-            {b.hsCode && (
-              <a
-                href={`/explorer?hs=${b.hsCode}`}
-                className="mt-2 inline-block text-xs font-medium text-kenya-green hover:underline"
-              >
-                {b.productDescription} ({b.sectorName}) →
-              </a>
-            )}
           </div>
         ))}
       </div>

@@ -2,6 +2,7 @@ import { eq, and, desc, ilike, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
 import { exporters, counties, sectors, products } from "@/db/schema";
 import { ExporterFilters } from "@/components/exporter-filters";
+import { AddToWatchlist } from "@/components/watchlist/add-to-watchlist";
 
 export const revalidate = 3600;
 
@@ -48,7 +49,9 @@ export default async function ExportersPage({
       .select({
         id: exporters.id,
         name: exporters.name,
+        countyId: exporters.countyId,
         countyName: counties.name,
+        sectorId: exporters.sectorId,
         sectorName: sectors.name,
         hsCode: products.hsCode,
         productDescription: products.description,
@@ -108,46 +111,66 @@ export default async function ExportersPage({
             key={e.id}
             className="rounded-2xl border border-stone-300 bg-white/70 p-5 dark:border-zinc-700 dark:bg-zinc-800/70"
           >
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                {e.name}
-              </h3>
-              {e.exportReady && (
-                <span className="shrink-0 rounded-full bg-kenya-green/10 px-2 py-0.5 text-xs font-medium text-kenya-green">
-                  Export-ready
-                </span>
-              )}
-            </div>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              {e.countyName} · {e.sectorName}
-            </p>
-            <a
-              href={`/explorer?hs=${e.hsCode}`}
-              className="mt-2 inline-block text-sm text-kenya-green hover:underline"
-            >
-              {e.productDescription}
-            </a>
-            <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-              {e.employeesCount.toLocaleString()} employees ·{" "}
-              {e.annualCapacity.toLocaleString()} {e.capacityUnit} capacity
-            </p>
-            {e.certifications.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {e.certifications.map((cert) => (
-                  <span
-                    key={cert}
-                    className="rounded-full bg-stone-200 px-2 py-0.5 text-xs text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
-                  >
-                    {cert}
-                  </span>
-                ))}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                    {e.name}
+                  </h3>
+                  {e.exportReady && (
+                    <span className="shrink-0 rounded-full bg-kenya-green/10 px-2 py-0.5 text-xs font-medium text-kenya-green">
+                      Export-ready
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                  {e.countyName} · {e.sectorName}
+                </p>
+                <a
+                  href={`/explorer?hs=${e.hsCode}`}
+                  className="mt-2 inline-block text-sm text-kenya-green hover:underline"
+                >
+                  {e.productDescription}
+                </a>
+                <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                  {e.employeesCount.toLocaleString()} employees ·{" "}
+                  {e.annualCapacity.toLocaleString()} {e.capacityUnit} capacity
+                </p>
+                {e.certifications.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {e.certifications.map((cert) => (
+                      <span
+                        key={cert}
+                        className="rounded-full bg-stone-200 px-2 py-0.5 text-xs text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
+                      >
+                        {cert}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {e.contactEmail && (
+                  <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                    {e.contactEmail}
+                  </p>
+                )}
               </div>
-            )}
-            {e.contactEmail && (
-              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                {e.contactEmail}
-              </p>
-            )}
+              <div className="shrink-0">
+                <AddToWatchlist
+                  itemType="exporter"
+                  itemId={e.id}
+                  itemName={e.name}
+                  itemMeta={{
+                    countyId: e.countyId,
+                    county: e.countyName,
+                    sectorId: e.sectorId,
+                    sector: e.sectorName,
+                    exportReady: e.exportReady,
+                  }}
+                  variant="icon"
+                  size="sm"
+                />
+              </div>
+            </div>
           </div>
         ))}
       </div>

@@ -7,6 +7,7 @@ import {
   countries,
 } from "@/db/schema";
 import { LeaderboardFilters } from "@/components/leaderboard-filters";
+import { AddToWatchlist } from "@/components/watchlist/add-to-watchlist";
 
 export const revalidate = 3600;
 
@@ -87,8 +88,10 @@ export default async function OpportunitiesPage({
     .select({
       id: marketOpportunityScores.id,
       hsCode: products.hsCode,
+      productId: products.id,
       productDescription: products.description,
       sectorName: sectors.name,
+      countryId: marketOpportunityScores.countryId,
       countryName: countries.name,
       overallScore: marketOpportunityScores.overallScore,
       demandScore: marketOpportunityScores.demandScore,
@@ -172,25 +175,45 @@ export default async function OpportunitiesPage({
               stacked, scannable layout instead of the desktop table. */}
           <div className="mt-6 flex flex-col gap-3 sm:hidden">
             {rows.map((r) => (
-              <a
+              <div
                 key={r.id}
-                href={`/explorer?hs=${r.hsCode}`}
                 className="rounded-2xl border border-stone-300 bg-white/70 p-4 dark:border-zinc-700 dark:bg-zinc-800/70"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-kenya-green">{r.productDescription}</p>
+                  <div className="flex-1 min-w-0">
+                    <a
+                      href={`/explorer?hs=${r.hsCode}`}
+                      className="text-sm font-semibold text-kenya-green hover:underline line-clamp-2"
+                    >
+                      {r.productDescription}
+                    </a>
                     <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
                       {r.sectorName} · {r.countryName}
                     </p>
                   </div>
-                  <div className="shrink-0 text-right">
-                    <span className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                      {Number(r.overallScore).toFixed(1)}
-                    </span>
-                    <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                      Overall
-                    </p>
+                  <div className="flex shrink-0 items-start gap-2">
+                    <div className="text-right">
+                      <span className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                        {Number(r.overallScore).toFixed(1)}
+                      </span>
+                      <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        Overall
+                      </p>
+                    </div>
+                    <AddToWatchlist
+                      itemType="opportunity"
+                      itemId={r.id}
+                      itemName={`${r.productDescription} in ${r.countryName}`}
+                      itemMeta={{
+                        hsCode: r.hsCode,
+                        productId: r.productId,
+                        countryId: r.countryId,
+                        sector: r.sectorName,
+                        score: Number(r.overallScore).toFixed(1),
+                      }}
+                      variant="icon"
+                      size="sm"
+                    />
                   </div>
                 </div>
                 <div className="mt-3 grid grid-cols-4 gap-2 border-t border-stone-200 pt-3 text-center dark:border-zinc-800">
@@ -219,7 +242,7 @@ export default async function OpportunitiesPage({
                     <p className="text-[10px] text-zinc-500 dark:text-zinc-400">Access</p>
                   </div>
                 </div>
-              </a>
+              </div>
             ))}
           </div>
 
@@ -240,6 +263,7 @@ export default async function OpportunitiesPage({
                   <th className="px-3 py-2 text-right font-semibold">
                     Market Access
                   </th>
+                  <th className="px-3 py-2 font-semibold">Watch</th>
                 </tr>
               </thead>
               <tbody>
@@ -276,6 +300,22 @@ export default async function OpportunitiesPage({
                     </td>
                     <td className="px-3 py-2 text-right text-zinc-500 dark:text-zinc-400">
                       {Number(r.marketAccessScore).toFixed(0)}
+                    </td>
+                    <td className="px-3 py-2">
+                      <AddToWatchlist
+                        itemType="opportunity"
+                        itemId={r.id}
+                        itemName={`${r.productDescription} in ${r.countryName}`}
+                        itemMeta={{
+                          hsCode: r.hsCode,
+                          productId: r.productId,
+                          countryId: r.countryId,
+                          sector: r.sectorName,
+                          score: Number(r.overallScore).toFixed(1),
+                        }}
+                        variant="icon"
+                        size="sm"
+                      />
                     </td>
                   </tr>
                 ))}
