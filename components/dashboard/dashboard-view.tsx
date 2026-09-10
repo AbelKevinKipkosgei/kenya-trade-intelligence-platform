@@ -49,27 +49,25 @@ export function DashboardView({
   const greeting = getGreeting();
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-zinc-50 dark:bg-zinc-950">
-      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-6 py-12">
-        {/* Welcome Header */}
-        <div className="mb-8">
-          <div className="border-l-4 border-kenya-green pl-4">
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white">
-              {greeting}, {userName}
-            </h1>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              {getRoleDescription(userRole)}
-            </p>
-          </div>
+    <div className="flex min-h-full flex-1 flex-col bg-white dark:bg-zinc-950">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 py-10 sm:px-10">
+        {/* Welcome Header - matching homepage border treatment */}
+        <div className="mb-10 border-l-4 border-kenya-green pl-4">
+          <h1 className="text-4xl font-semibold tracking-tight text-zinc-950 dark:text-white">
+            {greeting}, {userName}
+          </h1>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            {getRoleDescription(userRole)}
+          </p>
         </div>
 
         {/* Quick Stats */}
         <StatsCards stats={stats} />
 
         {/* Main Content Grid */}
-        <div className="mt-8 grid gap-6 lg:grid-cols-3">
-          {/* Left Column - Activity & Watchlists */}
-          <div className="space-y-6 lg:col-span-2">
+        <div className="mt-10 grid gap-10 lg:grid-cols-[1.35fr_0.65fr]">
+          {/* Left Column - Activity & Role-Specific */}
+          <div className="space-y-10">
             {/* Quick Actions */}
             <QuickActions userRole={userRole} />
 
@@ -86,7 +84,7 @@ export function DashboardView({
           </div>
 
           {/* Right Column - Watchlists Preview */}
-          <div className="lg:col-span-1">
+          <div>
             <WatchlistPreview watchlists={watchlists} />
           </div>
         </div>

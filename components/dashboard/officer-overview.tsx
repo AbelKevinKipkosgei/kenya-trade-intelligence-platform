@@ -30,12 +30,12 @@ export function OfficerOverview({ data }: OfficerOverviewProps) {
   const { profile, sectorStats, recentBarriers } = data;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {/* Sector Overview */}
-      <section className="border-t-4 border-indigo-500 bg-white p-6 dark:bg-zinc-900">
+      <section className="border-t-4 border-kenya-green bg-zinc-50 p-6 dark:bg-zinc-900">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
+            <h2 className="text-lg font-semibold tracking-tight text-zinc-950 dark:text-white">
               Sector Overview
             </h2>
             <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
@@ -44,7 +44,7 @@ export function OfficerOverview({ data }: OfficerOverviewProps) {
           </div>
           <Link
             href="/exporters"
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+            className="text-sm font-medium text-kenya-green transition-colors hover:text-[#004d00]"
           >
             View exporters →
           </Link>
@@ -57,20 +57,16 @@ export function OfficerOverview({ data }: OfficerOverviewProps) {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-zinc-200 text-left text-xs uppercase tracking-wide text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
+              <thead className="border-b-2 border-zinc-900 text-left text-xs font-semibold uppercase tracking-wide text-zinc-900 dark:border-zinc-100 dark:text-zinc-100">
                 <tr>
-                  <th className="pb-2 pr-4 font-semibold">Sector</th>
-                  <th className="pb-2 pr-4 text-right font-semibold">
-                    Exporters
-                  </th>
-                  <th className="pb-2 text-right font-semibold">
-                    Opportunities
-                  </th>
+                  <th className="pb-3 pr-4">Sector</th>
+                  <th className="pb-3 pr-4 text-right">Exporters</th>
+                  <th className="pb-3 text-right">Opportunities</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                 {sectorStats.map((sector) => (
-                  <tr key={sector.sectorName}>
+                  <tr key={sector.sectorName} className="group hover:bg-white dark:hover:bg-zinc-800/50">
                     <td className="py-3 pr-4 font-medium text-zinc-900 dark:text-zinc-100">
                       {sector.sectorName}
                     </td>
@@ -90,10 +86,10 @@ export function OfficerOverview({ data }: OfficerOverviewProps) {
 
       {/* Recent Active Barriers */}
       {recentBarriers.length > 0 && (
-        <section className="border-t-4 border-red-500 bg-white p-6 dark:bg-zinc-900">
+        <section className="border-t-4 border-kenya-red bg-zinc-50 p-6 dark:bg-zinc-900">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
+              <h2 className="text-lg font-semibold tracking-tight text-zinc-950 dark:text-white">
                 Recent Active Barriers
               </h2>
               <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
@@ -102,7 +98,7 @@ export function OfficerOverview({ data }: OfficerOverviewProps) {
             </div>
             <Link
               href="/barriers"
-              className="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400"
+              className="text-sm font-medium text-kenya-red transition-colors hover:text-red-700"
             >
               View all →
             </Link>
@@ -112,7 +108,7 @@ export function OfficerOverview({ data }: OfficerOverviewProps) {
             {recentBarriers.slice(0, 4).map((barrier) => (
               <div
                 key={barrier.id}
-                className="border-l-4 border-red-500/30 bg-red-50 p-3 dark:bg-red-950/20"
+                className="border-l-4 border-kenya-red/30 bg-white p-4 dark:bg-zinc-800/50"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -120,8 +116,8 @@ export function OfficerOverview({ data }: OfficerOverviewProps) {
                       <h3 className="font-semibold text-zinc-950 dark:text-white">
                         {barrier.countryName}
                       </h3>
-                      <span className="rounded bg-red-600/20 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-300">
-                        {barrier.impactLevel} impact
+                      <span className="bg-kenya-red/10 px-2 py-0.5 text-xs font-medium uppercase tracking-wide text-kenya-red">
+                        {barrier.impactLevel}
                       </span>
                       <span className="text-xs text-zinc-500 dark:text-zinc-400">
                         {barrier.barrierType}
@@ -133,16 +129,14 @@ export function OfficerOverview({ data }: OfficerOverviewProps) {
                       </p>
                     )}
                   </div>
-                  <div className="shrink-0 text-right">
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {new Date(barrier.reportedDate).toLocaleDateString(
-                        "en-GB",
-                        {
-                          day: "numeric",
-                          month: "short",
-                        }
-                      )}
-                    </div>
+                  <div className="shrink-0 text-right text-xs text-zinc-500 dark:text-zinc-400">
+                    {new Date(barrier.reportedDate).toLocaleDateString(
+                      "en-GB",
+                      {
+                        day: "numeric",
+                        month: "short",
+                      }
+                    )}
                   </div>
                 </div>
               </div>
@@ -153,8 +147,8 @@ export function OfficerOverview({ data }: OfficerOverviewProps) {
 
       {/* Agency Info */}
       {profile && (
-        <section className="border-t-4 border-zinc-300 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
-          <h2 className="mb-3 text-lg font-semibold text-zinc-950 dark:text-white">
+        <section className="border-t-4 border-zinc-300 bg-zinc-50 p-6 dark:border-zinc-700 dark:bg-zinc-900">
+          <h2 className="mb-3 text-lg font-semibold tracking-tight text-zinc-950 dark:text-white">
             Your Agency
           </h2>
           <div className="space-y-2 text-sm">
