@@ -161,9 +161,20 @@ async function main() {
 
   let emailsSent = 0;
   for (const [userId, interest] of byUser) {
+    // Barriers are sector-matched only here, deliberately — a country
+    // follow is itself just a "country" watchlist_items row (see the
+    // comment on interestRows above), and detect-barriers.ts already
+    // notifies (in-app, plus email if the user's opted in) for exactly
+    // that same condition. Matching on country here too would double-alert
+    // every country follow for every barrier in that country. Sector
+    // follows aren't covered by detect-barriers.ts at all (it only checks
+    // itemType "product"/"country"), so they still need to be matched here.
     const matchedBarriers = recentBarriers.filter(
-      (b) => (b.sectorId !== null && interest.sectorIds.has(b.sectorId)) || interest.countryIds.has(b.countryId),
+      (b) => b.sectorId !== null && interest.sectorIds.has(b.sectorId),
     );
+    // News has no equivalent in the per-item notification system at all
+    // (none of the detect-*.ts scripts touch news_articles), so both
+    // sector and country matches stay here with no duplication risk.
     const matchedNews = recentNews.filter(
       (n) =>
         (n.sectorId !== null && interest.sectorIds.has(n.sectorId)) ||
