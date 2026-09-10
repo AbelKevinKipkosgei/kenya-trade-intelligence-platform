@@ -245,12 +245,6 @@ export default async function Home() {
                 New here? See the Getting Started guide →
               </a>
             </div>
-            <a
-              href="/getting-started"
-              className="text-sm font-medium text-zinc-600 underline decoration-zinc-300 underline-offset-4 transition-colors hover:text-kenya-green hover:decoration-kenya-green dark:text-zinc-400 dark:decoration-zinc-600"
-            >
-              New here? Start with our Getting Started guide
-            </a>
           </div>
           <aside className="self-end border-t-4 border-kenya-black bg-zinc-50 p-6 dark:bg-zinc-900">
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-kenya-green">
