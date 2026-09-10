@@ -263,7 +263,17 @@ export function WatchlistItemsView({
   };
 
   const getTypeLabel = (type: string) => {
-    return type.charAt(0).toUpperCase() + type.slice(1) + "s";
+    // Not a naive `+ "s"` — that mispluralizes "country" ("Countrys") and
+    // "opportunity" ("Opportunitys").
+    const labels: Record<string, string> = {
+      product: "Products",
+      country: "Countries",
+      sector: "Sectors",
+      opportunity: "Opportunities",
+      barrier: "Barriers",
+      exporter: "Exporters",
+    };
+    return labels[type] ?? type;
   };
 
   const typeOrder = ["product", "country", "sector", "opportunity", "barrier", "exporter"];
