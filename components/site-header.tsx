@@ -103,20 +103,31 @@ export function SiteHeader() {
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="hidden h-9 items-center justify-center gap-2 border border-zinc-400 bg-transparent px-4 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-600 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red dark:border-zinc-600 dark:text-zinc-300 dark:hover:border-zinc-400 dark:hover:bg-zinc-800 sm:flex"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                {session.user.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt=""
+                    width={20}
+                    height={20}
+                    className="h-5 w-5 shrink-0 rounded-full object-cover"
+                    unoptimized
                   />
-                </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                )}
                 <span className="max-w-30 truncate">{session.user.name}</span>
               </button>
 
@@ -128,17 +139,33 @@ export function SiteHeader() {
                     onClick={() => setUserMenuOpen(false)}
                   />
                   <div className="absolute right-0 top-full z-50 mt-2 w-64 border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
-                    <div className="border-b border-zinc-200 p-4 dark:border-zinc-800">
-                      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                        {session.user.name}
-                      </p>
-                      <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-                        {session.user.email}
-                      </p>
-                      <p className="mt-2 inline-block rounded bg-kenya-green/10 px-2 py-1 text-xs font-semibold text-kenya-green dark:bg-kenya-green/20">
-                        {session.user.role.charAt(0).toUpperCase() +
-                          session.user.role.slice(1)}
-                      </p>
+                    <div className="flex items-start gap-3 border-b border-zinc-200 p-4 dark:border-zinc-800">
+                      {session.user.image ? (
+                        <Image
+                          src={session.user.image}
+                          alt=""
+                          width={40}
+                          height={40}
+                          className="h-10 w-10 shrink-0 rounded-full object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-kenya-green/10 text-sm font-semibold text-kenya-green dark:bg-kenya-green/20">
+                          {session.user.name?.charAt(0).toUpperCase() ?? "?"}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                          {session.user.name}
+                        </p>
+                        <p className="truncate text-xs text-zinc-600 dark:text-zinc-400">
+                          {session.user.email}
+                        </p>
+                        <p className="mt-2 inline-block rounded bg-kenya-green/10 px-2 py-1 text-xs font-semibold text-kenya-green dark:bg-kenya-green/20">
+                          {session.user.role.charAt(0).toUpperCase() +
+                            session.user.role.slice(1)}
+                        </p>
+                      </div>
                     </div>
                     <div className="py-1">
                       <Link

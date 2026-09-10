@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import type { UserRole } from "@/db/schema";
 import { ProfileEditForm } from "./profile-edit-form";
 import { NotificationPreferences } from "./notification-preferences";
@@ -13,6 +14,9 @@ interface User {
   emailVerified: boolean;
   isActive: boolean;
   createdAt: Date;
+  // Only ever set for OAuth-signed-in users (Google, LinkedIn, GitHub,
+  // Facebook — see lib/auth.ts); null for credentials-only accounts.
+  image: string | null;
 }
 
 interface Profile {
@@ -102,13 +106,29 @@ export function ProfileView({
       {/* Account Information */}
       <div className="border-t-4 border-kenya-black bg-white p-8 dark:bg-zinc-900">
         <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-zinc-950 dark:text-white">
-              Account Information
-            </h2>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Your basic account details
-            </p>
+          <div className="flex items-start gap-4">
+            {user.image ? (
+              <Image
+                src={user.image}
+                alt=""
+                width={56}
+                height={56}
+                className="h-14 w-14 shrink-0 rounded-full object-cover"
+                unoptimized
+              />
+            ) : (
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-kenya-green/10 text-xl font-semibold text-kenya-green dark:bg-kenya-green/20">
+                {user.fullName.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div>
+              <h2 className="text-xl font-semibold text-zinc-950 dark:text-white">
+                Account Information
+              </h2>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                Your basic account details
+              </p>
+            </div>
           </div>
           <button
             onClick={() => setIsEditing(true)}
