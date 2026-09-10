@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import type { UserRole } from "@/db/schema";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -110,6 +111,16 @@ export default function SignUpPage() {
 
         {/* Sign up form */}
         <div className="border-t-4 border-kenya-black bg-white p-8 shadow-sm dark:bg-zinc-900">
+          <OAuthButtons />
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+            <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              Or sign up with email
+            </span>
+            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Error message */}
             {error && (

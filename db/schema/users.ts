@@ -8,6 +8,7 @@ import {
   jsonb,
   timestamp,
   index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { agencies, sectors } from "./core";
 import { exporters } from "./exporters";
@@ -32,15 +33,53 @@ export const users = pgTable(
     id: serial("id").primaryKey(),
     email: varchar("email", { length: 200 }).notNull().unique(),
     fullName: varchar("full_name", { length: 200 }).notNull(),
-    passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+    // Nullable — OAuth-only users (Google, Microsoft, GitHub, Facebook; see
+    // lib/auth.ts) never set a password, only credentials-based signups do.
+    passwordHash: varchar("password_hash", { length: 255 }),
     role: varchar("role", { length: 20 }).$type<UserRole>().notNull().default("public"),
     emailVerified: boolean("email_verified").default(false).notNull(),
+    // OAuth provider avatar, if any (Auth.js's standard AdapterUser.image).
+    image: varchar("image", { length: 500 }),
     isActive: boolean("is_active").default(true).notNull(),
     lastLoginAt: timestamp("last_login_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (t) => [index("users_email_idx").on(t.email), index("users_role_idx").on(t.role)],
+);
+
+/**
+ * Linked OAuth accounts (Google, Microsoft, GitHub, Facebook, ...) — one row
+ * per provider a user has connected. Read/written by the custom adapter in
+ * lib/auth.ts, not @auth/drizzle-adapter's generic implementation: that
+ * adapter's defaults assume a UUID-keyed users table, which doesn't match
+ * this app's serial-integer users.id, so every adapter method is hand-
+ * written there instead.
+ */
+export const accounts = pgTable(
+  "accounts",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // "oauth" | "oidc" per Auth.js's AdapterAccountType — "email"/"webauthn"
+    // are unused here (no Email or passkey provider).
+    type: varchar("type", { length: 20 }).notNull(),
+    provider: varchar("provider", { length: 40 }).notNull(),
+    providerAccountId: varchar("provider_account_id", { length: 255 }).notNull(),
+    refreshToken: text("refresh_token"),
+    accessToken: text("access_token"),
+    expiresAt: integer("expires_at"),
+    tokenType: varchar("token_type", { length: 40 }),
+    scope: varchar("scope", { length: 255 }),
+    idToken: text("id_token"),
+    sessionState: varchar("session_state", { length: 255 }),
+  },
+  (t) => [
+    index("accounts_user_idx").on(t.userId),
+    uniqueIndex("accounts_provider_account_idx").on(t.provider, t.providerAccountId),
+  ],
 );
 
 /**

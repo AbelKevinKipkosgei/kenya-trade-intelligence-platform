@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 
 function SignInForm() {
   const router = useRouter();
@@ -70,6 +71,16 @@ function SignInForm() {
               Account created successfully! Please sign in to continue.
             </div>
           )}
+
+          <OAuthButtons callbackUrl={callbackUrl} />
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+            <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              Or continue with email
+            </span>
+            <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Error message */}
