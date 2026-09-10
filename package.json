@@ -14,6 +14,7 @@
     "db:score": "tsx db/scoring/run.ts",
     "news:fetch": "tsx db/ingestion/fetch-news.ts",
     "tariffs:sync-real": "tsx db/tariffs/fetch-real-mfn-rates.ts",
+    "alerts:send": "tsx db/notifications/send-interest-alerts.ts",
     "eval:trade-analyst": "tsx evals/trade-analyst.eval.ts"
   },
   "dependencies": {
@@ -30,6 +31,7 @@
     "react-markdown": "^10.1.0",
     "react-redux": "^9.3.0",
     "remark-gfm": "^4.0.1",
+    "resend": "^6.26.0",
     "zod": "^4.5.4"
   },
   "devDependencies": {
