@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { UserRole } from "@/db/schema";
 import { ProfileEditForm } from "./profile-edit-form";
+import { NotificationPreferences } from "./notification-preferences";
 
 interface User {
   id: number;
@@ -169,6 +170,9 @@ export function ProfileView({
           </div>
         </div>
       </div>
+
+      {/* Notification Preferences */}
+      <NotificationPreferences userId={user.id} profile={profile} />
 
       {/* Role-specific Profile */}
       {profile && user.role === "exporter" && (

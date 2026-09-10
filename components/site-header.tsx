@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { ThemeToggle } from "./theme-toggle";
 import { ScrollToTop } from "./scroll-to-top";
+import { NotificationBell } from "./notifications/notification-bell";
 
 const NAV_LINKS = [
   { href: "/explorer", label: "Explorer" },
@@ -90,6 +91,7 @@ export function SiteHeader() {
 
         <div className="flex shrink-0 items-center gap-3">
           <ThemeToggle />
+          <NotificationBell />
           
           {status === "loading" ? (
             <div className="h-9 w-20 animate-pulse bg-zinc-200 dark:bg-zinc-800" />

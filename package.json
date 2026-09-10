@@ -15,6 +15,8 @@
     "news:fetch": "tsx db/ingestion/fetch-news.ts",
     "tariffs:sync-real": "tsx db/tariffs/fetch-real-mfn-rates.ts",
     "alerts:send": "tsx db/notifications/send-interest-alerts.ts",
+    "notifications:detect": "tsx db/notifications/run-all-detections.ts",
+    "notifications:email": "tsx db/notifications/send-emails.ts",
     "eval:trade-analyst": "tsx evals/trade-analyst.eval.ts"
   },
   "dependencies": {

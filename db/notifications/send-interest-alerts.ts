@@ -1,9 +1,8 @@
 import "../seed/load-env";
 import { eq, gte } from "drizzle-orm";
 import { Resend } from "resend";
-import { clerkClient } from "@clerk/nextjs/server";
 import { db, pool } from "../client";
-import { userInterests, tradeBarriers, newsArticles, products, sectors, countries } from "../schema";
+import { userInterests, tradeBarriers, newsArticles, products, sectors, countries, users } from "../schema";
 
 /**
  * Sends one digest email per user covering new trade barriers and news
@@ -89,10 +88,10 @@ async function main() {
 
   const byUser = new Map<string, { sectorIds: Set<number>; countryIds: Set<number> }>();
   for (const row of interestRows) {
-    if (!byUser.has(row.clerkUserId)) {
-      byUser.set(row.clerkUserId, { sectorIds: new Set(), countryIds: new Set() });
+    if (!byUser.has(row.authUserId)) {
+      byUser.set(row.authUserId, { sectorIds: new Set(), countryIds: new Set() });
     }
-    const entry = byUser.get(row.clerkUserId)!;
+    const entry = byUser.get(row.authUserId)!;
     if (row.sectorId) entry.sectorIds.add(row.sectorId);
     if (row.countryId) entry.countryIds.add(row.countryId);
   }
@@ -136,7 +135,7 @@ async function main() {
   );
 
   let emailsSent = 0;
-  for (const [clerkUserId, interest] of byUser) {
+  for (const [authUserId, interest] of byUser) {
     const matchedBarriers = recentBarriers.filter(
       (b) => (b.sectorId !== null && interest.sectorIds.has(b.sectorId)) || interest.countryIds.has(b.countryId),
     );
@@ -147,11 +146,14 @@ async function main() {
     );
     if (matchedBarriers.length === 0 && matchedNews.length === 0) continue;
 
-    const client = await clerkClient();
-    const user = await client.users.getUser(clerkUserId);
-    const email = user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0]?.emailAddress;
+    const [user] = await db
+      .select({ email: users.email })
+      .from(users)
+      .where(eq(users.id, Number(authUserId)))
+      .limit(1);
+    const email = user?.email;
     if (!email) {
-      console.log(`  Skipping ${clerkUserId} — no email on file.`);
+      console.log(`  Skipping ${authUserId} — no email on file.`);
       continue;
     }
 
