@@ -4,7 +4,7 @@ import { db } from "@/db/client";
 import { watchlists, watchlistItems } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 
-const VALID_ITEM_TYPES = ["product", "country", "opportunity", "barrier", "exporter"] as const;
+const VALID_ITEM_TYPES = ["product", "country", "sector", "opportunity", "barrier", "exporter"] as const;
 type ItemType = (typeof VALID_ITEM_TYPES)[number];
 
 function isValidItemType(value: string): value is ItemType {

@@ -123,6 +123,8 @@ export const watchlists = pgTable(
  * Polymorphic design: itemType determines what itemId references.
  * - product: references products table
  * - country: references countries table (market tracking)
+ * - sector: references sectors table (used by the alert-digest follow flow,
+ *   folded in from the old standalone user_interests table)
  * - opportunity: virtual (product+country combination)
  * - barrier: references trade_barriers table
  * - exporter: references exporters table
@@ -135,7 +137,7 @@ export const watchlistItems = pgTable(
       .notNull()
       .references(() => watchlists.id, { onDelete: "cascade" }),
     itemType: varchar("item_type", { length: 40 })
-      .$type<"product" | "country" | "opportunity" | "barrier" | "exporter">()
+      .$type<"product" | "country" | "sector" | "opportunity" | "barrier" | "exporter">()
       .notNull(),
     itemId: integer("item_id").notNull(), // Foreign key to respective table
 

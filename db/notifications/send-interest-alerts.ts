@@ -1,8 +1,8 @@
 import "../seed/load-env";
-import { eq, gte, inArray } from "drizzle-orm";
+import { and, eq, gte, inArray } from "drizzle-orm";
 import { Resend } from "resend";
 import { db, pool } from "../client";
-import { userInterests, tradeBarriers, newsArticles, products, sectors, countries, users } from "../schema";
+import { watchlists, watchlistItems, tradeBarriers, newsArticles, products, sectors, countries, users } from "../schema";
 
 /**
  * Sends one digest email per user covering new trade barriers and news
@@ -79,7 +79,23 @@ async function main() {
 
   const since = new Date(Date.now() - LOOKBACK_HOURS * 60 * 60 * 1000);
 
-  const interestRows = await db.select().from(userInterests);
+  // Sector/country follows live in watchlist_items now (itemType "sector" |
+  // "country"), same table as every other tracked item, folded in from the
+  // old standalone user_interests table.
+  const interestRows = await db
+    .select({
+      userId: watchlists.userId,
+      itemType: watchlistItems.itemType,
+      itemId: watchlistItems.itemId,
+    })
+    .from(watchlistItems)
+    .innerJoin(watchlists, eq(watchlists.id, watchlistItems.watchlistId))
+    .where(
+      and(
+        inArray(watchlistItems.itemType, ["sector", "country"]),
+        eq(watchlistItems.alertsEnabled, true)
+      )
+    );
   if (interestRows.length === 0) {
     console.log("No followed interests, nothing to do.");
     await pool.end();
@@ -92,8 +108,8 @@ async function main() {
       byUser.set(row.userId, { sectorIds: new Set(), countryIds: new Set() });
     }
     const entry = byUser.get(row.userId)!;
-    if (row.sectorId) entry.sectorIds.add(row.sectorId);
-    if (row.countryId) entry.countryIds.add(row.countryId);
+    if (row.itemType === "sector") entry.sectorIds.add(row.itemId);
+    if (row.itemType === "country") entry.countryIds.add(row.itemId);
   }
 
   // Email lives directly in our own users table now (NextAuth, not an

@@ -7,7 +7,7 @@ import Link from "next/link";
 interface WatchlistItem {
   id: number;
   watchlistId: number;
-  itemType: "product" | "country" | "opportunity" | "barrier" | "exporter";
+  itemType: "product" | "country" | "sector" | "opportunity" | "barrier" | "exporter";
   itemId: number;
   itemName: string;
   // Matches the fields every AddToWatchlist call site actually sends (see
@@ -46,6 +46,7 @@ export function WatchlistItemsView({
     const groups: Record<string, WatchlistItem[]> = {
       product: [],
       country: [],
+      sector: [],
       opportunity: [],
       barrier: [],
       exporter: [],
@@ -138,6 +139,8 @@ export function WatchlistItemsView({
         return `/explorer?hs=${item.itemId}`;
       case "country":
         return `/explorer?market=${item.itemId}`;
+      case "sector":
+        return `/barriers?sector=${item.itemId}`;
       case "opportunity":
         return `/opportunities`;
       case "barrier":
@@ -183,6 +186,24 @@ export function WatchlistItemsView({
               strokeLinejoin="round"
               d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
+          </svg>
+        );
+      case "sector":
+        return (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"
+            />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
           </svg>
         );
       case "opportunity":
@@ -245,7 +266,7 @@ export function WatchlistItemsView({
     return type.charAt(0).toUpperCase() + type.slice(1) + "s";
   };
 
-  const typeOrder = ["product", "country", "opportunity", "barrier", "exporter"];
+  const typeOrder = ["product", "country", "sector", "opportunity", "barrier", "exporter"];
   const hasItems = items.length > 0;
 
   return (

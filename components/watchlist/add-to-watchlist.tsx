@@ -17,7 +17,7 @@ interface WatchlistMembership {
 }
 
 interface AddToWatchlistProps {
-  itemType: "product" | "country" | "opportunity" | "barrier" | "exporter";
+  itemType: "product" | "country" | "sector" | "opportunity" | "barrier" | "exporter";
   itemId: number;
   itemName: string;
   itemMeta?: Record<string, unknown>;
