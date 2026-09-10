@@ -1,3 +1,23 @@
+## Error Type
+Build Error
+
+## Error Message
+Module not found: Can't resolve '@/auth'
+
+## Build Output
+./proxy.ts:1:1
+Error: Module not found: Can't resolve '@/auth'
+> 1 | import { auth } from "@/auth";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 |
+  3 | export default auth((req) => {
+  4 |   // The auth function automatically handles authentication
+
+Import map: aliased to relative './auth' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found
+
+Next.js version: 16.3.4 (Turbopack)
 # Authentication System Implementation
 
 ## Overview
