@@ -62,11 +62,13 @@ flowchart TB
         InterestsAPI["/api/interests<br/>route handler"]
         Analyst["AI Trade Analyst<br/>Claude Opus 5 + tool-use loop"]
         SQLTool["Hardened read-only SQL tool<br/>(regex prefilter + READ ONLY tx<br/>+ statement timeout + row cap)"]
-        Proxy["Clerk middleware (proxy.ts)<br/>gates /api/trade-analyst only"]
+        Proxy["NextAuth middleware (proxy.ts)<br/>gates /api/trade-analyst, /interests,<br/>/watchlists, /profile, /dashboard"]
+        AuthJs["NextAuth.js (lib/auth.ts)<br/>Credentials + bcrypt, JWT sessions"]
     end
 
     subgraph Data["Neon Postgres"]
         Core[("Core tables<br/>products, countries, tariffs,<br/>barriers, exporters, transactions,<br/>procedures, agencies")]
+        UsersTable[("users, user_profiles<br/>(NextAuth's own user store,<br/>via DrizzleAdapter)")]
         Scores[("market_opportunity_scores<br/>(computed in-repo, see §6.3)")]
         Interest_Table[("user_interests")]
         Views[("vw_* BI views<br/>(read-only, denormalized)")]
@@ -74,7 +76,6 @@ flowchart TB
 
     subgraph External["External Systems"]
         NewsAPI["NewsAPI.org"]
-        Clerk["Clerk<br/>(auth + user lookup)"]
         Resend["Resend<br/>(email delivery)"]
         InsightGrid["InsightGrid<br/>(org's BI/dashboard tool)"]
     end
@@ -89,13 +90,13 @@ flowchart TB
     UI -->|"reads"| Scores
     Chat --> API --> Analyst --> SQLTool --> Core
     Interests --> InterestsAPI --> Interest_Table
-    Proxy --> Clerk
+    Proxy --> AuthJs --> UsersTable
     ScoreJob -->|"pnpm db:score"| Scores
     NewsJob -->|"pnpm news:fetch"| NewsAPI
     NewsJob --> Core
     AlertsJob -->|"pnpm alerts:send"| Interest_Table
     AlertsJob --> Core
-    AlertsJob -->|"look up email"| Clerk
+    AlertsJob -->|"look up email"| UsersTable
     AlertsJob -->|"send digest"| Resend
     Core --> Views
     Views --> InsightGrid
@@ -104,14 +105,15 @@ flowchart TB
 Layering, top to bottom:
 
 - Feature pages are React Server Components. Each one reads its filters from the URL's search params (not client state), queries Postgres directly through Drizzle ORM, and renders server-side — so every page is a plain link that can be bookmarked or shared and reproduces the exact same view. There is no client-side dashboard framework anywhere in this layer.
-- The AI Trade Analyst is a separate, parallel path: a streaming API route that hands the conversation to Claude with a single tool (a locked-down SQL runner) and loops until Claude produces a final, non-tool-use answer. It's the only route gated behind Clerk authentication — every other page stays public, matching the platform's public-data mission.
+- The AI Trade Analyst is a separate, parallel path: a streaming API route that hands the conversation to Claude with a single tool (a locked-down SQL runner) and loops until Claude produces a final, non-tool-use answer. It's one of the few routes gated behind authentication — every core data page stays public, matching the platform's public-data mission.
+- Authentication is fully self-hosted via NextAuth.js — a credentials provider (email/password, bcrypt-hashed) backed by `DrizzleAdapter` against this same Postgres database, not an external identity provider. Sessions are stateless JWTs.
 - The database is the single source of truth for every path. It also exposes a layer of read-only SQL views (`vw_*`) purely for external consumption — this is the seam where InsightGrid plugs in without needing to understand the underlying normalized schema.
-- Three GitHub Actions workflows run against the same database on a schedule, standing in for the recurring jobs a deployed system would need: recomputing opportunity scores, pulling in new trade news, and emailing interest-alert digests. The alerts job is the only one that also talks to external services beyond the database — Clerk (to resolve a user ID to an email) and Resend (to actually send it) — entirely independent of the live website itself.
+- Three GitHub Actions workflows run against the same database on a schedule, standing in for the recurring jobs a deployed system would need: recomputing opportunity scores, pulling in new trade news, and emailing interest-alert digests. The alerts job's only external dependency beyond the database is Resend, for actually sending the email — the recipient's address is a direct query against `users`, not an external lookup.
 
 ## 4. Technology Stack
 
 - Next.js 16 (App Router) — full-stack framework: Server Components for all data-driven pages, route handlers for the streaming AI API, file-based routing throughout.
-- Clerk (`@clerk/nextjs`) — authentication: sign-in/sign-up, the account menu in the site header, and gating the AI Trade Analyst behind a signed-in user so its per-query LLM cost is tied to an identifiable account rather than anonymous traffic. Every other page stays public.
+- NextAuth.js (Auth.js v5, `@auth/drizzle-adapter`, `bcryptjs`) — self-hosted authentication: email/password sign-in backed directly by this project's own Postgres via `DrizzleAdapter`, JWT sessions, and role-based access control (`public | exporter | officer | admin`). Gates the AI Trade Analyst and account-specific pages (interests, watchlists, profile, dashboard) behind a signed-in user; every core data page stays public.
 - Resend — transactional email delivery for the interest-alert digest job (see [Section 6.11](#611-my-interests--alerts-interests)).
 - React 19 — UI rendering, used with the React Compiler's stricter lint rules (`react-hooks/refs`, `react-hooks/set-state-in-effect`) enabled.
 - TypeScript — end-to-end static typing, including inferred types from the Drizzle schema all the way into page props.
@@ -139,8 +141,8 @@ The schema is organized into seven logical groups, each in its own file under `d
 - Transactions (`transactions.ts`) — `trade_transactions`: 2,708,389 rows.
 - Intelligence (`intelligence.ts`) — `market_opportunity_scores`, `news_articles`: 311,217 scores · 3,004 articles (3,000 seeded mock + live NewsAPI ingestion).
 - Procedures (`procedures.ts`) — `procedures`: 10 rows.
-- Users (`users.ts`) — `users`: schema scaffold only (role field: `public | exporter | officer | admin`) — unrelated to Clerk, which handles real authentication; still not wired to anything.
-- Interests (`interests.ts`) — `user_interests`: one row per followed sector or market, keyed directly by Clerk user ID. Powers the interest-alert digest job (see [Section 6.11](#611-my-interests--alerts-interests)).
+- Users (`users.ts`) — `users` (real, wired accounts: email, bcrypt password hash, role, active/verified flags), `user_profiles` (role-specific extended data — exporter business details, officer agency/department), `watchlists`/`watchlist_items` (tracking individual products, countries, opportunities, barriers, or exporters). This is NextAuth's own user store, accessed via `DrizzleAdapter` — not a separate identity provider.
+- Interests (`interests.ts`) — `user_interests`: one row per followed sector or market, referencing `users.id` directly. Powers the interest-alert digest job (see [Section 6.11](#611-my-interests--alerts-interests)) — a narrower, alert-focused sibling to `watchlists` above (which tracks specific items, not sector/market-level categories).
 
 Design principles baked into the schema:
 
@@ -193,9 +195,9 @@ Per the architectural boundary in [Section 11](#11-external-analytics-insightgri
 
 ### 6.11. My Interests & Alerts (`/interests`)
 
-Authentication is handled by Clerk — sign-in/sign-up controls live in the site header, and the AI Trade Analyst is gated behind sign-in specifically to bound its per-query LLM cost to identifiable accounts rather than anonymous traffic. Every other page stays fully public, matching the platform's stated public-data mission.
+Authentication is self-hosted via NextAuth.js — email/password sign-in and sign-up at `/auth/signin` / `/auth/signup`, backed directly by this project's own `users` table (`@auth/drizzle-adapter`, bcrypt password hashing, JWT sessions). The AI Trade Analyst and account-specific pages (this one included) are gated behind sign-in; every core data page stays fully public, matching the platform's stated public-data mission.
 
-Once signed in, a user can follow specific sectors and markets on `/interests`, stored against their Clerk user ID (`user_interests` — no separate synced user profile needed for this). A daily scheduled job (`db/notifications/send-interest-alerts.ts`, see [Section 10](#10-automation--scheduled-jobs)) emails a digest of new trade barriers and news articles matching those interests since the last run. Deliberately scoped to those two sources for now — tariff-rate changes and opportunity-score shifts would need either a tracked "changed at" timestamp or a period-over-period diff, neither of which exists yet.
+Once signed in, a user can follow specific sectors and markets on `/interests`, stored against their `users.id` (`user_interests`). A daily scheduled job (`db/notifications/send-interest-alerts.ts`, see [Section 10](#10-automation--scheduled-jobs)) emails a digest of new trade barriers and news articles matching those interests since the last run, looking up each recipient's email with a direct query — no external identity API involved. Deliberately scoped to those two sources for now — tariff-rate changes and opportunity-score shifts would need either a tracked "changed at" timestamp or a period-over-period diff, neither of which exists yet.
 
 ## 7. Key Techniques & Implementation Patterns
 
@@ -244,7 +246,6 @@ A deliberate mobile-first pass — the 8-column Opportunity Leaderboard table re
 - News relevance filtering is heuristic, not semantic — the dual-regex approach materially improved on NewsAPI's raw boolean search (from ~90% noise down to a handful of clearly on-topic articles per fetch) but it's keyword-based, not an LLM classifier — a documented, deliberate cost/complexity trade-off, with LLM-based classification identified as a future upgrade path if warranted.
 - Rate limiting is in-memory, per-instance — fine for a single self-hosted Node process; would need a Postgres- or Redis-backed limiter before running multiple instances.
 - The Landed Cost Estimator's USD/KES conversion depends on a free, third-party forex API with no uptime guarantee — the page degrades gracefully (KES figures are omitted with a note) if it's unreachable, but the rate itself is indicative, not an authoritative customs valuation.
-- `users` table is a schema scaffold only, unrelated to the real authentication now in place — Clerk handles sign-in/sign-up and identity directly (see [Section 6.11](#611-my-interests--alerts-interests)); this table's role field (`public / exporter / officer / admin`) is still not wired to anything and exists for a possible future RBAC layer.
 
 ### Errors encountered during development, and their fixes
 
@@ -269,6 +270,8 @@ A deliberate mobile-first pass — the 8-column Opportunity Leaderboard table re
 - The interest-alert digest script logged "Sent digest to X" for an email that had actually failed to send. Root cause: the Resend SDK returns `{ data, error }` rather than throwing on a failed send (e.g. its sandbox-mode restriction on sending to unverified recipients) — the send call's result was never checked. Fix: check `error` before counting/logging a send as successful.
 - The same digest script then failed with "Missing Clerk Secret Key" even though the key was present in `.env.local`. Root cause: the exact same ES-module import-ordering bug already documented above for seed scripts, reintroduced here — `import "../seed/load-env"` was placed after the `@clerk/nextjs/server` import instead of first, so Clerk's module read `process.env.CLERK_SECRET_KEY` before the env file had loaded it. Fix: moved the env-loading import to the top of the file, as the existing convention requires.
 - A project-wide lint pass turned up two pre-existing `react/no-unescaped-entities` errors in `app/dashboards/page.tsx` (a literal `"` inside JSX text), unrelated to the session's own changes. Fix: escaped to `&ldquo;`/`&rdquo;`.
+- Two people's parallel work replaced the same authentication subsystem in incompatible, incomplete ways at once — Clerk-based auth (with the interests/alerts feature built on it) plus a separate, more complete NextAuth.js migration, decided as the project's actual direction. Root cause: `package.json` had `@clerk/nextjs` removed and `next-auth`/`@auth/drizzle-adapter`/`bcryptjs` added, but `pnpm install` had never been run, so the app couldn't even start; separately, seven files (interests API/page, trade-analyst gate, the analyst chat UI, the alert digest script, both old Clerk sign-in/sign-up pages) still imported from `@clerk/nextjs`. Fix: installed the missing dependencies, deleted the orphaned Clerk pages (superseded by NextAuth's own `/auth/signin`/`/auth/signup`), and migrated every Clerk call site to `auth()` from `lib/auth.ts` — including re-pointing `user_interests` from a Clerk identity string to a real foreign key on `users.id`, now that genuine local user rows exist. The alert digest script actually simplified as a result: user email now comes from a direct query against `users` instead of an external API call.
+- The same parallel `drizzle-kit push` that introduced NextAuth's tables also silently dropped every `vw_*` BI view and the `user_interests` table — `drizzle-kit push` only manages tables it knows about from committed schema files, and has no awareness of the separately-applied views; when it needs to alter a table a view depends on, Postgres drops the dependent view first, and nothing recreates it afterward. Fix: reran `pnpm db:views` to restore the views (zero data was lost — only the views existed, not the underlying data) and recreated `user_interests` directly via SQL once its schema changed to match the new NextAuth-based user reference.
 
 ## 9. Getting Started (Local Development)
 
@@ -285,7 +288,9 @@ Prerequisites: Node.js 24, pnpm, a Neon (or any) Postgres connection string, an 
    ```bash
    DATABASE_URL="postgresql://user:password@host/db?sslmode=verify-full"
    ANTHROPIC_API_KEY="sk-ant-..."
+   AUTH_SECRET="..."    # required — generate with `openssl rand -base64 32`
    NEWS_API_KEY="..."   # optional — only needed for `pnpm news:fetch`
+   RESEND_API_KEY="..." # optional — only needed for `pnpm alerts:send`
    ```
 
 3. Push the schema to your database
@@ -339,7 +344,7 @@ Both scheduled jobs run as GitHub Actions (chosen after confirming `pg_cron` isn
 
 - Recompute Market Opportunity Scores (`.github/workflows/recompute-opportunity-scores.yml`) — runs daily at 03:00 UTC. Keeps the Opportunity Leaderboard current as underlying transaction/tariff/barrier data changes. Requires the `DATABASE_URL` secret.
 - Fetch Trade News (`.github/workflows/fetch-trade-news.yml`) — runs every 6 hours. Pulls new, relevance-filtered Kenya trade news from NewsAPI.org into `news_articles`. Requires the `DATABASE_URL` and `NEWS_API_KEY` secrets.
-- Send Interest Alerts (`.github/workflows/send-interest-alerts.yml`) — runs daily at 06:00 UTC. Emails each user a digest of new trade barriers and news matching their followed sectors/markets (see [Section 6.11](#611-my-interests--alerts-interests)). Requires the `DATABASE_URL`, `CLERK_SECRET_KEY`, and `RESEND_API_KEY` secrets.
+- Send Interest Alerts (`.github/workflows/send-interest-alerts.yml`) — runs daily at 06:00 UTC. Emails each user a digest of new trade barriers and news matching their followed sectors/markets (see [Section 6.11](#611-my-interests--alerts-interests)). Requires the `DATABASE_URL` and `RESEND_API_KEY` secrets — recipient emails come from a direct query against `users`, no separate identity-provider secret needed.
 
 ## 11. External Analytics: InsightGrid
 
