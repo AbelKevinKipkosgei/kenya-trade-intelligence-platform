@@ -1,5 +1,5 @@
 import "../seed/load-env";
-import { eq, gte } from "drizzle-orm";
+import { eq, gte, inArray } from "drizzle-orm";
 import { Resend } from "resend";
 import { db, pool } from "../client";
 import { userInterests, tradeBarriers, newsArticles, products, sectors, countries, users } from "../schema";
@@ -86,15 +86,24 @@ async function main() {
     return;
   }
 
-  const byUser = new Map<string, { sectorIds: Set<number>; countryIds: Set<number> }>();
+  const byUser = new Map<number, { sectorIds: Set<number>; countryIds: Set<number> }>();
   for (const row of interestRows) {
-    if (!byUser.has(row.authUserId)) {
-      byUser.set(row.authUserId, { sectorIds: new Set(), countryIds: new Set() });
+    if (!byUser.has(row.userId)) {
+      byUser.set(row.userId, { sectorIds: new Set(), countryIds: new Set() });
     }
-    const entry = byUser.get(row.authUserId)!;
+    const entry = byUser.get(row.userId)!;
     if (row.sectorId) entry.sectorIds.add(row.sectorId);
     if (row.countryId) entry.countryIds.add(row.countryId);
   }
+
+  // Email lives directly in our own users table now (NextAuth, not an
+  // external identity provider) — one query up front instead of an API
+  // call per user.
+  const userRows = await db
+    .select({ id: users.id, email: users.email })
+    .from(users)
+    .where(inArray(users.id, [...byUser.keys()]));
+  const emailById = new Map(userRows.map((u) => [u.id, u.email]));
 
   const [recentBarriers, recentNews] = await Promise.all([
     db
@@ -135,7 +144,7 @@ async function main() {
   );
 
   let emailsSent = 0;
-  for (const [authUserId, interest] of byUser) {
+  for (const [userId, interest] of byUser) {
     const matchedBarriers = recentBarriers.filter(
       (b) => (b.sectorId !== null && interest.sectorIds.has(b.sectorId)) || interest.countryIds.has(b.countryId),
     );
@@ -146,14 +155,9 @@ async function main() {
     );
     if (matchedBarriers.length === 0 && matchedNews.length === 0) continue;
 
-    const [user] = await db
-      .select({ email: users.email })
-      .from(users)
-      .where(eq(users.id, Number(authUserId)))
-      .limit(1);
-    const email = user?.email;
+    const email = emailById.get(userId);
     if (!email) {
-      console.log(`  Skipping ${authUserId} — no email on file.`);
+      console.log(`  Skipping user ${userId} — no email on file.`);
       continue;
     }
 
