@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db/client";
 import { sectors, countries, watchlists, watchlistItems } from "@/db/schema";
 import { InterestsPicker } from "@/components/interests-picker";
+import { getInterestsWatchlist } from "@/lib/watchlists";
 
 export default async function InterestsPage() {
   const session = await auth();
@@ -28,7 +29,7 @@ export default async function InterestsPage() {
   }
 
   const userId = Number(session.user.id);
-  const [sectorOptions, countryOptions, followedItems] = await Promise.all([
+  const [sectorOptions, countryOptions, followedItems, interestsWatchlist] = await Promise.all([
     db.select({ id: sectors.id, name: sectors.name }).from(sectors).orderBy(sectors.name),
     db.select({ id: countries.id, name: countries.name }).from(countries).orderBy(countries.name),
     db
@@ -45,6 +46,7 @@ export default async function InterestsPage() {
           inArray(watchlistItems.itemType, ["sector", "country"])
         )
       ),
+    getInterestsWatchlist(userId),
   ]);
 
   const currentInterests = followedItems.map((item) => ({
@@ -85,6 +87,29 @@ export default async function InterestsPage() {
       </p>
 
       <InterestsPicker sectors={sectorOptions} countries={countryOptions} initialInterests={currentInterests} />
+
+      {interestsWatchlist && (
+        <Link
+          href={`/watchlists/${interestsWatchlist.id}`}
+          className="mt-8 inline-flex w-fit items-center gap-2 self-start border border-kenya-green px-5 py-2.5 text-sm font-semibold text-kenya-green transition-colors hover:bg-kenya-green hover:text-white"
+        >
+          View My Interests watchlist
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M14 5l7 7m0 0l-7 7m7-7H3"
+            />
+          </svg>
+        </Link>
+      )}
     </div>
   );
 }

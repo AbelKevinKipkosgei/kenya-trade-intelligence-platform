@@ -1,5 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
 import type { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/client";
 import { watchlists, watchlistItems, sectors, countries } from "@/db/schema";
@@ -74,6 +75,13 @@ export async function POST(req: NextRequest) {
 
   if (existing) {
     await db.delete(watchlistItems).where(eq(watchlistItems.id, existing.id));
+    // A prefetched <Link> to /watchlists or a watchlist detail page caches
+    // its RSC payload client-side for up to 5 minutes by default — without
+    // this, navigating there right after a follow/unfollow can still show
+    // the pre-change list until a manual refresh.
+    revalidatePath("/watchlists");
+    revalidatePath("/watchlists/[id]", "page");
+    revalidatePath("/dashboard");
     return Response.json({ following: false });
   }
 
@@ -94,6 +102,10 @@ export async function POST(req: NextRequest) {
     itemName: item.name,
     alertsEnabled: true,
   });
+
+  revalidatePath("/watchlists");
+  revalidatePath("/watchlists/[id]", "page");
+  revalidatePath("/dashboard");
 
   return Response.json({ following: true });
 }

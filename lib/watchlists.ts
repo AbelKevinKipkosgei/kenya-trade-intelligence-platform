@@ -5,6 +5,26 @@ import { watchlists } from "@/db/schema";
 const INTERESTS_WATCHLIST_NAME = "My Interests";
 
 /**
+ * Looks up the user's "My Interests" watchlist without creating one —
+ * for read-only contexts (e.g. showing a "View your watchlist" link) that
+ * shouldn't provision an empty watchlist just because the page was visited.
+ */
+export async function getInterestsWatchlist(userId: number) {
+  const [existing] = await db
+    .select()
+    .from(watchlists)
+    .where(
+      and(
+        eq(watchlists.userId, userId),
+        eq(watchlists.name, INTERESTS_WATCHLIST_NAME)
+      )
+    )
+    .limit(1);
+
+  return existing ?? null;
+}
+
+/**
  * Returns the user's "My Interests" watchlist (creating it if this is
  * their first sector/country follow). This is the single home for the
  * quick sector/market follow picker at /interests — it's a normal
