@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./seed/load-env";
 import { db } from "./client";
 import { sql } from "drizzle-orm";
 

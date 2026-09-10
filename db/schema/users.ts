@@ -75,7 +75,11 @@ export const userProfiles = pgTable(
     notificationPreferences: jsonb("notification_preferences").$type<{
       email?: boolean;
       inApp?: boolean;
-      frequency?: "realtime" | "daily" | "weekly";
+      // Matches what the preferences UI actually saves (components/profile/
+      // notification-preferences.tsx) and what send-emails.ts reads — was
+      // previously declared as "frequency" with a "realtime" option that
+      // neither side ever wrote or read.
+      emailFrequency?: "immediate" | "daily" | "weekly";
       categories?: {
         tariffChanges?: boolean;
         barriers?: boolean;
@@ -208,7 +212,7 @@ export const notifications = pgTable(
       newValue?: string | number;
       changePercent?: number;
       actionUrl?: string;
-      [key: string]: any;
+      [key: string]: unknown;
     }>(),
 
     isRead: boolean("is_read").default(false).notNull(),

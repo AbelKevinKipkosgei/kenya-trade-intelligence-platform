@@ -134,7 +134,7 @@ export async function POST(request: Request) {
       notificationPreferences: {
         email: true,
         inApp: true,
-        frequency: "daily",
+        emailFrequency: "daily",
       },
     });
 

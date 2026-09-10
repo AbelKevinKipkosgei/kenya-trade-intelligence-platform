@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "../seed/load-env";
 import { db } from "../client";
 import { marketOpportunityScores, watchlistItems, products, countries, watchlists } from "../schema";
 import { eq, and, sql } from "drizzle-orm";
@@ -16,6 +16,7 @@ export async function detectOpportunityChanges() {
   // Get all tracked opportunities
   const trackedOpportunities = await db
     .select({
+      watchlistItemId: watchlistItems.id,
       opportunityId: watchlistItems.itemId,
       userId: watchlists.userId,
       itemName: watchlistItems.itemName,
@@ -103,7 +104,7 @@ export async function detectOpportunityChanges() {
             ${JSON.stringify(currentScore.toFixed(1))}
           )`,
         })
-        .where(eq(watchlistItems.id, tracked.opportunityId));
+        .where(eq(watchlistItems.id, tracked.watchlistItemId));
     }
   }
 

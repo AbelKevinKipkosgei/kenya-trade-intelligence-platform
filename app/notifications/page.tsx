@@ -12,7 +12,12 @@ interface Notification {
   message: string;
   relatedItemType: string | null;
   relatedItemId: number | null;
-  metadata: Record<string, any> | null;
+  metadata: {
+    hsCode?: string;
+    countryName?: string;
+    actionUrl?: string;
+    [key: string]: unknown;
+  } | null;
   isRead: boolean;
   createdAt: Date;
 }
@@ -28,7 +33,7 @@ const NOTIFICATION_TYPES = [
 ];
 
 export default function NotificationsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,14 +47,8 @@ export default function NotificationsPage() {
 
   const LIMIT = 20;
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin?callbackUrl=/notifications");
-    } else if (status === "authenticated") {
-      fetchNotifications(true);
-    }
-  }, [status, filterType, filterUnread]);
-
+  // Also called directly from the "Load more" button below — kept as a
+  // regular function (not effect-local) since it's reused outside effects.
   const fetchNotifications = async (reset = false) => {
     setLoading(true);
     try {
@@ -82,6 +81,24 @@ export default function NotificationsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin?callbackUrl=/notifications");
+    } else if (status === "authenticated") {
+      // fetchNotifications is intentionally excluded from the deps array —
+      // it's redefined every render, and depending on it (or router, stable
+      // as it is) would re-fetch on every render instead of only when the
+      // filters actually change. The set-state-in-effect lint rule flags
+      // this as a general anti-pattern, but re-fetching on a
+      // status/filter change is exactly React's own documented use case
+      // for an effect — fetchNotifications can't be moved inline since the
+      // "Load more" button below also calls it directly.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      fetchNotifications(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, filterType, filterUnread]);
 
   const markAsRead = async (notificationId: number) => {
     try {

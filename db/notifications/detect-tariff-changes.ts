@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "../seed/load-env";
 import { db } from "../client";
 import { tariffs, watchlistItems, products, countries, watchlists } from "../schema";
 import { eq, and, sql } from "drizzle-orm";
@@ -29,7 +29,10 @@ export async function detectTariffChanges() {
 
   console.log(`Checking ${trackedItems.length} tracked product-market combinations`);
 
-  let notificationCount = 0;
+  // Always 0 until historical tariff-rate tracking exists — see the
+  // commented-out block below, which is the actual notification logic
+  // waiting on that data.
+  const notificationCount = 0;
 
   for (const item of trackedItems) {
     if (!item.productId || !item.countryId) continue;

@@ -1,10 +1,20 @@
 import type { NotificationType } from "../schema";
 
+interface NotificationMetadata {
+  hsCode?: string;
+  countryName?: string;
+  oldValue?: string | number;
+  newValue?: string | number;
+  changePercent?: number;
+  actionUrl?: string;
+  [key: string]: unknown;
+}
+
 interface NotificationEmailData {
   type: NotificationType;
   title: string;
   message: string;
-  metadata?: Record<string, any>;
+  metadata?: NotificationMetadata;
   actionUrl?: string;
 }
 

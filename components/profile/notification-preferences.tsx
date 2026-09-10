@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface Profile {
   id: number;
@@ -19,12 +19,13 @@ interface Profile {
 }
 
 interface NotificationPreferencesProps {
+  // Unused here — /api/profile/notification-preferences derives the user
+  // from the session server-side, not from the request body.
   userId: number;
   profile: Profile | null;
 }
 
 export function NotificationPreferences({
-  userId,
   profile,
 }: NotificationPreferencesProps) {
   const [preferences, setPreferences] = useState({
@@ -152,7 +153,7 @@ export function NotificationPreferences({
                   onChange={(e) =>
                     setPreferences({
                       ...preferences,
-                      emailFrequency: e.target.value as any,
+                      emailFrequency: e.target.value as "immediate" | "daily" | "weekly",
                     })
                   }
                   className="h-4 w-4 cursor-pointer border-zinc-300 text-kenya-green focus:ring-kenya-green dark:border-zinc-600"
@@ -176,7 +177,7 @@ export function NotificationPreferences({
                   onChange={(e) =>
                     setPreferences({
                       ...preferences,
-                      emailFrequency: e.target.value as any,
+                      emailFrequency: e.target.value as "immediate" | "daily" | "weekly",
                     })
                   }
                   className="h-4 w-4 cursor-pointer border-zinc-300 text-kenya-green focus:ring-kenya-green dark:border-zinc-600"
@@ -200,7 +201,7 @@ export function NotificationPreferences({
                   onChange={(e) =>
                     setPreferences({
                       ...preferences,
-                      emailFrequency: e.target.value as any,
+                      emailFrequency: e.target.value as "immediate" | "daily" | "weekly",
                     })
                   }
                   className="h-4 w-4 cursor-pointer border-zinc-300 text-kenya-green focus:ring-kenya-green dark:border-zinc-600"

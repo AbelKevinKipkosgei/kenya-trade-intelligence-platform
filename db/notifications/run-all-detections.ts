@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "../seed/load-env";
 import { detectNewBarriers } from "./detect-barriers";
 import { detectTariffChanges } from "./detect-tariff-changes";
 import { detectOpportunityChanges } from "./detect-opportunity-changes";

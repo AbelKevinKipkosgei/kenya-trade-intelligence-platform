@@ -1,22 +1,12 @@
-import "dotenv/config";
+import "../seed/load-env";
 import { Resend } from "resend";
 import { db } from "../client";
 import { notifications, userProfiles, users } from "../schema";
-import { eq, and, lte, isNull } from "drizzle-orm";
+import { eq, and, gte } from "drizzle-orm";
 import { generateNotificationEmail, generateDigestEmail } from "./email-templates";
 
 // Only initialize Resend if API key is present
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-
-interface EmailNotification {
-  id: number;
-  userId: number;
-  type: string;
-  title: string;
-  message: string;
-  metadata: Record<string, any> | null;
-  createdAt: Date;
-}
 
 /**
  * Send email notifications to users based on their preferences
@@ -57,11 +47,12 @@ export async function sendEmailNotifications() {
 
   for (const user of emailEnabledUsers) {
     try {
-      const frequency = (user.notificationPreferences as any)?.emailFrequency || "immediate";
+      const frequency = user.notificationPreferences?.emailFrequency || "immediate";
 
       if (frequency === "immediate") {
         // Send individual emails for unsent notifications
         emailsSent += await sendImmediateEmails(
+          resend,
           user.userId,
           user.userEmail,
           user.userName
@@ -69,6 +60,7 @@ export async function sendEmailNotifications() {
       } else if (frequency === "daily") {
         // Send daily digest (only if run once per day)
         emailsSent += await sendDailyDigest(
+          resend,
           user.userId,
           user.userEmail,
           user.userName
@@ -76,6 +68,7 @@ export async function sendEmailNotifications() {
       } else if (frequency === "weekly") {
         // Send weekly digest (only if run once per week)
         emailsSent += await sendWeeklyDigest(
+          resend,
           user.userId,
           user.userEmail,
           user.userName
@@ -100,6 +93,7 @@ export async function sendEmailNotifications() {
  * Send immediate emails for new notifications
  */
 async function sendImmediateEmails(
+  resend: Resend,
   userId: number,
   userEmail: string,
   userName: string
@@ -123,7 +117,7 @@ async function sendImmediateEmails(
       and(
         eq(notifications.userId, userId),
         eq(notifications.isRead, false),
-        lte(notifications.createdAt, oneHourAgo)
+        gte(notifications.createdAt, oneHourAgo)
       )
     )
     .limit(10);
@@ -137,7 +131,7 @@ async function sendImmediateEmails(
   for (const notification of unsentNotifications) {
     try {
       const { subject, html } = generateNotificationEmail(userName, {
-        type: notification.type as any,
+        type: notification.type,
         title: notification.title,
         message: notification.message,
         metadata: notification.metadata || undefined,
@@ -164,6 +158,7 @@ async function sendImmediateEmails(
  * Send daily digest of notifications
  */
 async function sendDailyDigest(
+  resend: Resend,
   userId: number,
   userEmail: string,
   userName: string
@@ -184,7 +179,7 @@ async function sendDailyDigest(
     .where(
       and(
         eq(notifications.userId, userId),
-        lte(notifications.createdAt, oneDayAgo)
+        gte(notifications.createdAt, oneDayAgo)
       )
     )
     .limit(50);
@@ -197,7 +192,7 @@ async function sendDailyDigest(
     const { subject, html } = generateDigestEmail(
       userName,
       dailyNotifications.map((n) => ({
-        type: n.type as any,
+        type: n.type,
         title: n.title,
         message: n.message,
         metadata: n.metadata || undefined,
@@ -223,6 +218,7 @@ async function sendDailyDigest(
  * Send weekly digest of notifications
  */
 async function sendWeeklyDigest(
+  resend: Resend,
   userId: number,
   userEmail: string,
   userName: string
@@ -243,7 +239,7 @@ async function sendWeeklyDigest(
     .where(
       and(
         eq(notifications.userId, userId),
-        lte(notifications.createdAt, oneWeekAgo)
+        gte(notifications.createdAt, oneWeekAgo)
       )
     )
     .limit(100);
@@ -256,7 +252,7 @@ async function sendWeeklyDigest(
     const { subject, html } = generateDigestEmail(
       userName,
       weeklyNotifications.map((n) => ({
-        type: n.type as any,
+        type: n.type,
         title: n.title,
         message: n.message,
         metadata: n.metadata || undefined,

@@ -11,13 +11,13 @@ interface Notification {
   message: string;
   relatedItemType: string | null;
   relatedItemId: number | null;
-  metadata: Record<string, any> | null;
+  metadata: { actionUrl?: string; [key: string]: unknown } | null;
   isRead: boolean;
   createdAt: Date;
 }
 
 export function NotificationBell() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -36,9 +36,22 @@ export function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch unread count on mount and periodically
+  // Fetch unread count on mount and periodically. Defined inline (not as a
+  // hoisted const) since it's only ever called from here — keeps the fetch
+  // scoped to the effect that owns it, matching React's recommended
+  // data-fetching-effect shape.
   useEffect(() => {
     if (status !== "authenticated") return;
+
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await fetch("/api/notifications?unread=true&limit=1");
+        const data = await response.json();
+        setUnreadCount(data.unreadCount || 0);
+      } catch (error) {
+        console.error("Error fetching unread count:", error);
+      }
+    };
 
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 60000); // Check every minute
@@ -46,36 +59,27 @@ export function NotificationBell() {
     return () => clearInterval(interval);
   }, [status]);
 
-  // Fetch recent notifications when dropdown opens
+  // Fetch recent notifications when dropdown opens. Same inline-definition
+  // reasoning as above.
   useEffect(() => {
-    if (showDropdown && status === "authenticated") {
-      fetchNotifications();
-    }
+    if (!showDropdown || status !== "authenticated") return;
+
+    const fetchNotifications = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch("/api/notifications?limit=5");
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
   }, [showDropdown, status]);
-
-  const fetchUnreadCount = async () => {
-    try {
-      const response = await fetch("/api/notifications?unread=true&limit=1");
-      const data = await response.json();
-      setUnreadCount(data.unreadCount || 0);
-    } catch (error) {
-      console.error("Error fetching unread count:", error);
-    }
-  };
-
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/notifications?limit=5");
-      const data = await response.json();
-      setNotifications(data.notifications || []);
-      setUnreadCount(data.unreadCount || 0);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const markAsRead = async (notificationId: number) => {
     try {

@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "../seed/load-env";
 import { db } from "../client";
 import { notifications, userProfiles, type NotificationType } from "../schema";
 import { eq } from "drizzle-orm";
@@ -10,7 +10,7 @@ interface CreateNotificationParams {
   message: string;
   relatedItemType?: string;
   relatedItemId?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -35,13 +35,16 @@ export async function createNotification(params: CreateNotificationParams) {
     .where(eq(userProfiles.userId, userId))
     .limit(1);
 
-  // If no profile or in-app notifications disabled, skip
-  if (!profile?.notificationPreferences?.inApp) {
+  // In-app notifications default to on (matches the preferences UI, which
+  // shows every toggle checked until a user explicitly saves otherwise) —
+  // only an explicit `false` opts a user out, so a profile that has never
+  // saved preferences still receives notifications.
+  if (profile?.notificationPreferences?.inApp === false) {
     return null;
   }
 
   // Check category preferences
-  const categories = profile.notificationPreferences.categories || {};
+  const categories = profile?.notificationPreferences?.categories || {};
   const categoryEnabled = getCategoryForType(type, categories);
 
   if (!categoryEnabled) {

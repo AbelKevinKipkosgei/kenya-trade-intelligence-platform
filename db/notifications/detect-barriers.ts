@@ -1,7 +1,7 @@
-import "dotenv/config";
+import "../seed/load-env";
 import { db } from "../client";
 import { tradeBarriers, watchlistItems, products, countries, watchlists } from "../schema";
-import { eq, and, gte, sql } from "drizzle-orm";
+import { eq, and, gte } from "drizzle-orm";
 import { createNotification } from "./create-notification";
 
 /**
@@ -34,7 +34,7 @@ export async function detectNewBarriers() {
     .where(
       and(
         eq(tradeBarriers.status, "active"),
-        gte(tradeBarriers.reportedDate, oneDayAgo)
+        gte(tradeBarriers.reportedDate, oneDayAgo.toISOString().slice(0, 10))
       )
     );
 
