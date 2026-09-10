@@ -1,8 +1,7 @@
 import "../seed/load-env";
 import { db } from "../client";
-import { tariffs, watchlistItems, products, countries, watchlists } from "../schema";
+import { watchlistItems } from "../schema";
 import { eq, and, sql } from "drizzle-orm";
-import { createNotification } from "./create-notification";
 
 /**
  * Detect tariff changes for tracked products and create notifications
@@ -29,91 +28,17 @@ export async function detectTariffChanges() {
 
   console.log(`Checking ${trackedItems.length} tracked product-market combinations`);
 
-  // Always 0 until historical tariff-rate tracking exists — see the
-  // commented-out block below, which is the actual notification logic
-  // waiting on that data.
+  // Always 0 until historical tariff-rate tracking exists. The real
+  // logic would, per tracked item: look up the current rate (`tariffs`,
+  // joined to `products`/`countries` for display), diff it against a
+  // stored previous rate, and — only on a significant change — notify
+  // every user tracking that product/country pair via
+  // `createNotification` (querying `watchlistItems`/`watchlists` for
+  // `itemType: "opportunity"` rows matching that pair). None of that can
+  // run yet: there's no "previous rate" column to diff against, so
+  // querying the current rate or the affected users per item would just
+  // be a discarded round trip until that tracking exists.
   const notificationCount = 0;
-
-  for (const item of trackedItems) {
-    if (!item.productId || !item.countryId) continue;
-
-    // Get current and previous tariff rates
-    // Note: This is a simplified example - in production you'd want to
-    // track historical changes in a separate table
-    const tariffData = await db
-      .select({
-        currentRate: tariffs.ratePercent,
-        productDescription: products.description,
-        hsCode: products.hsCode,
-        countryName: countries.name,
-        rateType: tariffs.rateType,
-      })
-      .from(tariffs)
-      .innerJoin(products, eq(products.id, tariffs.productId))
-      .innerJoin(countries, eq(countries.id, tariffs.countryId))
-      .where(
-        and(
-          eq(tariffs.productId, item.productId),
-          eq(tariffs.countryId, item.countryId)
-        )
-      )
-      .limit(1);
-
-    if (tariffData.length === 0) continue;
-
-    const tariff = tariffData[0];
-
-    // Find users tracking this opportunity
-    const affectedUsers = await db
-      .select({
-        userId: watchlists.userId,
-      })
-      .from(watchlistItems)
-      .innerJoin(watchlists, eq(watchlists.id, watchlistItems.watchlistId))
-      .where(
-        and(
-          eq(watchlistItems.itemType, "opportunity"),
-          sql`${watchlistItems.itemMeta}->>'productId' = ${item.productId.toString()}`,
-          sql`${watchlistItems.itemMeta}->>'countryId' = ${item.countryId.toString()}`,
-          eq(watchlistItems.alertsEnabled, true)
-        )
-      )
-      .groupBy(watchlists.userId);
-
-    // In a real implementation, you would:
-    // 1. Store historical tariff rates
-    // 2. Compare current vs. previous rates
-    // 3. Only notify if change is significant (e.g., > 1%)
-
-    // For now, we'll create a placeholder for the notification logic
-    // Uncomment when you have historical data tracking:
-
-    /*
-    const changePercent = calculateChange(oldRate, newRate);
-    
-    if (Math.abs(changePercent) >= 1) {
-      for (const user of affectedUsers) {
-        await createNotification({
-          userId: user.userId,
-          type: "tariff_change",
-          title: `Tariff change: ${tariff.productDescription} to ${tariff.countryName}`,
-          message: `The tariff rate for ${tariff.productDescription} (HS ${tariff.hsCode}) to ${tariff.countryName} has changed from ${oldRate}% to ${tariff.currentRate}% (${changePercent > 0 ? '+' : ''}${changePercent.toFixed(1)}%).`,
-          relatedItemType: "product",
-          relatedItemId: item.productId,
-          metadata: {
-            hsCode: tariff.hsCode,
-            countryName: tariff.countryName,
-            oldValue: oldRate,
-            newValue: tariff.currentRate,
-            changePercent,
-            actionUrl: `/explorer?hs=${tariff.hsCode}`,
-          },
-        });
-        notificationCount++;
-      }
-    }
-    */
-  }
 
   console.log(`✓ Checked for tariff changes (${notificationCount} notifications would be created)`);
   return notificationCount;

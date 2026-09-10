@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Bundled Clerk skills/templates for unrelated frameworks (Astro,
+    // TanStack, Vue, etc.) — reference material, not part of this app.
+    ".agents/**",
   ]),
 ]);
 
