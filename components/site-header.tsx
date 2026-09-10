@@ -92,7 +92,7 @@ export function SiteHeader() {
         <div className="flex shrink-0 items-center gap-3">
           <ThemeToggle />
           <NotificationBell />
-          
+
           {status === "loading" ? (
             <div className="h-9 w-20 animate-pulse bg-zinc-200 dark:bg-zinc-800" />
           ) : session ? (
@@ -117,7 +117,7 @@ export function SiteHeader() {
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                   />
                 </svg>
-                <span className="max-w-[120px] truncate">{session.user.name}</span>
+                <span className="max-w-30 truncate">{session.user.name}</span>
               </button>
 
               {/* User dropdown menu */}
@@ -161,6 +161,13 @@ export function SiteHeader() {
                         className="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
                       >
                         My Watchlists
+                      </Link>
+                      <Link
+                        href="/interests"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        My Interests
                       </Link>
                       {(session.user.role === "admin" ||
                         session.user.role === "officer") && (
@@ -269,6 +276,15 @@ export function SiteHeader() {
                   className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                 >
                   Profile
+                </Link>
+              </div>
+              <div className="rounded-lg px-3 py-3 hover:bg-stone-200 dark:hover:bg-zinc-800">
+                <Link
+                  href="/interests"
+                  onClick={() => setMobileOpen(false)}
+                  className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                >
+                  My Interests
                 </Link>
               </div>
               <div className="rounded-lg px-3 py-3 hover:bg-stone-200 dark:hover:bg-zinc-800">
