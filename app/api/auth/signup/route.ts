@@ -3,6 +3,7 @@ import { hash } from "bcryptjs";
 import { db } from "@/db/client";
 import { users, userProfiles, type UserRole } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { isValidPassword, PASSWORD_REQUIREMENTS_MESSAGE } from "@/lib/validation";
 
 /**
  * Government email domains that are allowed for officer accounts.
@@ -24,18 +25,6 @@ const GOVERNMENT_EMAIL_DOMAINS = [
 function isGovernmentEmail(email: string): boolean {
   const domain = email.split("@")[1]?.toLowerCase();
   return GOVERNMENT_EMAIL_DOMAINS.some((govDomain) => domain === govDomain);
-}
-
-/**
- * Validate password strength.
- * Must be at least 8 characters with uppercase, lowercase, and number.
- */
-function isValidPassword(password: string): boolean {
-  if (password.length < 8) return false;
-  if (!/[a-z]/.test(password)) return false;
-  if (!/[A-Z]/.test(password)) return false;
-  if (!/[0-9]/.test(password)) return false;
-  return true;
 }
 
 export async function POST(request: Request) {
@@ -63,10 +52,7 @@ export async function POST(request: Request) {
     // Validate password strength
     if (!isValidPassword(password)) {
       return NextResponse.json(
-        {
-          error:
-            "Password must be at least 8 characters and contain uppercase, lowercase, and number",
-        },
+        { error: PASSWORD_REQUIREMENTS_MESSAGE },
         { status: 400 }
       );
     }

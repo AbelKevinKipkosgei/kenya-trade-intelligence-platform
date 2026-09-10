@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/client";
-import { userProfiles, users, sectors, counties, agencies } from "@/db/schema";
+import { userProfiles, users, sectors, counties, agencies, accounts } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ProfileView } from "@/components/profile/profile-view";
 
@@ -19,16 +19,38 @@ export default async function ProfilePage() {
   }
   const userId = parseInt(session.user.id);
 
-  // Fetch user data
-  const [user] = await db
-    .select()
+  // Fetch user data. Selected explicitly (not a plain `select()`) so
+  // passwordHash never becomes part of the object handed to a Client
+  // Component below — Next.js serializes the actual JS object across the
+  // Server/Client boundary, not just whatever a prop type declares, so a
+  // full row here would have shipped the bcrypt hash to the browser.
+  const [userRow] = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      fullName: users.fullName,
+      role: users.role,
+      emailVerified: users.emailVerified,
+      isActive: users.isActive,
+      image: users.image,
+      createdAt: users.createdAt,
+      passwordHash: users.passwordHash,
+    })
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);
 
-  if (!user) {
+  if (!userRow) {
     redirect("/auth/signin");
   }
+
+  const { passwordHash, ...userFields } = userRow;
+  const user = { ...userFields, hasPassword: !!passwordHash };
+
+  const linkedAccounts = await db
+    .select({ provider: accounts.provider })
+    .from(accounts)
+    .where(eq(accounts.userId, userId));
 
   // Fetch profile with related data
   const [profile] = await db
@@ -86,6 +108,7 @@ export default async function ProfilePage() {
           sector={profile?.sector || null}
           agency={profile?.agency || null}
           counties={profileCounties}
+          linkedProviders={linkedAccounts.map((a) => a.provider)}
         />
       </main>
     </div>

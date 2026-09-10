@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { UserRole } from "@/db/schema";
 import { ProfileEditForm } from "./profile-edit-form";
 import { NotificationPreferences } from "./notification-preferences";
+import { AccountSecurity } from "./account-security";
 
 interface User {
   id: number;
@@ -17,6 +18,9 @@ interface User {
   // Only ever set for OAuth-signed-in users (Google, LinkedIn, GitHub,
   // Facebook — see lib/auth.ts); null for credentials-only accounts.
   image: string | null;
+  // Never the hash itself — see app/profile/page.tsx for why passwordHash
+  // is deliberately excluded from what's queried and passed down here.
+  hasPassword: boolean;
 }
 
 interface Profile {
@@ -55,6 +59,7 @@ interface ProfileViewProps {
   sector: Sector | null;
   agency: Agency | null;
   counties: County[];
+  linkedProviders: string[];
 }
 
 export function ProfileView({
@@ -63,6 +68,7 @@ export function ProfileView({
   sector,
   agency,
   counties,
+  linkedProviders,
 }: ProfileViewProps) {
   const [isEditing, setIsEditing] = useState(false);
 
@@ -190,6 +196,9 @@ export function ProfileView({
           </div>
         </div>
       </div>
+
+      {/* Account Security */}
+      <AccountSecurity hasPassword={user.hasPassword} linkedProviders={linkedProviders} />
 
       {/* Notification Preferences */}
       <NotificationPreferences userId={user.id} profile={profile} />
