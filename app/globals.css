@@ -6,8 +6,19 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
+  --background: #fdfdfc;
   --foreground: #171717;
+
+  /* Tailwind's built-in `white` theme token, toned down from pure #fff —
+     every bg-white/text-white/border-white utility across the app
+     resolves this at paint time via CSS variable, so this one override
+     softens every light-mode background without touching every
+     component. Deliberately kept just above Tailwind's own stone-50
+     (~#fafaf9, already used throughout this UI for cards/sections that
+     sit on top of the page background) rather than matching it exactly —
+     matching it would make those cards blend invisibly into the page,
+     erasing the contrast the app relies on for visual hierarchy. */
+  --color-white: #fdfdfc;
 
   /* Kenyan flag palette */
   --color-kenya-black: #000000;

@@ -5,3 +5,4 @@ export * from "./transactions";
 export * from "./intelligence";
 export * from "./procedures";
 export * from "./users";
+export * from "./interests";

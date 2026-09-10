@@ -245,6 +245,12 @@ export default async function Home() {
                 New here? See the Getting Started guide →
               </a>
             </div>
+            <a
+              href="/getting-started"
+              className="text-sm font-medium text-zinc-600 underline decoration-zinc-300 underline-offset-4 transition-colors hover:text-kenya-green hover:decoration-kenya-green dark:text-zinc-400 dark:decoration-zinc-600"
+            >
+              New here? Start with our Getting Started guide
+            </a>
           </div>
           <aside className="self-end border-t-4 border-kenya-black bg-zinc-50 p-6 dark:bg-zinc-900">
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-kenya-green">
@@ -278,10 +284,10 @@ export default async function Home() {
               key={stat.label}
               className="min-w-0 border-l border-zinc-200 px-5 py-4 first:border-l-0 dark:border-zinc-800"
             >
-              <div className="block break-words text-2xl font-semibold leading-tight tracking-tight text-zinc-950 dark:text-zinc-50">
+              <div className="block wrap-break-word text-2xl font-semibold leading-tight tracking-tight text-zinc-950 dark:text-zinc-50">
                 {stat.value}
               </div>
-              <div className="mt-2 block max-w-[15rem] text-xs font-semibold uppercase leading-snug tracking-wide text-zinc-700 dark:text-zinc-300">
+              <div className="mt-2 block max-w-60 text-xs font-semibold uppercase leading-snug tracking-wide text-zinc-700 dark:text-zinc-300">
                 {stat.label}
               </div>
               <div className="mt-2 block text-xs leading-snug text-zinc-500 dark:text-zinc-400">
@@ -400,7 +406,6 @@ export default async function Home() {
           })()}
         </section>
       </main>
-
     </div>
   );
 }

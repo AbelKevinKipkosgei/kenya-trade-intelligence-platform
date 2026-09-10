@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import type Anthropic from "@anthropic-ai/sdk";
+import { auth } from "@clerk/nextjs/server";
 import { runTradeAnalystTurn } from "@/lib/ai/trade-analyst";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
@@ -31,6 +32,14 @@ function sanitizeMessages(body: unknown): ChatMessage[] {
 }
 
 export async function POST(req: NextRequest) {
+  // Every call here is a real, metered LLM request — require sign-in so
+  // usage is tied to an account, not just an IP (which the rate limiter
+  // below already covers, but doesn't stop anonymous abuse from rotating).
+  const { userId } = await auth();
+  if (!userId) {
+    return new Response("Sign in to use the AI Trade Analyst.", { status: 401 });
+  }
+
   const clientIp = getClientIp(req.headers);
   const rateLimit = checkRateLimit(clientIp);
   if (!rateLimit.allowed) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Option = { value: string; label: string };
@@ -22,6 +23,30 @@ export function LeaderboardFilters({
   productSearch: string;
 }) {
   const router = useRouter();
+  const [query, setQuery] = useState(productSearch);
+  // Tracks whether `query` changed locally (typing) vs. arrived from a
+  // fresh server render (e.g. the sector/country/period selects below
+  // triggering a navigation) — without this, a select-driven navigation
+  // would replay this effect and re-push the same search param.
+  const isFirstRun = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      return;
+    }
+    const timeout = setTimeout(() => {
+      const params = new URLSearchParams({
+        sector: selectedSector,
+        country: selectedCountry,
+        period: selectedPeriod,
+      });
+      if (query.trim()) params.set("search", query.trim());
+      router.replace(`/opportunities?${params.toString()}`, { scroll: false });
+    }, 300);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
 
   function updateParam(key: string, value: string) {
     const params = new URLSearchParams({
@@ -29,20 +54,9 @@ export function LeaderboardFilters({
       country: selectedCountry,
       period: selectedPeriod,
     });
-    if (productSearch) params.set("search", productSearch);
+    if (query.trim()) params.set("search", query.trim());
     if (value) params.set(key, value);
     else params.delete(key);
-    router.push(`/opportunities?${params.toString()}`);
-  }
-
-  function searchProducts(formData: FormData) {
-    const params = new URLSearchParams({
-      sector: selectedSector,
-      country: selectedCountry,
-      period: selectedPeriod,
-    });
-    const search = String(formData.get("search") ?? "").trim();
-    if (search) params.set("search", search);
     router.push(`/opportunities?${params.toString()}`);
   }
 
@@ -50,17 +64,15 @@ export function LeaderboardFilters({
     "border border-zinc-400 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-kenya-green sm:text-xs dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50";
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <form action={searchProducts} className="order-first flex min-w-60 flex-1 sm:order-0 sm:flex-none">
-        <input
-          type="search"
-          name="search"
-          defaultValue={productSearch}
-          placeholder="Search products or HS codes"
-          aria-label="Search products or HS codes"
-          className={`${selectClass} w-full`}
-        />
-      </form>
+    <div className="flex w-full flex-wrap gap-2">
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search products or HS codes"
+        aria-label="Search products or HS codes"
+        className={`${selectClass} order-first min-w-60 flex-1 sm:order-0`}
+      />
       <select
         value={selectedPeriod}
         onChange={(e) => updateParam("period", e.target.value)}

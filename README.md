@@ -53,37 +53,50 @@ flowchart TB
     subgraph Client["Browser"]
         UI["Next.js pages<br/>(Server Components, URL-filtered)"]
         Chat["AI Trade Analyst chat UI<br/>(Client Component, streaming)"]
+        Interests["Interests picker<br/>(Client Component)"]
     end
 
     subgraph App["Next.js 16 App (Node runtime)"]
         Pages["Feature pages<br/>Explorer · Opportunities · Barriers<br/>Exporters · News · Getting Started"]
         API["/api/trade-analyst<br/>streaming route handler"]
+        InterestsAPI["/api/interests<br/>route handler"]
         Analyst["AI Trade Analyst<br/>Claude Opus 5 + tool-use loop"]
         SQLTool["Hardened read-only SQL tool<br/>(regex prefilter + READ ONLY tx<br/>+ statement timeout + row cap)"]
+        Proxy["Clerk middleware (proxy.ts)<br/>gates /api/trade-analyst only"]
     end
 
     subgraph Data["Neon Postgres"]
         Core[("Core tables<br/>products, countries, tariffs,<br/>barriers, exporters, transactions,<br/>procedures, agencies")]
         Scores[("market_opportunity_scores<br/>(computed in-repo, see §6.3)")]
+        Interest_Table[("user_interests")]
         Views[("vw_* BI views<br/>(read-only, denormalized)")]
     end
 
     subgraph External["External Systems"]
         NewsAPI["NewsAPI.org"]
+        Clerk["Clerk<br/>(auth + user lookup)"]
+        Resend["Resend<br/>(email delivery)"]
         InsightGrid["InsightGrid<br/>(org's BI/dashboard tool)"]
     end
 
     subgraph Automation["GitHub Actions (scheduled)"]
         ScoreJob["Recompute Opportunity Scores<br/>(daily cron)"]
         NewsJob["Fetch Trade News<br/>(every 6h cron)"]
+        AlertsJob["Send Interest Alerts<br/>(daily cron)"]
     end
 
     UI -->|"Drizzle ORM queries"| Core
     UI -->|"reads"| Scores
     Chat --> API --> Analyst --> SQLTool --> Core
+    Interests --> InterestsAPI --> Interest_Table
+    Proxy --> Clerk
     ScoreJob -->|"pnpm db:score"| Scores
     NewsJob -->|"pnpm news:fetch"| NewsAPI
     NewsJob --> Core
+    AlertsJob -->|"pnpm alerts:send"| Interest_Table
+    AlertsJob --> Core
+    AlertsJob -->|"look up email"| Clerk
+    AlertsJob -->|"send digest"| Resend
     Core --> Views
     Views --> InsightGrid
 ```
@@ -91,13 +104,15 @@ flowchart TB
 Layering, top to bottom:
 
 - Feature pages are React Server Components. Each one reads its filters from the URL's search params (not client state), queries Postgres directly through Drizzle ORM, and renders server-side — so every page is a plain link that can be bookmarked or shared and reproduces the exact same view. There is no client-side dashboard framework anywhere in this layer.
-- The AI Trade Analyst is a separate, parallel path: a streaming API route that hands the conversation to Claude with a single tool (a locked-down SQL runner) and loops until Claude produces a final, non-tool-use answer.
-- The database is the single source of truth for both paths. It also exposes a layer of read-only SQL views (`vw_*`) purely for external consumption — this is the seam where InsightGrid plugs in without needing to understand the underlying normalized schema.
-- Two GitHub Actions workflows run against the same database on a schedule, standing in for the recurring jobs a deployed system would need: recomputing opportunity scores, and pulling in new trade news.
+- The AI Trade Analyst is a separate, parallel path: a streaming API route that hands the conversation to Claude with a single tool (a locked-down SQL runner) and loops until Claude produces a final, non-tool-use answer. It's the only route gated behind Clerk authentication — every other page stays public, matching the platform's public-data mission.
+- The database is the single source of truth for every path. It also exposes a layer of read-only SQL views (`vw_*`) purely for external consumption — this is the seam where InsightGrid plugs in without needing to understand the underlying normalized schema.
+- Three GitHub Actions workflows run against the same database on a schedule, standing in for the recurring jobs a deployed system would need: recomputing opportunity scores, pulling in new trade news, and emailing interest-alert digests. The alerts job is the only one that also talks to external services beyond the database — Clerk (to resolve a user ID to an email) and Resend (to actually send it) — entirely independent of the live website itself.
 
 ## 4. Technology Stack
 
-- Next.js 16 (App Router) — full-stack framework: Server Components for all data-driven pages, route handlers for the streaming AI API, file-based routing for all 8 pages.
+- Next.js 16 (App Router) — full-stack framework: Server Components for all data-driven pages, route handlers for the streaming AI API, file-based routing throughout.
+- Clerk (`@clerk/nextjs`) — authentication: sign-in/sign-up, the account menu in the site header, and gating the AI Trade Analyst behind a signed-in user so its per-query LLM cost is tied to an identifiable account rather than anonymous traffic. Every other page stays public.
+- Resend — transactional email delivery for the interest-alert digest job (see [Section 6.11](#611-my-interests--alerts-interests)).
 - React 19 — UI rendering, used with the React Compiler's stricter lint rules (`react-hooks/refs`, `react-hooks/set-state-in-effect`) enabled.
 - TypeScript — end-to-end static typing, including inferred types from the Drizzle schema all the way into page props.
 - Tailwind CSS v4 — styling; custom theme tokens for the Kenyan flag palette (`kenya-black`, `kenya-red`, `kenya-green`, `kenya-white`) and dark/light mode via `@custom-variant dark`.
@@ -111,20 +126,21 @@ Layering, top to bottom:
 - @faker-js/faker + world-countries — mock data generation: faker for volume/randomization, `world-countries` for real ISO country reference data (names, codes, regions) so the mock dataset is geographically accurate.
 - NewsAPI.org — real-time source for the trade news feed's live ingestion pipeline.
 - pnpm — package manager (workspace-aware, used for its strict, disk-efficient install model).
-- GitHub Actions — scheduled automation: daily opportunity-score recomputation and 6-hourly news ingestion, chosen after confirming Neon's free tier does not support `pg_cron` (see [Section 8](#8-limitations--known-errors-and-how-they-were-fixed)).
+- GitHub Actions — scheduled automation: daily opportunity-score recomputation, 6-hourly news ingestion, and daily interest-alert digests, chosen after confirming Neon's free tier does not support `pg_cron` (see [Section 8](#8-limitations--known-errors-and-how-they-were-fixed)).
 - Playwright (dev-only) — available for browser-driven verification of pages during development.
 
 ## 5. Data Model
 
-The schema is organized into six logical groups, each in its own file under `db/schema/`. Row counts below reflect the current seeded database:
+The schema is organized into seven logical groups, each in its own file under `db/schema/`. Row counts below reflect the current seeded database:
 
 - Reference / core (`core.ts`) — `agencies`, `countries`, `sectors`, `counties`, `ports`: 13 agencies · 250 countries · 14 sectors · 47 counties · 12 ports.
 - Trade catalog (`trade.ts`) — `products`, `trade_agreements`, `agreement_members`, `tariffs`, `trade_barriers`: 1,307 products · 8 agreements · 395 memberships · 79,528 tariffs · 4,000 barriers.
 - Export capacity (`exporters.ts`) — `exporters`: 5,000 rows.
-- Transactions (`transactions.ts`) — `trade_transactions`: 2,709,265 rows.
-- Intelligence (`intelligence.ts`) — `market_opportunity_scores`, `news_articles`: 311,468 scores · 3,004 articles (3,000 seeded mock + live NewsAPI ingestion).
+- Transactions (`transactions.ts`) — `trade_transactions`: 2,708,389 rows.
+- Intelligence (`intelligence.ts`) — `market_opportunity_scores`, `news_articles`: 311,217 scores · 3,004 articles (3,000 seeded mock + live NewsAPI ingestion).
 - Procedures (`procedures.ts`) — `procedures`: 10 rows.
-- Users (`users.ts`) — `users`: schema scaffold only (role field: `public | exporter | officer | admin`) — not yet wired into auth.
+- Users (`users.ts`) — `users`: schema scaffold only (role field: `public | exporter | officer | admin`) — unrelated to Clerk, which handles real authentication; still not wired to anything.
+- Interests (`interests.ts`) — `user_interests`: one row per followed sector or market, keyed directly by Clerk user ID. Powers the interest-alert digest job (see [Section 6.11](#611-my-interests--alerts-interests)).
 
 Design principles baked into the schema:
 
@@ -175,6 +191,12 @@ A chat interface for asking free-form questions about Kenyan trade — tariffs, 
 
 Per the architectural boundary in [Section 11](#11-external-analytics-insightgrid), general trend dashboards and BI-style analytics are intentionally not built in this repository — that's InsightGrid's job, fed by the `vw_*` views. The homepage (`/`) does surface a small set of real, live headline statistics (current-year export/import totals, top export partner, active trade barrier count) computed directly from the database, but this is deliberately a summary strip, not a dashboard.
 
+### 6.11. My Interests & Alerts (`/interests`)
+
+Authentication is handled by Clerk — sign-in/sign-up controls live in the site header, and the AI Trade Analyst is gated behind sign-in specifically to bound its per-query LLM cost to identifiable accounts rather than anonymous traffic. Every other page stays fully public, matching the platform's stated public-data mission.
+
+Once signed in, a user can follow specific sectors and markets on `/interests`, stored against their Clerk user ID (`user_interests` — no separate synced user profile needed for this). A daily scheduled job (`db/notifications/send-interest-alerts.ts`, see [Section 10](#10-automation--scheduled-jobs)) emails a digest of new trade barriers and news articles matching those interests since the last run. Deliberately scoped to those two sources for now — tariff-rate changes and opportunity-score shifts would need either a tracked "changed at" timestamp or a period-over-period diff, neither of which exists yet.
+
 ## 7. Key Techniques & Implementation Patterns
 
 Server-rendered, URL-filtered pages instead of a client dashboard framework — every feature page reads its filter state from `searchParams`, queries the database in the Server Component itself (often several queries in parallel via `Promise.all`), and renders fully on the server. Filter controls are small Client Components that just push a new URL via `router.push()` — no client-side data fetching, no loading spinners, no state synchronization bugs, and every filtered view is a real, shareable URL.
@@ -222,7 +244,7 @@ A deliberate mobile-first pass — the 8-column Opportunity Leaderboard table re
 - News relevance filtering is heuristic, not semantic — the dual-regex approach materially improved on NewsAPI's raw boolean search (from ~90% noise down to a handful of clearly on-topic articles per fetch) but it's keyword-based, not an LLM classifier — a documented, deliberate cost/complexity trade-off, with LLM-based classification identified as a future upgrade path if warranted.
 - Rate limiting is in-memory, per-instance — fine for a single self-hosted Node process; would need a Postgres- or Redis-backed limiter before running multiple instances.
 - The Landed Cost Estimator's USD/KES conversion depends on a free, third-party forex API with no uptime guarantee — the page degrades gracefully (KES figures are omitted with a note) if it's unreachable, but the rate itself is indicative, not an authoritative customs valuation.
-- `users` table is a schema scaffold only — role field (`public / exporter / officer / admin`) exists but isn't wired into any authentication/authorization flow yet — no login exists today.
+- `users` table is a schema scaffold only, unrelated to the real authentication now in place — Clerk handles sign-in/sign-up and identity directly (see [Section 6.11](#611-my-interests--alerts-interests)); this table's role field (`public / exporter / officer / admin`) is still not wired to anything and exists for a possible future RBAC layer.
 
 ### Errors encountered during development, and their fixes
 
@@ -240,6 +262,13 @@ A deliberate mobile-first pass — the 8-column Opportunity Leaderboard table re
 - `drizzle-kit push` blocked on adding a `UNIQUE` constraint to `news_articles.source_url`. Root cause: the table already had 3,000 seeded rows; drizzle-kit's interactive TTY prompt (unavailable non-interactively) defaulted to suggesting a destructive truncate. Fix: verified zero duplicate `source_url` values existed first, applied the constraint directly via raw `ALTER TABLE ... ADD CONSTRAINT ... UNIQUE` SQL, then re-ran `drizzle-kit push` to confirm the schema and database were back in sync.
 - The Opportunity Leaderboard was unusable on a phone. Root cause: an 8-column table with only horizontal-scroll as a mobile fallback — comparing a row meant constant side-scrolling. Fix: added a stacked card view (overall score prominent, four sub-scores in a small grid) below the `sm` breakpoint, keeping the table for larger screens.
 - Clicking a news article often didn't go anywhere real. Root cause: seeded mock articles use a placeholder `example.com` URL as a stand-in for a real source, which resolves to a generic placeholder page regardless of path. Fix: labeled every article sourced from that placeholder domain with a "Mock article" badge (kept clickable, since the placeholder link itself is harmless) so it's clear which articles are real, live-ingested coverage.
+- Several ports converged to near-identical aggregate trade values (all six land border posts, both airports, both seaports pairwise), and the two Inland Container Depots had zero transactions, ever. Root cause: the seed generator picked a specific port uniformly at random within its type, independent of transaction value — over millions of rows this converges every port in a type toward an equal share purely by the law of large numbers — and never handled the `icd` port type at all. Fix: replaced the uniform pick with sourced, weighted port pools (real 2024/2025 published throughput figures for Port of Mombasa vs. Lamu Port and JKIA vs. Moi International; directional estimates, clearly labeled as such, for the six land borders and two ICDs — see the citations in `db/seed/04-transactions.ts`) and added the missing `icd` case.
+- Correcting that port assignment on already-seeded data via an in-place `UPDATE` failed outright against Neon's 512MB project cap, even batched with `VACUUM` between batches. Root cause: Postgres's MVCC writes a new row version on every `UPDATE` rather than overwriting in place; plain `VACUUM` only reclaims trailing empty pages, and batching in ascending ID order never reaches the trailing pages until the whole table is done, so the bloat accumulates instead of getting reclaimed mid-run. Fix: `TRUNCATE` + a fresh `INSERT` via the corrected seed script instead of correcting rows in place — a clean rebuild carries none of the old-row-version overhead an `UPDATE` does — followed by recomputing `market_opportunity_scores`. Also added retry-wrapping around the transaction insert loop after a transient Neon connection drop killed one reseed attempt partway through.
+- `<SignedIn>`/`<SignedOut>` crashed with "not available in @clerk/nextjs Core 3." Root cause: the installed `@clerk/nextjs` version (7.9.1) uses Clerk's newer "Core 3" component architecture, which replaced those two components with a single `<Show when="signed-in" fallback={...}>`. Fix: switched every conditional-auth-rendering call site to `<Show>` — the correct pattern was already shown in the Clerk setup instructions used to install it, so this was avoidable by following that literally instead of relying on a trained assumption about Clerk's API.
+- Production deployment returned a 500 on every page after adding Clerk. Root cause: confirmed directly from Vercel's runtime logs (not assumed) — `@clerk/nextjs: Missing publishableKey`. The Clerk API keys only ever existed in the local, correctly-gitignored `.env.local`, which never reaches Vercel on its own. Fix: added the six Clerk env vars to Vercel's Production environment via the Vercel CLI (piping each value directly from `.env.local` into `vercel env add` so the secrets were never printed to a terminal or appear in this document), then redeployed.
+- The interest-alert digest script logged "Sent digest to X" for an email that had actually failed to send. Root cause: the Resend SDK returns `{ data, error }` rather than throwing on a failed send (e.g. its sandbox-mode restriction on sending to unverified recipients) — the send call's result was never checked. Fix: check `error` before counting/logging a send as successful.
+- The same digest script then failed with "Missing Clerk Secret Key" even though the key was present in `.env.local`. Root cause: the exact same ES-module import-ordering bug already documented above for seed scripts, reintroduced here — `import "../seed/load-env"` was placed after the `@clerk/nextjs/server` import instead of first, so Clerk's module read `process.env.CLERK_SECRET_KEY` before the env file had loaded it. Fix: moved the env-loading import to the top of the file, as the existing convention requires.
+- A project-wide lint pass turned up two pre-existing `react/no-unescaped-entities` errors in `app/dashboards/page.tsx` (a literal `"` inside JSX text), unrelated to the session's own changes. Fix: escaped to `&ldquo;`/`&rdquo;`.
 
 ## 9. Getting Started (Local Development)
 
@@ -310,6 +339,7 @@ Both scheduled jobs run as GitHub Actions (chosen after confirming `pg_cron` isn
 
 - Recompute Market Opportunity Scores (`.github/workflows/recompute-opportunity-scores.yml`) — runs daily at 03:00 UTC. Keeps the Opportunity Leaderboard current as underlying transaction/tariff/barrier data changes. Requires the `DATABASE_URL` secret.
 - Fetch Trade News (`.github/workflows/fetch-trade-news.yml`) — runs every 6 hours. Pulls new, relevance-filtered Kenya trade news from NewsAPI.org into `news_articles`. Requires the `DATABASE_URL` and `NEWS_API_KEY` secrets.
+- Send Interest Alerts (`.github/workflows/send-interest-alerts.yml`) — runs daily at 06:00 UTC. Emails each user a digest of new trade barriers and news matching their followed sectors/markets (see [Section 6.11](#611-my-interests--alerts-interests)). Requires the `DATABASE_URL`, `CLERK_SECRET_KEY`, and `RESEND_API_KEY` secrets.
 
 ## 11. External Analytics: InsightGrid
 
@@ -317,7 +347,7 @@ InsightGrid is the organization's existing BI/analytics tool, and general trend 
 
 Seven read-only SQL views (`db/views/bi-views.sql`, applied with `pnpm db:views`) — plain views with zero storage cost, never materialized, so they always reflect live data:
 
-- `vw_trade_transactions` — every transaction joined out to product, sector, country (with region/bloc-membership flags), port, and source agency — the main fact table InsightGrid would query most heavily.
+- `vw_trade_transactions` — every transaction joined out to product, sector, country (with region/bloc-membership flags and an ISO-3 code for map-based tools), port, and source agency, with calendar month pre-extracted (independent of year) for seasonality analysis — the main fact table InsightGrid would query most heavily.
 - `vw_market_opportunity` — every opportunity score joined to its product/sector/country, with all seven score dimensions as columns.
 - `vw_tariffs` — every tariff rate joined to product, country, and the trade agreement (if any) it derives from, with a rate_source column distinguishing a real, WITS-sourced rate from an estimated one.
 - `vw_trade_barriers` — every barrier joined to product, country, and the reporting agency.

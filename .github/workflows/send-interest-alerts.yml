@@ -1,0 +1,36 @@
+name: Send Interest Alerts
+
+# Emails a digest of new trade barriers and news matching each user's
+# followed sectors/markets (see db/notifications/send-interest-alerts.ts).
+# Runs on a schedule rather than pg_cron, which is unavailable on this
+# Neon plan (confirmed directly — CREATE EXTENSION pg_cron is rejected
+# even for the owning role). Same pattern as sync-real-tariffs.yml.
+
+on:
+  workflow_dispatch: {} # trigger manually from the Actions tab
+  schedule:
+    - cron: "0 6 * * *" # 06:00 UTC daily (~09:00 EAT)
+
+jobs:
+  send-alerts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.25.0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm alerts:send
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
