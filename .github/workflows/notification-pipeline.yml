@@ -1,0 +1,42 @@
+name: Notification Pipeline
+
+# Detects new barriers, tariff changes, and opportunity-score shifts on
+# tracked watchlist items (db/notifications/detect-*.ts), then emails
+# notifications for users who've opted into the email channel
+# (db/notifications/send-emails.ts) — a per-item alert path independent
+# of the sector/country-level Send Interest Alerts digest. Runs hourly so
+# a user's "immediate" email-frequency preference actually means close to
+# immediate, rather than only being meaningful once a day. Same
+# pg_cron-unavailable rationale as the other scheduled jobs in this repo.
+
+on:
+  workflow_dispatch: {} # trigger manually from the Actions tab
+  schedule:
+    - cron: "0 * * * *" # every hour, on the hour
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.25.0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm notifications:detect
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - run: pnpm notifications:email
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
