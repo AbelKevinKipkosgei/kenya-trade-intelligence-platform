@@ -17,10 +17,15 @@ import { exporters } from "./exporters";
  * User roles for role-based access control (RBAC).
  * - public: Default role for browsing (limited access)
  * - exporter: Kenyan exporters with full access to market intelligence
- * - officer: Government trade officials (requires domain verification or admin approval)
+ * - importer: Kenyan importers with full access to market intelligence
+ * - officer: Government trade officials (requires domain verification or admin approval).
+ *   Not self-selectable at signup/onboarding for now (no signup UI offers it,
+ *   and the API rejects it) — the role and its dashboard/profile support are
+ *   left in place for any account provisioned another way, but nothing
+ *   currently lets a new user become one.
  * - admin: Platform administrators with full access
  */
-export type UserRole = "public" | "exporter" | "officer" | "admin";
+export type UserRole = "public" | "exporter" | "importer" | "officer" | "admin";
 
 /**
  * Core users table with authentication credentials and role.

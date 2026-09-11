@@ -266,12 +266,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true;
     },
 
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       // On sign in, add custom fields to JWT
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.emailVerified = user.emailVerified;
+      }
+      // The client calling useSession().update({ role }) fires this with
+      // trigger "update" instead of a fresh `user` — needed because a JWT
+      // session never re-reads the database on its own, so a role change
+      // made mid-session (e.g. picking an account type during onboarding —
+      // see app/onboarding, components/onboarding/account-type-step.tsx)
+      // would otherwise stay invisible until the next full sign-in.
+      if (trigger === "update" && session && typeof session === "object" && "role" in session) {
+        token.role = (session as { role: UserRole }).role;
       }
       return token;
     },

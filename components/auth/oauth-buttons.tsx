@@ -57,13 +57,22 @@ const PROVIDERS = [
 ];
 
 export function OAuthButtons({ callbackUrl }: { callbackUrl?: string }) {
+  // Always routes through /onboarding rather than straight to callbackUrl —
+  // a first-time OAuth sign-in has no signup form to choose an account type
+  // on (unlike credentials), so createUser (lib/auth.ts) defaults it to
+  // "public" with no profile row at all. /onboarding is the page that
+  // detects that and asks; for an already-onboarded returning user it just
+  // redirects straight on to callbackUrl itself, so this adds no extra step
+  // for them.
+  const onboardingUrl = `/onboarding?next=${encodeURIComponent(callbackUrl || "/dashboard")}`;
+
   return (
     <div className="grid grid-cols-2 gap-3">
       {PROVIDERS.map((provider) => (
         <button
           key={provider.id}
           type="button"
-          onClick={() => signIn(provider.id, { callbackUrl: callbackUrl || "/" })}
+          onClick={() => signIn(provider.id, { callbackUrl: onboardingUrl })}
           className="flex h-11 items-center justify-center gap-2 border border-zinc-300 bg-white text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kenya-red dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
         >
           {provider.icon}

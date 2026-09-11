@@ -76,6 +76,7 @@ export function ProfileView({
     const roleMap = {
       public: "Public User",
       exporter: "Exporter",
+      importer: "Importer",
       officer: "Trade Officer",
       admin: "Administrator",
     };
@@ -204,7 +205,7 @@ export function ProfileView({
       <NotificationPreferences userId={user.id} profile={profile} />
 
       {/* Role-specific Profile */}
-      {profile && user.role === "exporter" && (
+      {profile && (user.role === "exporter" || user.role === "importer") && (
         <div className="border-t-4 border-zinc-300 bg-white p-8 dark:border-zinc-700 dark:bg-zinc-900">
           <h2 className="text-xl font-semibold text-zinc-950 dark:text-white">
             Business Profile

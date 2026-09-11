@@ -14,13 +14,32 @@ interface County {
   region: string;
 }
 
-interface ExporterOnboardingProps {
-  // Unused here — /api/user/profile derives the user from the session
-  // server-side, not from the request body.
-  userId: number;
+interface BusinessOnboardingProps {
+  role: "exporter" | "importer";
+  next: string;
 }
 
-export function ExporterOnboarding({}: ExporterOnboardingProps) {
+const COPY = {
+  exporter: {
+    sectorLabel: "Primary Sector",
+    sectorHelp: "The sector you mainly export in.",
+    bioPlaceholder: "Briefly describe your products, markets, and export goals...",
+  },
+  importer: {
+    sectorLabel: "Primary Sector",
+    sectorHelp: "The sector you mainly import in.",
+    bioPlaceholder: "Briefly describe your products, sourcing markets, and import goals...",
+  },
+};
+
+/**
+ * Business-details onboarding form shared by the exporter and importer
+ * roles — the underlying user_profiles columns (businessType,
+ * primarySectorId, countiesOfOperation, businessRegistrationNumber, bio)
+ * are generic business attributes, not exporter-specific, so one form with
+ * role-aware copy covers both instead of two near-identical files.
+ */
+export function BusinessOnboarding({ role, next }: BusinessOnboardingProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,6 +53,8 @@ export function ExporterOnboarding({}: ExporterOnboardingProps) {
     businessRegistrationNumber: "",
     bio: "",
   });
+
+  const copy = COPY[role];
 
   // Fetch reference data
   useEffect(() => {
@@ -92,8 +113,7 @@ export function ExporterOnboarding({}: ExporterOnboardingProps) {
         return;
       }
 
-      // Success - redirect to dashboard
-      router.push("/dashboard");
+      router.push(next);
       router.refresh();
     } catch {
       setError("An unexpected error occurred");
@@ -146,8 +166,9 @@ export function ExporterOnboarding({}: ExporterOnboardingProps) {
         {/* Primary Sector */}
         <div>
           <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-            Primary Sector <span className="text-kenya-red">*</span>
+            {copy.sectorLabel} <span className="text-kenya-red">*</span>
           </label>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{copy.sectorHelp}</p>
           <select
             value={formData.primarySectorId}
             onChange={(e) =>
@@ -221,7 +242,7 @@ export function ExporterOnboarding({}: ExporterOnboardingProps) {
             value={formData.bio}
             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
             rows={4}
-            placeholder="Briefly describe your products, markets, and export goals..."
+            placeholder={copy.bioPlaceholder}
             className="mt-2 block w-full border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 focus:border-kenya-green focus:outline-none focus:ring-1 focus:ring-kenya-green dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
           />
         </div>
@@ -237,7 +258,7 @@ export function ExporterOnboarding({}: ExporterOnboardingProps) {
           </button>
           <button
             type="button"
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push(next)}
             className="flex h-11 items-center justify-center border border-zinc-400 px-6 text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
           >
             Skip for now

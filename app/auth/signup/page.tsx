@@ -188,15 +188,9 @@ export default function SignUpPage() {
                 className="mt-2 block w-full border border-zinc-300 bg-white px-4 py-2.5 text-sm text-zinc-900 focus:border-kenya-green focus:outline-none focus:ring-1 focus:ring-kenya-green dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               >
                 <option value="exporter">Exporter / Business</option>
-                <option value="officer">Trade Officer (Government)</option>
+                <option value="importer">Importer / Business</option>
                 <option value="public">Public / Researcher</option>
               </select>
-              {formData.role === "officer" && (
-                <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
-                  Officer accounts require a government email address
-                  (@trade.go.ke, @treasury.go.ke, etc.)
-                </p>
-              )}
             </div>
 
             {/* Password */}

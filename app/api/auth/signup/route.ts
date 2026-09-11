@@ -5,28 +5,6 @@ import { users, userProfiles, type UserRole } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { isValidPassword, PASSWORD_REQUIREMENTS_MESSAGE } from "@/lib/validation";
 
-/**
- * Government email domains that are allowed for officer accounts.
- * Officers must use one of these domains or require manual admin approval.
- */
-const GOVERNMENT_EMAIL_DOMAINS = [
-  "trade.go.ke",
-  "treasury.go.ke",
-  "industrialization.go.ke",
-  "agriculture.go.ke",
-  "kra.go.ke",
-  "kephis.org",
-  "epza.go.ke",
-];
-
-/**
- * Validate if an email belongs to a government domain.
- */
-function isGovernmentEmail(email: string): boolean {
-  const domain = email.split("@")[1]?.toLowerCase();
-  return GOVERNMENT_EMAIL_DOMAINS.some((govDomain) => domain === govDomain);
-}
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -57,21 +35,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate role
-    const validRoles: UserRole[] = ["public", "exporter", "officer", "admin"];
+    // Validate role — officer is deliberately excluded: not self-selectable
+    // for now (see the UserRole comment in db/schema/users.ts).
+    const validRoles: UserRole[] = ["public", "exporter", "importer", "admin"];
     if (!validRoles.includes(role)) {
       return NextResponse.json({ error: "Invalid role" }, { status: 400 });
-    }
-
-    // For officer role, validate government email domain
-    if (role === "officer" && !isGovernmentEmail(email)) {
-      return NextResponse.json(
-        {
-          error:
-            "Officer accounts require a government email address (@trade.go.ke, @treasury.go.ke, etc.)",
-        },
-        { status: 403 }
-      );
     }
 
     // Prevent self-service admin account creation

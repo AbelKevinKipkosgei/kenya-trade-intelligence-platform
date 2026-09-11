@@ -78,7 +78,7 @@ export function ProfileEditForm({
 
   // Fetch reference data
   useEffect(() => {
-    if (user.role === "exporter") {
+    if (user.role === "exporter" || user.role === "importer") {
       Promise.all([
         fetch("/api/reference/sectors").then((r) => r.json()),
         fetch("/api/reference/counties").then((r) => r.json()),
@@ -110,7 +110,7 @@ export function ProfileEditForm({
     try {
       const payload: Record<string, unknown> = { bio: formData.bio || null };
 
-      if (user.role === "exporter") {
+      if (user.role === "exporter" || user.role === "importer") {
         payload.businessType = formData.businessType;
         payload.businessRegistrationNumber =
           formData.businessRegistrationNumber || null;
@@ -161,8 +161,8 @@ export function ProfileEditForm({
           </div>
         )}
 
-        {/* Exporter fields */}
-        {user.role === "exporter" && (
+        {/* Exporter/importer fields (shared business-profile columns) */}
+        {(user.role === "exporter" || user.role === "importer") && (
           <>
             <div>
               <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300">
