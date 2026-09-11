@@ -90,6 +90,32 @@ export const tariffs = pgTable(
   ],
 );
 
+/**
+ * Last observed tariff rate for each product-country-rate type combination.
+ * Detector jobs compare the current tariff table with this snapshot so a
+ * notification is emitted once per observed change.
+ */
+export const tariffRateSnapshots = pgTable(
+  "tariff_rate_snapshots",
+  {
+    id: serial("id").primaryKey(),
+    productId: integer("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    countryId: integer("country_id")
+      .notNull()
+      .references(() => countries.id, { onDelete: "cascade" }),
+    rateType: varchar("rate_type", { length: 20 }).notNull(),
+    ratePercent: numeric("rate_percent", { precision: 6, scale: 3 }).notNull(),
+    rateSource: varchar("rate_source", { length: 20 }).notNull(),
+    observedAt: timestamp("observed_at").defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex("tariff_rate_snapshots_unique").on(t.productId, t.countryId, t.rateType),
+    index("tariff_rate_snapshots_country_idx").on(t.countryId),
+  ],
+);
+
 /** Non-tariff barriers, SPS/technical requirements, quotas, etc. */
 export const tradeBarriers = pgTable(
   "trade_barriers",

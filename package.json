@@ -11,6 +11,7 @@
     "db:studio": "drizzle-kit studio --config=drizzle.config.ts",
     "db:seed": "tsx db/seed/index.ts",
     "db:views": "tsx db/views/apply.ts",
+    "db:migrate-tariff-history": "tsx db/migrate-tariff-history.ts",
     "db:score": "tsx db/scoring/run.ts",
     "news:fetch": "tsx db/ingestion/fetch-news.ts",
     "tariffs:sync-real": "tsx db/tariffs/fetch-real-mfn-rates.ts",
