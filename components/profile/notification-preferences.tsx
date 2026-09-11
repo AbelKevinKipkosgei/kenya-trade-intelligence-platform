@@ -31,8 +31,7 @@ export function NotificationPreferences({
   const [preferences, setPreferences] = useState({
     inApp: profile?.notificationPreferences?.inApp ?? true,
     email: profile?.notificationPreferences?.email ?? false,
-    emailFrequency:
-      profile?.notificationPreferences?.emailFrequency ?? "daily",
+    emailFrequency: profile?.notificationPreferences?.emailFrequency ?? "daily",
     categories: {
       tariffChanges:
         profile?.notificationPreferences?.categories?.tariffChanges ?? true,
@@ -46,7 +45,7 @@ export function NotificationPreferences({
 
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">(
-    "idle"
+    "idle",
   );
 
   const handleSave = async () => {
@@ -153,7 +152,10 @@ export function NotificationPreferences({
                   onChange={(e) =>
                     setPreferences({
                       ...preferences,
-                      emailFrequency: e.target.value as "immediate" | "daily" | "weekly",
+                      emailFrequency: e.target.value as
+                        | "immediate"
+                        | "daily"
+                        | "weekly",
                     })
                   }
                   className="h-4 w-4 cursor-pointer border-zinc-300 text-kenya-green focus:ring-kenya-green dark:border-zinc-600"
@@ -177,7 +179,10 @@ export function NotificationPreferences({
                   onChange={(e) =>
                     setPreferences({
                       ...preferences,
-                      emailFrequency: e.target.value as "immediate" | "daily" | "weekly",
+                      emailFrequency: e.target.value as
+                        | "immediate"
+                        | "daily"
+                        | "weekly",
                     })
                   }
                   className="h-4 w-4 cursor-pointer border-zinc-300 text-kenya-green focus:ring-kenya-green dark:border-zinc-600"
@@ -201,7 +206,10 @@ export function NotificationPreferences({
                   onChange={(e) =>
                     setPreferences({
                       ...preferences,
-                      emailFrequency: e.target.value as "immediate" | "daily" | "weekly",
+                      emailFrequency: e.target.value as
+                        | "immediate"
+                        | "daily"
+                        | "weekly",
                     })
                   }
                   className="h-4 w-4 cursor-pointer border-zinc-300 text-kenya-green focus:ring-kenya-green dark:border-zinc-600"
@@ -245,7 +253,7 @@ export function NotificationPreferences({
               />
               <div className="flex-1">
                 <span className="text-sm font-medium text-zinc-950 dark:text-white">
-                  📊 Tariff changes
+                  Tariff changes
                 </span>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400">
                   Changes to tariff rates on your tracked products
@@ -270,7 +278,7 @@ export function NotificationPreferences({
               />
               <div className="flex-1">
                 <span className="text-sm font-medium text-zinc-950 dark:text-white">
-                  ⚠️ Trade barriers
+                  Trade barriers
                 </span>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400">
                   New barriers or resolved barriers affecting your markets
@@ -295,7 +303,7 @@ export function NotificationPreferences({
               />
               <div className="flex-1">
                 <span className="text-sm font-medium text-zinc-950 dark:text-white">
-                  📈 Opportunity updates
+                  Opportunity updates
                 </span>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400">
                   Score changes and new opportunities in tracked sectors
@@ -320,7 +328,7 @@ export function NotificationPreferences({
               />
               <div className="flex-1">
                 <span className="text-sm font-medium text-zinc-950 dark:text-white">
-                  🎯 Price alerts
+                  Price alerts
                 </span>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400">
                   Price changes and new product listings
