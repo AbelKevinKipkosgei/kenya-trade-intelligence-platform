@@ -32,8 +32,13 @@ export function WatchlistItemsView({
 }: WatchlistItemsViewProps) {
   const router = useRouter();
   // Mutations call router.refresh() to re-sync from the server instead of
-  // updating this list locally, so it's never reassigned after init.
-  const [items] = useState(initialItems);
+  // updating this list locally — which means this must stay a plain alias
+  // of the prop, not useState(initialItems). useState's initializer
+  // argument is ignored on every render after the first, so wrapping it in
+  // useState previously froze the very first render's data forever: a
+  // refreshed prop from the parent Server Component (after a delete/toggle)
+  // never reached the rendered list until a full page reload.
+  const items = initialItems;
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<WatchlistItem | null>(null);

@@ -20,7 +20,15 @@ interface WatchlistsViewProps {
 
 export function WatchlistsView({ initialWatchlists }: WatchlistsViewProps) {
   const router = useRouter();
-  const [watchlists] = useState(initialWatchlists);
+  // Not local state — this list is never mutated client-side, only
+  // re-fetched server-side via router.refresh() after a create/edit/delete
+  // (see submitCreate/submitEdit/submitDelete below). Wrapping it in
+  // useState(initialWatchlists) previously froze the very first render's
+  // data forever, since useState's initializer argument is ignored on every
+  // render after the first — a refreshed prop from the parent Server
+  // Component never made it into the list, so a deleted watchlist kept
+  // showing until a full page reload.
+  const watchlists = initialWatchlists;
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
