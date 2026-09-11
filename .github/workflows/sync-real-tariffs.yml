@@ -8,9 +8,22 @@ name: Sync Real MFN Tariffs
 # Resumable (skips product/country pairs already verified real), so
 # re-triggering after a failure or a GitHub Actions timeout picks up
 # where the last run left off instead of starting over.
+#
+# Scheduled monthly rather than daily/weekly like the other jobs: MFN
+# tariff schedules change on a roughly annual cadence, not daily, and
+# the script itself never permanently gives up on a "no data" pair
+# (WITS reporting lag means coverage genuinely improves over following
+# years) — monthly is frequent enough to pick that up without wasting
+# hours of runtime re-checking data that hasn't changed.
 
 on:
   workflow_dispatch: {} # trigger manually from the Actions tab
+  schedule:
+    - cron: "0 4 1 * *" # 04:00 UTC on the 1st of each month
+
+concurrency:
+  group: sync-real-tariffs
+  cancel-in-progress: false # let a running sync finish instead of losing hours of progress to a new trigger
 
 jobs:
   sync:
