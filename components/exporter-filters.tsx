@@ -38,10 +38,10 @@ export function ExporterFilters({
   }
 
   const selectClass =
-    "border border-zinc-400 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-kenya-green sm:text-xs dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50";
+    "h-10 w-full appearance-none border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 outline-none transition-colors focus:border-kenya-green focus:ring-2 focus:ring-kenya-green/10 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 sm:min-w-40";
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="grid w-full grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_1px_3px_rgba(16,42,67,0.04)] dark:border-zinc-700 dark:bg-zinc-900 sm:grid-cols-4">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -53,7 +53,7 @@ export function ExporterFilters({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by company name…"
-          className="w-full border border-zinc-400 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-kenya-green sm:w-56 sm:text-xs dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+          className="h-10 w-full border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition-colors focus:border-kenya-green focus:ring-2 focus:ring-kenya-green/10 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 sm:w-56 sm:text-xs"
         />
       </form>
       <select

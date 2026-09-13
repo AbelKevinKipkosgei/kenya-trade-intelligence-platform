@@ -40,7 +40,7 @@ function SectionIcon({
 }) {
   return (
     <span
-      className={`flex h-8 w-8 shrink-0 items-center justify-center border ${bg} ${text}`}
+      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${bg} ${text}`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -72,7 +72,7 @@ function SectionHeading({
       <SectionIcon bg={bg} text={text}>
         {icon}
       </SectionIcon>
-      <h2 className="text-lg font-semibold tracking-tight text-ktp-navy dark:text-zinc-50">
+      <h2 className="font-display text-xl font-semibold tracking-tight text-ktp-navy dark:text-zinc-50">
         {title}
       </h2>
     </div>
@@ -261,8 +261,9 @@ export default async function ExplorerPage({
   if (!product) {
     const samples = await loadSampleProducts();
     return (
-      <div className="mx-auto flex min-h-full w-full max-w-3xl flex-1 flex-col px-6 py-10 sm:px-10">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-kenya-green/10 text-kenya-green dark:bg-kenya-green/20">
+      <main className="flex min-h-full flex-1 flex-col bg-white dark:bg-zinc-950">
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-5 py-8 sm:px-8 sm:py-10">
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-kenya-green/10 text-kenya-green dark:bg-kenya-green/20">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -278,15 +279,15 @@ export default async function ExplorerPage({
             />
           </svg>
         </span>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">
           Market &amp; Product Explorer
         </h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 max-w-2xl text-sm leading-5 text-slate-500 dark:text-zinc-400">
           Look up a product by HS code or name to see export performance, top
           markets, tariffs, active barriers, capable exporters, and related news
           in one place.
         </p>
-        <div className="mt-6">
+        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_1px_3px_rgba(16,42,67,0.04)] dark:border-zinc-700 dark:bg-zinc-900">
           <ProductSearchBox autoFocus />
         </div>
         {hs && (
@@ -303,7 +304,7 @@ export default async function ExplorerPage({
               <a
                 key={s.hsCode}
                 href={`/explorer?hs=${s.hsCode}`}
-                className="rounded-xl border border-stone-300 bg-white/60 px-4 py-3 text-sm text-zinc-700 transition-colors hover:border-kenya-green hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300 dark:hover:text-zinc-50"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 transition-colors hover:border-kenya-green hover:text-ktp-navy dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
               >
                 <span className="font-medium">{s.hsCode}</span> –{" "}
                 {s.description}
@@ -312,6 +313,7 @@ export default async function ExplorerPage({
           </div>
         </div>
       </div>
+      </main>
     );
   }
 
@@ -336,15 +338,27 @@ export default async function ExplorerPage({
   ]);
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-4xl flex-1 flex-col px-6 py-10 sm:px-10">
-      <div className="mb-7">
+    <main className="flex min-h-full flex-1 flex-col bg-white dark:bg-zinc-950">
+    <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-5 py-7 sm:px-8 sm:py-9">
+      <div className="mb-5 flex items-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-kenya-green/10 text-kenya-green">
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <path d="M21 21l-5.2-5.2m0 0A7.5 7.5 0 1 0 5.2 5.2a7.5 7.5 0 0 0 10.6 10.6Z" />
+          </svg>
+        </span>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-kenya-green">Product intelligence</p>
+          <h1 className="font-display text-3xl font-semibold leading-none tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">Market &amp; Product Explorer</h1>
+        </div>
+      </div>
+      <div className="mb-6 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_1px_3px_rgba(16,42,67,0.04)] dark:border-zinc-700 dark:bg-zinc-900">
         <ProductSearchBox />
       </div>
 
-      <div className="mb-10 border-t-4 border-ktp-navy bg-ktp-surface p-7 dark:border-zinc-500 dark:bg-zinc-900 sm:p-9">
+      <div className="mb-8 rounded-xl border border-slate-200 border-t-4 border-t-kenya-green bg-white p-6 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:border-t-kenya-green dark:bg-zinc-900 sm:p-8">
         <div className="flex flex-col gap-7 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-start gap-4 flex-1">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-kenya-green text-kenya-green">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-kenya-green/10 text-kenya-green">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
@@ -403,8 +417,8 @@ export default async function ExplorerPage({
         </div>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <section className="border-t-2 border-kenya-green bg-white p-6 shadow-[0_1px_0_#d9e2e8] dark:bg-zinc-900">
+      <div className="grid gap-5 sm:grid-cols-2">
+        <section className="rounded-xl border border-slate-200 border-t-4 border-t-kenya-green bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:border-t-kenya-green dark:bg-zinc-900 sm:p-6">
           <SectionHeading
             bg="border-kenya-green/30"
             text="text-kenya-green"
@@ -426,7 +440,7 @@ export default async function ExplorerPage({
           )}
         </section>
 
-        <section className="border-t-2 border-ktp-navy bg-white p-6 shadow-[0_1px_0_#d9e2e8] dark:bg-zinc-900">
+        <section className="rounded-xl border border-slate-200 border-t-4 border-t-ktp-navy bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:border-t-ktp-navy dark:bg-zinc-900 sm:p-6">
           <SectionHeading
             bg="border-ktp-navy/30"
             text="text-ktp-navy dark:text-zinc-300"
@@ -449,7 +463,7 @@ export default async function ExplorerPage({
         </section>
       </div>
 
-      <section className="mt-8 border border-zinc-300 bg-white p-6 shadow-[0_2px_0_#d9e2e8] dark:border-zinc-700 dark:bg-zinc-900 sm:p-8">
+      <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:bg-zinc-900 sm:p-7">
         <SectionHeading
           bg="border-ktp-amber/40"
           text="text-ktp-amber dark:text-amber-400"
@@ -469,7 +483,7 @@ export default async function ExplorerPage({
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-ktp-navy text-xs uppercase tracking-wide text-white">
+              <thead className="bg-[#f7fafb] text-[10px] uppercase tracking-wide text-slate-500 dark:bg-zinc-950 dark:text-zinc-400">
                 <tr>
                   <th className="px-3 py-3 pr-4">Market</th>
                   <th className="px-3 py-3 pr-4">Rate</th>
@@ -536,7 +550,7 @@ export default async function ExplorerPage({
       </section>
 
       {tariffRows.length > 0 && (
-        <section className="mt-8 border-l-4 border-ktp-amber bg-amber-50/60 p-6 dark:bg-amber-950/20">
+        <section className="mt-6 rounded-xl border border-amber-200 border-l-4 border-l-ktp-amber bg-[#fffaf0] p-5 dark:border-amber-900 dark:bg-amber-950/20 sm:p-7">
           <SectionHeading
             bg="border-ktp-amber/40"
             text="text-ktp-amber dark:text-amber-400"
@@ -562,7 +576,7 @@ export default async function ExplorerPage({
         </section>
       )}
 
-      <section className="mt-8 border-l-4 border-kenya-red bg-white p-6 shadow-[0_1px_0_#d9e2e8] dark:bg-zinc-900">
+      <section className="mt-6 rounded-xl border border-red-100 border-l-4 border-l-kenya-red bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:bg-zinc-900 sm:p-7">
         <SectionHeading
           bg="border-kenya-red/40"
           text="text-kenya-red"
@@ -604,8 +618,8 @@ export default async function ExplorerPage({
         )}
       </section>
 
-      <div className="mt-6 grid gap-6 sm:grid-cols-2">
-        <section className="border-t border-ktp-navy/40 bg-ktp-surface p-6 dark:bg-zinc-900">
+      <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <section className="rounded-xl border border-slate-200 border-t-4 border-t-ktp-navy bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:bg-zinc-900 sm:p-6">
           <SectionHeading
             bg="border-ktp-navy/30"
             text="text-ktp-navy dark:text-zinc-300"
@@ -647,7 +661,7 @@ export default async function ExplorerPage({
           )}
         </section>
 
-        <section className="border-t border-ktp-amber/50 bg-amber-50/40 p-6 dark:bg-amber-950/10">
+        <section className="rounded-xl border border-amber-100 border-t-4 border-t-ktp-amber bg-[#fffaf0] p-5 dark:border-amber-900 dark:bg-amber-950/10 sm:p-6">
           <SectionHeading
             bg="border-ktp-amber/40"
             text="text-ktp-amber dark:text-amber-400"
@@ -685,7 +699,7 @@ export default async function ExplorerPage({
       </div>
 
       {newsRows.length > 0 && (
-        <section className="mt-8 border-t border-zinc-400 bg-white p-6 dark:bg-zinc-900">
+        <section className="mt-6 rounded-xl border border-slate-200 border-t-4 border-t-slate-400 bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:bg-zinc-900 sm:p-7">
           <SectionHeading
             bg="border-zinc-400"
             text="text-zinc-700 dark:text-zinc-300"
@@ -723,5 +737,6 @@ export default async function ExplorerPage({
         </section>
       )}
     </div>
+    </main>
   );
 }
