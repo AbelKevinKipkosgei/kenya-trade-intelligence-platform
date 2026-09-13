@@ -54,19 +54,55 @@ export function BarrierFilters({
 
   return (
     <div className="grid w-full grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_1px_3px_rgba(16,42,67,0.04)] dark:border-zinc-700 dark:bg-zinc-900 sm:grid-cols-4">
-      <select value={selectedStatus} onChange={(e) => updateParam("status", e.target.value)} className={selectClass} aria-label="Filter by status">
-        {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      <select
+        value={selectedStatus}
+        onChange={(e) => updateParam("status", e.target.value)}
+        className={selectClass}
+        aria-label="Filter by status"
+      >
+        {STATUS_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
       </select>
-      <select value={selectedType} onChange={(e) => updateParam("type", e.target.value)} className={selectClass} aria-label="Filter by barrier type">
-        {TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      <select
+        value={selectedType}
+        onChange={(e) => updateParam("type", e.target.value)}
+        className={selectClass}
+        aria-label="Filter by barrier type"
+      >
+        {TYPE_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
       </select>
-      <select value={selectedSector} onChange={(e) => updateParam("sector", e.target.value)} className={selectClass} aria-label="Filter by sector">
+      <select
+        value={selectedSector}
+        onChange={(e) => updateParam("sector", e.target.value)}
+        className={selectClass}
+        aria-label="Filter by sector"
+      >
         <option value="">All sectors</option>
-        {sectors.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+        {sectors.map((s) => (
+          <option key={s.value} value={s.value}>
+            {s.label}
+          </option>
+        ))}
       </select>
-      <select value={selectedCountry} onChange={(e) => updateParam("country", e.target.value)} className={selectClass} aria-label="Filter by market">
+      <select
+        value={selectedCountry}
+        onChange={(e) => updateParam("country", e.target.value)}
+        className={selectClass}
+        aria-label="Filter by market"
+      >
         <option value="">All markets</option>
-        {countries.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+        {countries.map((c) => (
+          <option key={c.value} value={c.value}>
+            {c.label}
+          </option>
+        ))}
       </select>
     </div>
   );

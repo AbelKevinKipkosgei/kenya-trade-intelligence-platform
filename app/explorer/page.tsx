@@ -262,57 +262,57 @@ export default async function ExplorerPage({
     const samples = await loadSampleProducts();
     return (
       <main className="flex min-h-full flex-1 flex-col bg-white dark:bg-zinc-950">
-      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-5 py-8 sm:px-8 sm:py-10">
-        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-kenya-green/10 text-kenya-green dark:bg-kenya-green/20">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-            />
-          </svg>
-        </span>
-        <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">
-          Market &amp; Product Explorer
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-5 text-slate-500 dark:text-zinc-400">
-          Look up a product by HS code or name to see export performance, top
-          markets, tariffs, active barriers, capable exporters, and related news
-          in one place.
-        </p>
-        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_1px_3px_rgba(16,42,67,0.04)] dark:border-zinc-700 dark:bg-zinc-900">
-          <ProductSearchBox autoFocus />
-        </div>
-        {hs && (
-          <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
-            No product found for HS code &quot;{hs}&quot;.
+        <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-5 py-8 sm:px-8 sm:py-10">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-kenya-green/10 text-kenya-green dark:bg-kenya-green/20">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+              />
+            </svg>
+          </span>
+          <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">
+            Market &amp; Product Explorer
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-5 text-slate-500 dark:text-zinc-400">
+            Look up a product by HS code or name to see export performance, top
+            markets, tariffs, active barriers, capable exporters, and related
+            news in one place.
           </p>
-        )}
-        <div className="mt-8">
-          <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-            Or try one of these
-          </h2>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {samples.map((s) => (
-              <a
-                key={s.hsCode}
-                href={`/explorer?hs=${s.hsCode}`}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 transition-colors hover:border-kenya-green hover:text-ktp-navy dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
-              >
-                <span className="font-medium">{s.hsCode}</span> –{" "}
-                {s.description}
-              </a>
-            ))}
+          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_1px_3px_rgba(16,42,67,0.04)] dark:border-zinc-700 dark:bg-zinc-900">
+            <ProductSearchBox autoFocus />
+          </div>
+          {hs && (
+            <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+              No product found for HS code &quot;{hs}&quot;.
+            </p>
+          )}
+          <div className="mt-8">
+            <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+              Or try one of these
+            </h2>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {samples.map((s) => (
+                <a
+                  key={s.hsCode}
+                  href={`/explorer?hs=${s.hsCode}`}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 transition-colors hover:border-kenya-green hover:text-ktp-navy dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
+                >
+                  <span className="font-medium">{s.hsCode}</span> –{" "}
+                  {s.description}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
       </main>
     );
   }
@@ -339,404 +339,415 @@ export default async function ExplorerPage({
 
   return (
     <main className="flex min-h-full flex-1 flex-col bg-white dark:bg-zinc-950">
-    <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-5 py-7 sm:px-8 sm:py-9">
-      <div className="mb-5 flex items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-kenya-green/10 text-kenya-green">
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-            <path d="M21 21l-5.2-5.2m0 0A7.5 7.5 0 1 0 5.2 5.2a7.5 7.5 0 0 0 10.6 10.6Z" />
-          </svg>
-        </span>
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-kenya-green">Product intelligence</p>
-          <h1 className="font-display text-3xl font-semibold leading-none tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">Market &amp; Product Explorer</h1>
+      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-5 py-7 sm:px-8 sm:py-9">
+        <div className="mb-5 flex items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-kenya-green/10 text-kenya-green">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              aria-hidden="true"
+            >
+              <path d="M21 21l-5.2-5.2m0 0A7.5 7.5 0 1 0 5.2 5.2a7.5 7.5 0 0 0 10.6 10.6Z" />
+            </svg>
+          </span>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-kenya-green">
+              Product intelligence
+            </p>
+            <h1 className="font-display text-3xl font-semibold leading-none tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">
+              Market &amp; Product Explorer
+            </h1>
+          </div>
         </div>
-      </div>
-      <div className="mb-6 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_1px_3px_rgba(16,42,67,0.04)] dark:border-zinc-700 dark:bg-zinc-900">
-        <ProductSearchBox />
-      </div>
+        <div className="mb-6 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_1px_3px_rgba(16,42,67,0.04)] dark:border-zinc-700 dark:bg-zinc-900">
+          <ProductSearchBox />
+        </div>
 
-      <div className="mb-8 rounded-xl border border-slate-200 border-t-4 border-t-kenya-green bg-white p-6 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:border-t-kenya-green dark:bg-zinc-900 sm:p-8">
-        <div className="flex flex-col gap-7 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-4 flex-1">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-kenya-green/10 text-kenya-green">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-                />
-              </svg>
-            </span>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start gap-3">
-                <div className="flex-1 min-w-0">
-                  <span className="text-xs font-bold uppercase tracking-[0.14em] text-kenya-green">
-                    {product.sectorName}
-                  </span>
-                  <h1 className="mt-1 text-3xl font-semibold leading-none tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">
-                    {product.description}
-                  </h1>
-                  <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-                    HS Code {product.hsCode} · Traded in {product.unit}
-                  </p>
-                </div>
-                <div className="shrink-0 pt-1">
-                  <AddToWatchlist
-                    itemType="product"
-                    itemId={product.id}
-                    itemName={product.description}
-                    itemMeta={{
-                      hsCode: product.hsCode,
-                      sector: product.sectorName,
-                      unit: product.unit,
-                    }}
-                    variant="icon"
-                    size="md"
+        <div className="mb-8 rounded-xl border border-slate-200 border-t-4 border-t-kenya-green bg-white p-6 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:border-t-kenya-green dark:bg-zinc-900 sm:p-8">
+          <div className="flex flex-col gap-7 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-4 flex-1">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-kenya-green/10 text-kenya-green">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
                   />
+                </svg>
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-bold uppercase tracking-[0.14em] text-kenya-green">
+                      {product.sectorName}
+                    </span>
+                    <h1 className="mt-1 text-3xl font-semibold leading-none tracking-tight text-ktp-navy dark:text-zinc-50 sm:text-4xl">
+                      {product.description}
+                    </h1>
+                    <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+                      HS Code {product.hsCode} · Traded in {product.unit}
+                    </p>
+                  </div>
+                  <div className="shrink-0 pt-1">
+                    <AddToWatchlist
+                      itemType="product"
+                      itemId={product.id}
+                      itemName={product.description}
+                      itemMeta={{
+                        hsCode: product.hsCode,
+                        sector: product.sectorName,
+                        unit: product.unit,
+                      }}
+                      variant="icon"
+                      size="md"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div
-            aria-label="Trade route marker"
-            className="flex shrink-0 items-center gap-2 text-ktp-navy dark:text-zinc-300"
-          >
-            <span className="h-2.5 w-2.5 rounded-full border-2 border-kenya-green bg-white dark:bg-zinc-900" />
-            <span className="h-px w-14 bg-ktp-navy dark:bg-zinc-500" />
-            <span className="h-2.5 w-2.5 rounded-full bg-ktp-navy" />
-            <span className="h-px w-14 bg-ktp-navy dark:bg-zinc-500" />
-            <span className="h-2.5 w-2.5 rounded-full border-2 border-kenya-red bg-white dark:bg-zinc-900" />
+            <div
+              aria-label="Trade route marker"
+              className="flex shrink-0 items-center gap-2 text-ktp-navy dark:text-zinc-300"
+            >
+              <span className="h-2.5 w-2.5 rounded-full border-2 border-kenya-green bg-white dark:bg-zinc-900" />
+              <span className="h-px w-14 bg-ktp-navy dark:bg-zinc-500" />
+              <span className="h-2.5 w-2.5 rounded-full bg-ktp-navy" />
+              <span className="h-px w-14 bg-ktp-navy dark:bg-zinc-500" />
+              <span className="h-2.5 w-2.5 rounded-full border-2 border-kenya-red bg-white dark:bg-zinc-900" />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <section className="rounded-xl border border-slate-200 border-t-4 border-t-kenya-green bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:border-t-kenya-green dark:bg-zinc-900 sm:p-6">
-          <SectionHeading
-            bg="border-kenya-green/30"
-            text="text-kenya-green"
-            title="Top Export Markets"
-            icon={
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M7.5 7.5L12 3m0 0l4.5 4.5M12 3v13.5"
-              />
-            }
-          />
-          {exportMarkets.length === 0 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              No export transactions recorded.
-            </p>
-          ) : (
-            <MarketList rows={exportMarkets} />
-          )}
-        </section>
-
-        <section className="rounded-xl border border-slate-200 border-t-4 border-t-ktp-navy bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:border-t-ktp-navy dark:bg-zinc-900 sm:p-6">
-          <SectionHeading
-            bg="border-ktp-navy/30"
-            text="text-ktp-navy dark:text-zinc-300"
-            title="Top Import Sources"
-            icon={
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-              />
-            }
-          />
-          {importMarkets.length === 0 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              No import transactions recorded.
-            </p>
-          ) : (
-            <MarketList rows={importMarkets} />
-          )}
-        </section>
-      </div>
-
-      <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:bg-zinc-900 sm:p-7">
-        <SectionHeading
-          bg="border-ktp-amber/40"
-          text="text-ktp-amber dark:text-amber-400"
-          title="Tariff Rates by Market"
-          icon={
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 7h6m0 10v-3m-3 3v-6m-3 6v-9m-2 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z"
+        <div className="grid gap-5 sm:grid-cols-2">
+          <section className="rounded-xl border border-slate-200 border-t-4 border-t-kenya-green bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:border-t-kenya-green dark:bg-zinc-900 sm:p-6">
+            <SectionHeading
+              bg="border-kenya-green/30"
+              text="text-kenya-green"
+              title="Top Export Markets"
+              icon={
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M7.5 7.5L12 3m0 0l4.5 4.5M12 3v13.5"
+                />
+              }
             />
-          }
-        />
-        {tariffRows.length === 0 ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No tariff data recorded.
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-[#f7fafb] text-[10px] uppercase tracking-wide text-slate-500 dark:bg-zinc-950 dark:text-zinc-400">
-                <tr>
-                  <th className="px-3 py-3 pr-4">Market</th>
-                  <th className="px-3 py-3 pr-4">Rate</th>
-                  <th className="px-3 py-3 pr-4">Type</th>
-                  <th className="px-3 py-3 pr-4">Agreement</th>
-                  <th className="px-3 py-3">Source</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tariffRows.map((t, i) => (
-                  <tr
-                    key={i}
-                    className={
-                      t.rateType === "preferential"
-                        ? "bg-kenya-green/[0.07]"
-                        : "bg-white dark:bg-zinc-900"
-                    }
-                  >
-                    <td className="border-b border-zinc-200 px-3 py-3 pr-4 text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
-                      {t.countryName}
-                    </td>
-                    <td className="border-b border-zinc-200 px-3 py-3 pr-4 font-bold text-ktp-navy dark:border-zinc-800 dark:text-zinc-50">
-                      {Number(t.ratePercent).toFixed(1)}%
-                    </td>
-                    <td className="border-b border-zinc-200 px-3 py-3 pr-4 dark:border-zinc-800">
-                      <span
-                        className={`inline-flex items-center gap-1 border px-2 py-1 text-[11px] font-bold uppercase tracking-wide ${
-                          t.rateType === "preferential"
-                            ? "border-kenya-green/40 bg-kenya-green/10 text-kenya-green"
-                            : "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
-                        }`}
-                      >
-                        <span aria-hidden="true">
-                          {t.rateType === "preferential" ? "✓" : "—"}
-                        </span>
-                        {t.rateType}
-                      </span>
-                    </td>
-                    <td className="border-b border-zinc-200 px-3 py-3 pr-4 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-                      {t.agreementCode ?? "–"}
-                    </td>
-                    <td className="border-b border-zinc-200 px-3 py-3 dark:border-zinc-800">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                          t.rateSource === "real"
-                            ? "bg-blue-500/10 text-blue-700 dark:text-blue-400"
-                            : "bg-stone-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"
-                        }`}
-                        title={
-                          t.rateSource === "real"
-                            ? "Sourced from the World Bank's WITS/TRAINS database"
-                            : "Estimated — no verified rate available for this pair"
-                        }
-                      >
-                        {t.rateSource === "real" ? "Verified" : "Estimated"}
-                      </span>
-                    </td>
+            {exportMarkets.length === 0 ? (
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                No export transactions recorded.
+              </p>
+            ) : (
+              <MarketList rows={exportMarkets} />
+            )}
+          </section>
+
+          <section className="rounded-xl border border-slate-200 border-t-4 border-t-ktp-navy bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:border-t-ktp-navy dark:bg-zinc-900 sm:p-6">
+            <SectionHeading
+              bg="border-ktp-navy/30"
+              text="text-ktp-navy dark:text-zinc-300"
+              title="Top Import Sources"
+              icon={
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                />
+              }
+            />
+            {importMarkets.length === 0 ? (
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                No import transactions recorded.
+              </p>
+            ) : (
+              <MarketList rows={importMarkets} />
+            )}
+          </section>
+        </div>
+
+        <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:bg-zinc-900 sm:p-7">
+          <SectionHeading
+            bg="border-ktp-amber/40"
+            text="text-ktp-amber dark:text-amber-400"
+            title="Tariff Rates by Market"
+            icon={
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 7h6m0 10v-3m-3 3v-6m-3 6v-9m-2 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            }
+          />
+          {tariffRows.length === 0 ? (
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              No tariff data recorded.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-[#f7fafb] text-[10px] uppercase tracking-wide text-slate-500 dark:bg-zinc-950 dark:text-zinc-400">
+                  <tr>
+                    <th className="px-3 py-3 pr-4">Market</th>
+                    <th className="px-3 py-3 pr-4">Rate</th>
+                    <th className="px-3 py-3 pr-4">Type</th>
+                    <th className="px-3 py-3 pr-4">Agreement</th>
+                    <th className="px-3 py-3">Source</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-
-      {tariffRows.length > 0 && (
-        <section className="mt-6 rounded-xl border border-amber-200 border-l-4 border-l-ktp-amber bg-[#fffaf0] p-5 dark:border-amber-900 dark:bg-amber-950/20 sm:p-7">
-          <SectionHeading
-            bg="border-ktp-amber/40"
-            text="text-ktp-amber dark:text-amber-400"
-            title="Landed Cost Estimator"
-            icon={
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 7.5v9m3.75-9v9M8.25 7.5v9M4.5 7.5h15M5.25 7.5v9a2.25 2.25 0 002.25 2.25h9a2.25 2.25 0 002.25-2.25v-9M4.5 7.5L6 4.5h12l1.5 3"
-              />
-            }
-          />
-          <LandedCostCalculator
-            rows={tariffRows.map((t) => ({
-              countryName: t.countryName,
-              ratePercent: Number(t.ratePercent),
-              rateType: t.rateType,
-              rateSource: t.rateSource,
-              agreementCode: t.agreementCode,
-            }))}
-            usdToKesRate={usdToKesRate}
-          />
+                </thead>
+                <tbody>
+                  {tariffRows.map((t, i) => (
+                    <tr
+                      key={i}
+                      className={
+                        t.rateType === "preferential"
+                          ? "bg-kenya-green/[0.07]"
+                          : "bg-white dark:bg-zinc-900"
+                      }
+                    >
+                      <td className="border-b border-zinc-200 px-3 py-3 pr-4 text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
+                        {t.countryName}
+                      </td>
+                      <td className="border-b border-zinc-200 px-3 py-3 pr-4 font-bold text-ktp-navy dark:border-zinc-800 dark:text-zinc-50">
+                        {Number(t.ratePercent).toFixed(1)}%
+                      </td>
+                      <td className="border-b border-zinc-200 px-3 py-3 pr-4 dark:border-zinc-800">
+                        <span
+                          className={`inline-flex items-center gap-1 border px-2 py-1 text-[11px] font-bold uppercase tracking-wide ${
+                            t.rateType === "preferential"
+                              ? "border-kenya-green/40 bg-kenya-green/10 text-kenya-green"
+                              : "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                          }`}
+                        >
+                          <span aria-hidden="true">
+                            {t.rateType === "preferential" ? "✓" : "—"}
+                          </span>
+                          {t.rateType}
+                        </span>
+                      </td>
+                      <td className="border-b border-zinc-200 px-3 py-3 pr-4 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                        {t.agreementCode ?? "–"}
+                      </td>
+                      <td className="border-b border-zinc-200 px-3 py-3 dark:border-zinc-800">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                            t.rateSource === "real"
+                              ? "bg-blue-500/10 text-blue-700 dark:text-blue-400"
+                              : "bg-stone-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400"
+                          }`}
+                          title={
+                            t.rateSource === "real"
+                              ? "Sourced from the World Bank's WITS/TRAINS database"
+                              : "Estimated — no verified rate available for this pair"
+                          }
+                        >
+                          {t.rateSource === "real" ? "Verified" : "Estimated"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
-      )}
 
-      <section className="mt-6 rounded-xl border border-red-100 border-l-4 border-l-kenya-red bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:bg-zinc-900 sm:p-7">
-        <SectionHeading
-          bg="border-kenya-red/40"
-          text="text-kenya-red"
-          title="Active Trade Barriers"
-          icon={
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+        {tariffRows.length > 0 && (
+          <section className="mt-6 rounded-xl border border-amber-200 border-l-4 border-l-ktp-amber bg-[#fffaf0] p-5 dark:border-amber-900 dark:bg-amber-950/20 sm:p-7">
+            <SectionHeading
+              bg="border-ktp-amber/40"
+              text="text-ktp-amber dark:text-amber-400"
+              title="Landed Cost Estimator"
+              icon={
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 7.5v9m3.75-9v9M8.25 7.5v9M4.5 7.5h15M5.25 7.5v9a2.25 2.25 0 002.25 2.25h9a2.25 2.25 0 002.25-2.25v-9M4.5 7.5L6 4.5h12l1.5 3"
+                />
+              }
             />
-          }
-        />
-        {barrierRows.length === 0 ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No active barriers recorded for this product.
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {barrierRows.map((b) => (
-              <li key={b.id} className="text-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                    {b.countryName}
-                  </span>
-                  <span className="inline-flex items-center gap-1 border border-kenya-red/40 bg-kenya-red/10 px-2 py-1 text-xs font-bold uppercase tracking-wide text-kenya-red">
-                    <span aria-hidden="true">!</span>
-                    {b.impactLevel} impact
-                  </span>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {b.barrierType} · {b.agencyName}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-zinc-600 dark:text-zinc-400">
-                  {b.description}
-                </p>
-              </li>
-            ))}
-          </ul>
+            <LandedCostCalculator
+              rows={tariffRows.map((t) => ({
+                countryName: t.countryName,
+                ratePercent: Number(t.ratePercent),
+                rateType: t.rateType,
+                rateSource: t.rateSource,
+                agreementCode: t.agreementCode,
+              }))}
+              usdToKesRate={usdToKesRate}
+            />
+          </section>
         )}
-      </section>
 
-      <div className="mt-5 grid gap-5 sm:grid-cols-2">
-        <section className="rounded-xl border border-slate-200 border-t-4 border-t-ktp-navy bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:bg-zinc-900 sm:p-6">
+        <section className="mt-6 rounded-xl border border-red-100 border-l-4 border-l-kenya-red bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:bg-zinc-900 sm:p-7">
           <SectionHeading
-            bg="border-ktp-navy/30"
-            text="text-ktp-navy dark:text-zinc-300"
-            title="Kenyan Exporters (Export Capacity)"
+            bg="border-kenya-red/40"
+            text="text-kenya-red"
+            title="Active Trade Barriers"
             icon={
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
               />
             }
           />
-          {exporterRows.length === 0 ? (
+          {barrierRows.length === 0 ? (
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              No registered exporters for this product.
+              No active barriers recorded for this product.
             </p>
           ) : (
-            <ul className="flex flex-col gap-2">
-              {exporterRows.map((e) => (
-                <li
-                  key={e.id}
-                  className="flex items-center justify-between gap-2 text-sm"
-                >
-                  <span className="flex flex-wrap items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
-                    {e.name}
-                    {e.exportReady && (
-                      <span className="inline-flex items-center gap-1 border border-kenya-green/40 bg-kenya-green/10 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-kenya-green">
-                        <span aria-hidden="true">✓</span>
-                        Export-ready
-                      </span>
-                    )}
-                  </span>
-                  <span className="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
-                    {e.countyName}
-                  </span>
+            <ul className="flex flex-col gap-3">
+              {barrierRows.map((b) => (
+                <li key={b.id} className="text-sm">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                      {b.countryName}
+                    </span>
+                    <span className="inline-flex items-center gap-1 border border-kenya-red/40 bg-kenya-red/10 px-2 py-1 text-xs font-bold uppercase tracking-wide text-kenya-red">
+                      <span aria-hidden="true">!</span>
+                      {b.impactLevel} impact
+                    </span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {b.barrierType} · {b.agencyName}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-zinc-600 dark:text-zinc-400">
+                    {b.description}
+                  </p>
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        <section className="rounded-xl border border-amber-100 border-t-4 border-t-ktp-amber bg-[#fffaf0] p-5 dark:border-amber-900 dark:bg-amber-950/10 sm:p-6">
-          <SectionHeading
-            bg="border-ktp-amber/40"
-            text="text-ktp-amber dark:text-amber-400"
-            title="Related Procedures"
-            icon={
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            }
-          />
-          {procedureRows.length === 0 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              No related procedures found.
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {procedureRows.map((p) => (
-                <li key={p.id}>
-                  <a
-                    href={`/getting-started#${p.category}`}
-                    className="text-sm text-kenya-green hover:underline"
+        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+          <section className="rounded-xl border border-slate-200 border-t-4 border-t-ktp-navy bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:bg-zinc-900 sm:p-6">
+            <SectionHeading
+              bg="border-ktp-navy/30"
+              text="text-ktp-navy dark:text-zinc-300"
+              title="Kenyan Exporters (Export Capacity)"
+              icon={
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"
+                />
+              }
+            />
+            {exporterRows.length === 0 ? (
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                No registered exporters for this product.
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {exporterRows.map((e) => (
+                  <li
+                    key={e.id}
+                    className="flex items-center justify-between gap-2 text-sm"
                   >
-                    {p.title}
+                    <span className="flex flex-wrap items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
+                      {e.name}
+                      {e.exportReady && (
+                        <span className="inline-flex items-center gap-1 border border-kenya-green/40 bg-kenya-green/10 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-kenya-green">
+                          <span aria-hidden="true">✓</span>
+                          Export-ready
+                        </span>
+                      )}
+                    </span>
+                    <span className="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
+                      {e.countyName}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="rounded-xl border border-amber-100 border-t-4 border-t-ktp-amber bg-[#fffaf0] p-5 dark:border-amber-900 dark:bg-amber-950/10 sm:p-6">
+            <SectionHeading
+              bg="border-ktp-amber/40"
+              text="text-ktp-amber dark:text-amber-400"
+              title="Related Procedures"
+              icon={
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              }
+            />
+            {procedureRows.length === 0 ? (
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                No related procedures found.
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {procedureRows.map((p) => (
+                  <li key={p.id}>
+                    <a
+                      href={`/getting-started#${p.category}`}
+                      className="text-sm text-kenya-green hover:underline"
+                    >
+                      {p.title}
+                    </a>
+                    <span className="ml-2 inline-block border border-zinc-300 bg-zinc-100 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                      {PROCEDURE_CATEGORY_LABELS[p.category] ?? p.category}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
+
+        {newsRows.length > 0 && (
+          <section className="mt-6 rounded-xl border border-slate-200 border-t-4 border-t-slate-400 bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:bg-zinc-900 sm:p-7">
+            <SectionHeading
+              bg="border-zinc-400"
+              text="text-zinc-700 dark:text-zinc-300"
+              title="Related News"
+              icon={
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z"
+                />
+              }
+            />
+            <ul className="flex flex-col gap-2">
+              {newsRows.map((n) => (
+                <li key={n.id} className="text-sm">
+                  <a
+                    href={n.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-kenya-green hover:underline"
+                  >
+                    {n.title}
                   </a>
-                  <span className="ml-2 inline-block border border-zinc-300 bg-zinc-100 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                    {PROCEDURE_CATEGORY_LABELS[p.category] ?? p.category}
+                  <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
+                    {n.sourceName}
                   </span>
+                  {n.sourceUrl.startsWith("https://example.com/") && (
+                    <span className="ml-2 inline-block border border-zinc-300 bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
+                      Mock article
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
-          )}
-        </section>
+          </section>
+        )}
       </div>
-
-      {newsRows.length > 0 && (
-        <section className="mt-6 rounded-xl border border-slate-200 border-t-4 border-t-slate-400 bg-white p-5 shadow-[0_1px_3px_rgba(16,42,67,0.05)] dark:border-zinc-700 dark:bg-zinc-900 sm:p-7">
-          <SectionHeading
-            bg="border-zinc-400"
-            text="text-zinc-700 dark:text-zinc-300"
-            title="Related News"
-            icon={
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z"
-              />
-            }
-          />
-          <ul className="flex flex-col gap-2">
-            {newsRows.map((n) => (
-              <li key={n.id} className="text-sm">
-                <a
-                  href={n.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-kenya-green hover:underline"
-                >
-                  {n.title}
-                </a>
-                <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
-                  {n.sourceName}
-                </span>
-                {n.sourceUrl.startsWith("https://example.com/") && (
-                  <span className="ml-2 inline-block border border-zinc-300 bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
-                    Mock article
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-    </div>
     </main>
   );
 }

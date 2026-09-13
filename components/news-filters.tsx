@@ -31,7 +31,10 @@ export function NewsFilters({
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (query.trim() === selectedSearch) return;
-      const params = new URLSearchParams({ category: selectedCategory, country: selectedCountry });
+      const params = new URLSearchParams({
+        category: selectedCategory,
+        country: selectedCountry,
+      });
       if (query.trim()) params.set("search", query.trim());
       router.replace(`/news?${params.toString()}`, { scroll: false });
     }, 300);
@@ -56,8 +59,24 @@ export function NewsFilters({
     <div className="grid w-full grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_1px_3px_rgba(16,42,67,0.04)] dark:border-zinc-700 dark:bg-zinc-900 sm:grid-cols-[minmax(0,1fr)_10rem_10rem]">
       <label className="relative col-span-2 sm:col-span-1">
         <span className="sr-only">Search headlines, topics, or sources</span>
-        <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search headlines, topics or sources..." aria-label="Search headlines, topics or sources" className="h-10 w-full border border-slate-200 bg-white pl-9 pr-3 text-xs text-slate-700 outline-none focus:border-kenya-green focus:ring-2 focus:ring-kenya-green/10 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200" />
+        <svg
+          viewBox="0 0 24 24"
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="6.5" />
+          <path d="m16 16 4 4" />
+        </svg>
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search headlines, topics or sources..."
+          aria-label="Search headlines, topics or sources"
+          className="h-10 w-full border border-slate-200 bg-white pl-9 pr-3 text-xs text-slate-700 outline-none focus:border-kenya-green focus:ring-2 focus:ring-kenya-green/10 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+        />
       </label>
       <select
         value={selectedCategory}

@@ -67,7 +67,14 @@ export function LeaderboardFilters({
     <div className="flex w-full flex-col gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_1px_3px_rgba(16,42,67,0.04)] dark:border-zinc-700 dark:bg-zinc-900 sm:flex-row sm:items-center">
       <label className="relative min-w-0 flex-1">
         <span className="sr-only">Search products or HS codes</span>
-        <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          aria-hidden="true"
+        >
           <circle cx="11" cy="11" r="6.5" />
           <path d="m16 16 4 4" />
         </svg>
@@ -81,16 +88,43 @@ export function LeaderboardFilters({
         />
       </label>
       <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
-        <select value={selectedPeriod} onChange={(e) => updateParam("period", e.target.value)} className={selectClass} aria-label="Select period">
-          {periods.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+        <select
+          value={selectedPeriod}
+          onChange={(e) => updateParam("period", e.target.value)}
+          className={selectClass}
+          aria-label="Select period"
+        >
+          {periods.map((p) => (
+            <option key={p.value} value={p.value}>
+              {p.label}
+            </option>
+          ))}
         </select>
-        <select value={selectedSector} onChange={(e) => updateParam("sector", e.target.value)} className={selectClass} aria-label="Select sector">
+        <select
+          value={selectedSector}
+          onChange={(e) => updateParam("sector", e.target.value)}
+          className={selectClass}
+          aria-label="Select sector"
+        >
           <option value="">All sectors</option>
-          {sectors.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+          {sectors.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
+          ))}
         </select>
-        <select value={selectedCountry} onChange={(e) => updateParam("country", e.target.value)} className={selectClass} aria-label="Select destination market">
+        <select
+          value={selectedCountry}
+          onChange={(e) => updateParam("country", e.target.value)}
+          className={selectClass}
+          aria-label="Select destination market"
+        >
           <option value="">All markets</option>
-          {countries.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+          {countries.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
         </select>
       </div>
     </div>
