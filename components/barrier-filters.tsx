@@ -50,14 +50,15 @@ export function BarrierFilters({
   }
 
   const selectClass =
-    "border border-zinc-400 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-kenya-green sm:text-xs dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50";
+    "h-10 w-full appearance-none border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 outline-none transition-colors focus:border-kenya-green focus:ring-2 focus:ring-kenya-green/10 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 sm:min-w-40";
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="grid w-full grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-[0_1px_3px_rgba(16,42,67,0.04)] dark:border-zinc-700 dark:bg-zinc-900 sm:grid-cols-4">
       <select
         value={selectedStatus}
         onChange={(e) => updateParam("status", e.target.value)}
         className={selectClass}
+        aria-label="Filter by status"
       >
         {STATUS_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
@@ -69,6 +70,7 @@ export function BarrierFilters({
         value={selectedType}
         onChange={(e) => updateParam("type", e.target.value)}
         className={selectClass}
+        aria-label="Filter by barrier type"
       >
         {TYPE_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
@@ -80,6 +82,7 @@ export function BarrierFilters({
         value={selectedSector}
         onChange={(e) => updateParam("sector", e.target.value)}
         className={selectClass}
+        aria-label="Filter by sector"
       >
         <option value="">All sectors</option>
         {sectors.map((s) => (
@@ -92,6 +95,7 @@ export function BarrierFilters({
         value={selectedCountry}
         onChange={(e) => updateParam("country", e.target.value)}
         className={selectClass}
+        aria-label="Filter by market"
       >
         <option value="">All markets</option>
         {countries.map((c) => (
