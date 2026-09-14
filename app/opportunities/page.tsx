@@ -402,10 +402,10 @@ function CountryFlag({
 }) {
   return (
     <img
-      src={`https://flagcdn.com/w40/${iso2.toLowerCase()}.png`}
+      src={`https://flagcdn.com/w80/${iso2.toLowerCase()}.png`}
       alt={`${countryName} flag`}
-      width={20}
-      height={14}
+      width={80}
+      height={56}
       loading="lazy"
       className="mr-2 inline-block h-3.5 w-5 rounded-sm object-cover align-[-2px] shadow-[0_0_0_1px_rgba(15,23,42,0.08)]"
     />

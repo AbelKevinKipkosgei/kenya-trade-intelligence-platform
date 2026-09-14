@@ -156,12 +156,12 @@ export default async function BarriersPage({
               <div className="flex flex-col sm:flex-row">
                 <div className="flex w-full shrink-0 items-center gap-3 border-b border-slate-100 bg-[#fbfdfd] px-5 py-4 sm:w-56 sm:flex-col sm:items-start sm:justify-center sm:border-b-0 sm:border-r dark:border-zinc-800 dark:bg-zinc-950/40">
                   <img
-                    src={`https://flagcdn.com/w40/${b.countryIso2.toLowerCase()}.png`}
+                    src={`https://flagcdn.com/w160/${b.countryIso2.toLowerCase()}.png`}
                     alt={`${b.countryName} flag`}
-                    width={40}
-                    height={28}
+                    width={160}
+                    height={112}
                     loading="lazy"
-                    className="h-9 w-12 rounded-full object-cover shadow-[0_0_0_1px_rgba(15,23,42,0.08)]"
+                    className="h-9 w-12 rounded-sm object-cover shadow-[0_0_0_1px_rgba(15,23,42,0.08)]"
                   />
                   <div>
                     <p className="font-semibold text-ktp-navy dark:text-zinc-100">
