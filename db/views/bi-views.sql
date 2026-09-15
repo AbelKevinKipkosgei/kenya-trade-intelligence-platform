@@ -103,7 +103,14 @@ SELECT
   tb.impact_level,
   tb.reported_date,
   tb.resolved_date,
-  ag.name AS source_agency
+  ag.name AS source_agency,
+  -- Appended at the end, not inserted alongside country_name/region above:
+  -- Postgres's CREATE OR REPLACE VIEW only allows adding columns at the
+  -- tail of the SELECT list, not inserting them mid-list (confirmed
+  -- directly — it errors with "cannot change name of view column" /
+  -- pg error 42P16 otherwise). Added for Superset's country-map chart
+  -- type, which keys on ISO-3166-1 alpha-3 codes.
+  c.iso3 AS country_iso3
 FROM trade_barriers tb
 LEFT JOIN products p ON p.id = tb.product_id
 LEFT JOIN sectors s ON s.id = p.sector_id
